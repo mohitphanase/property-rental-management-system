@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.rental.dto.LoginRequestDto;
 import com.rental.dto.RegisterRequestDto;
 import com.rental.dto.Resp;
 import com.rental.service.UserServiceImpl;
@@ -21,16 +22,21 @@ public class UserController {
 		this.userService = userService;
 	}
 	
+	//Registration
 	@PostMapping("/register")
 	public Resp<?> registerUser(@RequestBody RegisterRequestDto registerRequestDto) {
 		registerRequestDto = userService.register(registerRequestDto);
 		return Resp.success(registerRequestDto);
 	}
 	
-	
-	@GetMapping("/test")
-	public String test() {
-	    return "Controller Working";
+	//Login
+	@PostMapping("/login")
+	public Resp<?> login(@RequestBody LoginRequestDto loginRequestDto) {
+
+	    RegisterRequestDto userDto =userService.login(loginRequestDto);
+
+	    return Resp.success(userDto);
 	}
+
 	
 }
