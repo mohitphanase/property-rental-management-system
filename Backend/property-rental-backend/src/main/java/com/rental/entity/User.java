@@ -2,6 +2,7 @@ package com.rental.entity;
 
 import java.time.LocalDateTime;
 
+
 import jakarta.persistence.*;
 import lombok.*;
 
