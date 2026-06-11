@@ -11,6 +11,7 @@ import com.rental.dto.LoginRequestDto;
 import com.rental.dto.RegisterRequestDto;
 import com.rental.dto.Resp;
 import com.rental.service.UserServiceImpl;
+import com.rental.dto.LoginResponseDto;
 
 @RestController
 @RequestMapping("/user")
@@ -33,9 +34,7 @@ public class UserController {
 	@PostMapping("/login")
 	public Resp<?> login(@RequestBody LoginRequestDto loginRequestDto) {
 
-	    RegisterRequestDto userDto =userService.login(loginRequestDto);
-
-	    return Resp.success(userDto);
+	    return Resp.success(userService.login(loginRequestDto));
 	}
 
 	
