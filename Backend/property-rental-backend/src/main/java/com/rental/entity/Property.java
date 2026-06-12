@@ -1,0 +1,54 @@
+package com.rental.entity;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "properties")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Property {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "property_id")
+    private Long propertyId;
+
+    // Many Properties -> One Owner(User)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+
+    @Column
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column
+    private String address;
+
+    @Column
+    private String city;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "property_type")
+    private PropertyType propertyType;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    // One Property -> Many Images
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PropertyImage> images;
+}
