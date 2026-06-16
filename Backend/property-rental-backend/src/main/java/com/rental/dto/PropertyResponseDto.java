@@ -1,13 +1,16 @@
 package com.rental.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import com.rental.entity.PropertyType;
 
 import lombok.Data;
 
 @Data
-public class AddPropertyDto {
+public class PropertyResponseDto {
+
+    private Long propertyId;
 
     private String title;
 
@@ -20,4 +23,6 @@ public class AddPropertyDto {
     private BigDecimal price;
 
     private PropertyType propertyType;
+
+    private LocalDateTime createdAt;
 }

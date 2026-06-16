@@ -14,7 +14,11 @@ public interface PropertyDao extends JpaRepository<Property, Long> {
 
     // Get properties by type
     List<Property> findByPropertyType(PropertyType propertyType);
+    
+    //Get Properties by city and type
+    List<Property> findByCityAndPropertyType( String city, PropertyType propertyType);
 
     // Get all properties of a specific owner
     List<Property> findByOwnerUserId(Long ownerId);
 }
+
