@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.rental.daos.PropertyDao;
@@ -26,7 +27,6 @@ public class PropertyServiceImpl {
 	private PropertyDao propertyDao;
     private UserDao userDao;
     private ModelMapper modelMapper;
-    private JwtUtil jwtUtil;
     
     @Autowired
 	public PropertyServiceImpl(PropertyDao propertyDao, UserDao userDao, ModelMapper modelMapper , JwtUtil jwtUtil) {
@@ -34,15 +34,15 @@ public class PropertyServiceImpl {
 		this.propertyDao = propertyDao;
 		this.userDao = userDao;
 		this.modelMapper = modelMapper;
-		this.jwtUtil = jwtUtil;
 	}
 	
 	 // POST /properties
-    public PropertyResponseDto addProperty(AddPropertyDto dto, String authHeader) {
+    public PropertyResponseDto addProperty(AddPropertyDto dto) {
 
-        String token = authHeader;
-
-        String email = jwtUtil.extractEmail(token);
+        String email = SecurityContextHolder
+        		.getContext()
+        		.getAuthentication()
+        		.getName();
 
         User owner = userDao.findByEmail(email);
 

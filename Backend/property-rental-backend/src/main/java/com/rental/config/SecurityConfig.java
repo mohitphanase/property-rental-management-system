@@ -29,6 +29,8 @@ public class SecurityConfig {
             .hasAuthority("ADMIN")
             .requestMatchers("/owner/**")
             .hasAuthority("OWNER")
+            .requestMatchers("/properties/**")
+            .authenticated()
             .requestMatchers("/tenant/**")
             .hasAuthority("TENANT")
             .anyRequest()
