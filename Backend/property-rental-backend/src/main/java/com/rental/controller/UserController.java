@@ -1,6 +1,8 @@
 package com.rental.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -64,5 +66,29 @@ public class UserController {
 	    return Resp.success(email);
 	}
 
+	//Current User
+	@GetMapping("/current-user")
+	public Resp<?> currentUser() {
+
+	    Authentication authentication =
+	            SecurityContextHolder
+	                    .getContext()
+	                    .getAuthentication();
+
+	    return Resp.success(
+	            authentication.getName());
+	}
 	
+	//Current User Role
+	@GetMapping("/current-role")
+	public Resp<?> currentRole() {
+
+	    Authentication authentication =
+	            SecurityContextHolder
+	                    .getContext()
+	                    .getAuthentication();
+
+	    return Resp.success(
+	            authentication.getAuthorities());
+	}
 }
