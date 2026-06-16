@@ -91,4 +91,12 @@ public class UserController {
 	    return Resp.success(
 	            authentication.getAuthorities());
 	}
+	
+	//Current User Profile
+	@GetMapping("/profile")
+	public Resp<?> getProfile() {
+
+	    return Resp.success(
+	            userService.getCurrentUserProfile());
+	}
 }
