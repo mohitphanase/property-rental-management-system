@@ -108,23 +108,36 @@ public class PropertyServiceImpl {
     }
     
     
-    // GET /properties?city=Pune
-    public List<Property> getPropertiesByCity(String city) {
-        return propertyDao.findByCity(city);
+ // GET /properties?city=Pune
+    public List<PropertyResponseDto> getPropertiesByCity(String city) {
+
+        return propertyDao.findByCity(city)
+                .stream()
+                .map(property ->modelMapper.map(property,PropertyResponseDto.class))
+                .toList();
     }
 
     
-   // GET /properties?type=APARTMENT
-    public List<Property> getPropertiesByType(PropertyType propertyType) {
+ // GET /properties?type=APARTMENT
+    public List<PropertyResponseDto> getPropertiesByType(
+            PropertyType propertyType) {
 
-        return propertyDao.findByPropertyType(propertyType);
+        return propertyDao.findByPropertyType(propertyType)
+                .stream()
+                .map(property ->modelMapper.map(property,PropertyResponseDto.class))
+                .toList();
     }
     
     
  // GET /properties?city=Pune&type=APARTMENT
-    public List<Property> getPropertiesByCityAndType(String city, PropertyType propertyType) {
+    public List<PropertyResponseDto> getPropertiesByCityAndType(
+            String city,
+            PropertyType propertyType) {
 
-        return propertyDao.findByCityAndPropertyType(city, propertyType);
+        return propertyDao.findByCityAndPropertyType(city,propertyType)
+                .stream()
+                .map(property ->modelMapper.map( property,PropertyResponseDto.class))
+                .toList();
     }
     
     
