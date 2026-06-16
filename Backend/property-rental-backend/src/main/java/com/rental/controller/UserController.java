@@ -43,29 +43,6 @@ public class UserController {
 	    return Resp.success(userService.login(loginRequestDto));
 	}
 	
-	//Validation of token
-	@GetMapping("/validate")
-	public Resp<?> validateToken( @RequestHeader("Token")String authHeader) {
-
-	    String token = authHeader;
-
-	    boolean valid = jwtUtil.validateToken(token);
-
-	    return Resp.success(valid);
-	}
-	
-	//Extract Email
-	@GetMapping("/email")
-	public Resp<?> getEmail(
-	        @RequestHeader("Token") String authHeader) {
-
-	    String token = authHeader;
-
-	    String email = jwtUtil.extractEmail(token);
-
-	    return Resp.success(email);
-	}
-
 	//Current User
 	@GetMapping("/current-user")
 	public Resp<?> currentUser() {
@@ -90,5 +67,13 @@ public class UserController {
 
 	    return Resp.success(
 	            authentication.getAuthorities());
+	}
+	
+	//Current User Profile
+	@GetMapping("/profile")
+	public Resp<?> getProfile() {
+
+	    return Resp.success(
+	            userService.getCurrentUserProfile());
 	}
 }
