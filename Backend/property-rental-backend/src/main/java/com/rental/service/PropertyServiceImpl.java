@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.rental.daos.PropertyDao;
@@ -26,7 +27,6 @@ public class PropertyServiceImpl {
 	private PropertyDao propertyDao;
     private UserDao userDao;
     private ModelMapper modelMapper;
-    private JwtUtil jwtUtil;
     
     @Autowired
 	public PropertyServiceImpl(PropertyDao propertyDao, UserDao userDao, ModelMapper modelMapper , JwtUtil jwtUtil) {
@@ -34,15 +34,15 @@ public class PropertyServiceImpl {
 		this.propertyDao = propertyDao;
 		this.userDao = userDao;
 		this.modelMapper = modelMapper;
-		this.jwtUtil = jwtUtil;
 	}
 	
 	 // POST /properties
-    public PropertyResponseDto addProperty(AddPropertyDto dto, String authHeader) {
+    public PropertyResponseDto addProperty(AddPropertyDto dto) {
 
-        String token = authHeader;
-
-        String email = jwtUtil.extractEmail(token);
+        String email = SecurityContextHolder
+        		.getContext()
+        		.getAuthentication()
+        		.getName();
 
         User owner = userDao.findByEmail(email);
 
@@ -108,23 +108,36 @@ public class PropertyServiceImpl {
     }
     
     
-    // GET /properties?city=Pune
-    public List<Property> getPropertiesByCity(String city) {
-        return propertyDao.findByCity(city);
+ // GET /properties?city=Pune
+    public List<PropertyResponseDto> getPropertiesByCity(String city) {
+
+        return propertyDao.findByCity(city)
+                .stream()
+                .map(property ->modelMapper.map(property,PropertyResponseDto.class))
+                .toList();
     }
 
     
-   // GET /properties?type=APARTMENT
-    public List<Property> getPropertiesByType(PropertyType propertyType) {
+ // GET /properties?type=APARTMENT
+    public List<PropertyResponseDto> getPropertiesByType(
+            PropertyType propertyType) {
 
-        return propertyDao.findByPropertyType(propertyType);
+        return propertyDao.findByPropertyType(propertyType)
+                .stream()
+                .map(property ->modelMapper.map(property,PropertyResponseDto.class))
+                .toList();
     }
     
     
  // GET /properties?city=Pune&type=APARTMENT
-    public List<Property> getPropertiesByCityAndType(String city, PropertyType propertyType) {
+    public List<PropertyResponseDto> getPropertiesByCityAndType(
+            String city,
+            PropertyType propertyType) {
 
-        return propertyDao.findByCityAndPropertyType(city, propertyType);
+        return propertyDao.findByCityAndPropertyType(city,propertyType)
+                .stream()
+                .map(property ->modelMapper.map( property,PropertyResponseDto.class))
+                .toList();
     }
     
     

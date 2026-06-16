@@ -16,13 +16,10 @@ public class PropertyResponseDto {
 
     private String description;
 
-    private String address;
-
     private String city;
 
     private BigDecimal price;
 
     private PropertyType propertyType;
 
-    private LocalDateTime createdAt;
 }

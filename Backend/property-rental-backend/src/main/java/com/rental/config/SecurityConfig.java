@@ -29,8 +29,12 @@ public class SecurityConfig {
             .hasAuthority("ADMIN")
             .requestMatchers("/owner/**")
             .hasAuthority("OWNER")
+            
             .requestMatchers("/tenant/**")
             .hasAuthority("TENANT")
+            
+            .requestMatchers("/properties/**")
+            .authenticated()
             .anyRequest()
             .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

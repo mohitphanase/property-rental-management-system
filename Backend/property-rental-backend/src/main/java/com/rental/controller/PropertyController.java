@@ -28,22 +28,7 @@ public class PropertyController {
         this.propertyService = propertyService;
     }
     
-    
-    
-    // POST /properties
-
-    @PostMapping("/add")
-    public Resp<?> addProperty( @RequestHeader("Token")String authHeader, @RequestBody AddPropertyDto dto) {
-
-        return Resp.success(propertyService.addProperty(dto,authHeader));
-    }
-       
-    
-    
-    // GET /properties
-    // GET /properties?city=Pune
-    // GET /properties?type=APARTMENT
-    // GET /properties?city=Pune&type=APARTMENT
+    //get property
     @GetMapping
     public Resp<?> getProperties(
 
@@ -89,31 +74,9 @@ public class PropertyController {
     @GetMapping("/{id}")
     public Resp<?> getPropertyById(@PathVariable Long id) {
 
-        return Resp.success(
-                propertyService
-                .getPropertyById(id));
+        return Resp.success(propertyService.getPropertyById(id));
     }
     
-    
-    
-   // PUT /properties/{id}
-    @PutMapping("/{id}")
-    public Resp<?> updateProperty( @PathVariable Long id, @RequestBody AddPropertyDto dto) {
-
-        return Resp.success(
-                propertyService
-                .updateProperty(id, dto));
-    }
-    
-    
-    // DELETE /properties/{id}
-    @DeleteMapping("/{id}")
-    public Resp<?> deleteProperty(@PathVariable Long id) {
-
-        propertyService.deleteProperty(id);
-
-        return Resp.success("Property deleted successfully");
-    }
 }
     
     
