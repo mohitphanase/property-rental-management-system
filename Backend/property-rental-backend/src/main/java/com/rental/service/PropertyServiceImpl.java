@@ -1,0 +1,139 @@
+package com.rental.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.rental.daos.PropertyDao;
+import com.rental.daos.UserDao;
+import com.rental.dto.AddPropertyDto;
+import com.rental.dto.PropertyResponseDto;
+import com.rental.entity.Property;
+import com.rental.entity.PropertyType;
+import com.rental.entity.User;
+import com.rental.security.JwtUtil;
+
+import jakarta.transaction.Transactional;
+
+@Transactional
+@Service
+public class PropertyServiceImpl {
+	
+	private PropertyDao propertyDao;
+    private UserDao userDao;
+    private ModelMapper modelMapper;
+    private JwtUtil jwtUtil;
+    
+    @Autowired
+	public PropertyServiceImpl(PropertyDao propertyDao, UserDao userDao, ModelMapper modelMapper , JwtUtil jwtUtil) {
+		super();
+		this.propertyDao = propertyDao;
+		this.userDao = userDao;
+		this.modelMapper = modelMapper;
+		this.jwtUtil = jwtUtil;
+	}
+	
+	 // POST /properties
+    public PropertyResponseDto addProperty(AddPropertyDto dto, String authHeader) {
+
+        String token = authHeader;
+
+        String email = jwtUtil.extractEmail(token);
+
+        User owner = userDao.findByEmail(email);
+
+        if(owner == null) {
+            throw new RuntimeException("Owner not found");
+        }
+
+        Property property = modelMapper.map(dto, Property.class);
+
+        property.setPropertyId(null);
+        property.setOwner(owner);
+        property.setCreatedAt(LocalDateTime.now());
+
+        property = propertyDao.save(property);
+
+        return modelMapper.map(property,PropertyResponseDto.class);
+    }
+
+	
+    // GET /properties
+
+	public List<PropertyResponseDto> getAllProperties() {
+
+	    return propertyDao.findAll()
+	            .stream()
+	            .map(property -> modelMapper.map(property, PropertyResponseDto.class))
+	            .toList();
+	}
+    
+   // GET /properties/{id}
+
+    public PropertyResponseDto getPropertyById(Long propertyId) {
+
+        Property property = propertyDao.findById(propertyId)
+                .orElseThrow(() ->
+                        new RuntimeException("Property not found"));
+
+        return modelMapper.map(property, PropertyResponseDto.class);
+    }
+    
+ 
+    // PUT /properties/{id}
+    public Property updateProperty(Long propertyId,AddPropertyDto dto) {
+
+        Property property = propertyDao.findById(propertyId)
+                .orElseThrow(() ->
+                        new RuntimeException("Property not found"));
+
+        modelMapper.map(dto, property);
+
+        return propertyDao.save(property);
+    }
+
+    
+    // DELETE /properties/{id}
+    public void deleteProperty(Long propertyId) {
+
+        Property property = propertyDao.findById(propertyId)
+                .orElseThrow(() ->
+                        new RuntimeException("Property not found"));
+
+        propertyDao.delete(property);
+    }
+    
+    
+    // GET /properties?city=Pune
+    public List<Property> getPropertiesByCity(String city) {
+        return propertyDao.findByCity(city);
+    }
+
+    
+   // GET /properties?type=APARTMENT
+    public List<Property> getPropertiesByType(PropertyType propertyType) {
+
+        return propertyDao.findByPropertyType(propertyType);
+    }
+    
+    
+ // GET /properties?city=Pune&type=APARTMENT
+    public List<Property> getPropertiesByCityAndType(String city, PropertyType propertyType) {
+
+        return propertyDao.findByCityAndPropertyType(city, propertyType);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+}
