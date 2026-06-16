@@ -24,9 +24,8 @@ public class UserServiceImpl {
 	private PasswordEncoder passwordEncoder;
 	private JwtUtil jwtUtil;
 	
-	@Autowired
+	
 	public UserServiceImpl(UserDao userDao, ModelMapper modelMapper,PasswordEncoder passwordEncoder,JwtUtil jwtUtil) {
-		super();
 		this.userDao = userDao;
 		this.modelMapper = modelMapper;
 		this.passwordEncoder = passwordEncoder;
@@ -48,7 +47,6 @@ public class UserServiceImpl {
     }
 	
 	//Login
-
 	public LoginResponseDto login(LoginRequestDto loginRequestDto) {
 
 	    User user =userDao.findByEmail(loginRequestDto.getEmail());
