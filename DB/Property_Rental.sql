@@ -150,3 +150,71 @@ CREATE TABLE reviews (
     UNIQUE(property_id, tenant_id)
 );
 
+
+USE property_db;
+
+-- USERS
+INSERT INTO users(name,email,phone,password,role) VALUES
+('Admin User','admin@gmail.com','9999999991','admin123','ADMIN'),
+('Raj Owner','raj@gmail.com','9999999992','owner123','OWNER'),
+('Priya Owner','priya@gmail.com','9999999993','owner123','OWNER'),
+('Amit Tenant','amit@gmail.com','9999999994','tenant123','TENANT'),
+('Neha Tenant','neha@gmail.com','9999999995','tenant123','TENANT');
+
+-- PROPERTIES
+INSERT INTO properties
+(owner_id,title,description,address,city,price,property_type)
+VALUES
+(2,'Sea View Apartment','2 BHK near beach',
+ 'Juhu Beach Road','Mumbai',25000,'APARTMENT'),
+
+(2,'Luxury Villa','4 BHK Villa with pool',
+ 'Palm Street','Goa',75000,'VILLA'),
+
+(3,'Student PG','PG with WiFi and Food',
+ 'FC Road','Pune',8000,'PG'),
+
+(3,'Independent House','3 BHK Family House',
+ 'Baner Road','Pune',30000,'HOUSE');
+
+-- PROPERTY IMAGES
+INSERT INTO property_images(property_id,image_url) VALUES
+(1,'https://example.com/apartment1.jpg'),
+(1,'https://example.com/apartment2.jpg'),
+(2,'https://example.com/villa1.jpg'),
+(3,'https://example.com/pg1.jpg'),
+(4,'https://example.com/house1.jpg');
+
+-- BOOKINGS
+INSERT INTO bookings
+(property_id,tenant_id,start_date,end_date,status)
+VALUES
+(1,4,'2025-07-01','2025-07-05','APPROVED'),
+(2,4,'2025-07-15','2025-07-20','PENDING'),
+(3,5,'2025-08-01','2025-08-10','APPROVED'),
+(4,5,'2025-08-15','2025-08-25','REJECTED');
+
+-- PAYMENTS
+INSERT INTO payments
+(booking_id,amount,payment_status,transaction_id)
+VALUES
+(1,5000,'SUCCESS','TXN1001'),
+(2,7000,'PENDING','TXN1002'),
+(3,3000,'SUCCESS','TXN1003'),
+(4,0,'FAILED','TXN1004');
+
+-- WISHLIST
+INSERT INTO wishlist(user_id,property_id) VALUES
+(4,2),
+(4,3),
+(5,1),
+(5,4);
+
+-- REVIEWS
+INSERT INTO reviews
+(property_id,tenant_id,rating,comment)
+VALUES
+(1,4,5,'Excellent property and location'),
+(3,5,4,'Good PG with decent facilities'),
+(2,4,5,'Amazing villa experience');
+

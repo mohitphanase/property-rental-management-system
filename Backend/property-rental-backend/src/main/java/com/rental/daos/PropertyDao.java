@@ -1,6 +1,7 @@
 package com.rental.daos;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,11 +15,9 @@ public interface PropertyDao extends JpaRepository<Property, Long> {
 
     // Get properties by type
     List<Property> findByPropertyType(PropertyType propertyType);
-    
-    //Get Properties by city and type
-    List<Property> findByCityAndPropertyType( String city, PropertyType propertyType);
 
     // Get all properties of a specific owner
     List<Property> findByOwnerUserId(Long ownerId);
-}
 
+    Optional<Property> findByTitle(String title);
+}
