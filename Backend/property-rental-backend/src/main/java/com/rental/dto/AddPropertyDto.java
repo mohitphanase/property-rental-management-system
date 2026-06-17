@@ -9,6 +9,8 @@ import lombok.Data;
 @Data
 public class AddPropertyDto {
 
+    private Long ownerId;
+
     private String title;
 
     private String description;

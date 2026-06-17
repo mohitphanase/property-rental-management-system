@@ -2,7 +2,6 @@ package com.rental.entity;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,7 +25,6 @@ public class User {
 
     private String phone;
 
-    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -34,4 +32,5 @@ public class User {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
 }
