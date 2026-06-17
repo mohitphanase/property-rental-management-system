@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import com.rental.daos.UserDao;
 import com.rental.dto.LoginRequestDto;
 import com.rental.dto.LoginResponseDto;
 import com.rental.dto.RegisterRequestDto;
+import com.rental.dto.UserProfileDto;
 import com.rental.entity.User;
 import com.rental.security.JwtUtil;
 
@@ -24,9 +26,8 @@ public class UserServiceImpl {
 	private PasswordEncoder passwordEncoder;
 	private JwtUtil jwtUtil;
 	
-	@Autowired
+	
 	public UserServiceImpl(UserDao userDao, ModelMapper modelMapper,PasswordEncoder passwordEncoder,JwtUtil jwtUtil) {
-		super();
 		this.userDao = userDao;
 		this.modelMapper = modelMapper;
 		this.passwordEncoder = passwordEncoder;
@@ -48,7 +49,6 @@ public class UserServiceImpl {
     }
 	
 	//Login
-
 	public LoginResponseDto login(LoginRequestDto loginRequestDto) {
 
 	    User user =userDao.findByEmail(loginRequestDto.getEmail());
@@ -63,6 +63,22 @@ public class UserServiceImpl {
 	    }
 
 	    throw new RuntimeException("Invalid Password");
+	}
+	
+	//Current User Profile
+	
+	public UserProfileDto getCurrentUserProfile() {
+
+	    String email = SecurityContextHolder
+	            .getContext()
+	            .getAuthentication()
+	            .getName();
+
+	    User user = userDao.findByEmail(email);
+
+	    return modelMapper.map(
+	            user,
+	            UserProfileDto.class);
 	}
 	
 	

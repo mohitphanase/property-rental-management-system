@@ -1,6 +1,8 @@
 package com.rental.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,28 +43,37 @@ public class UserController {
 	    return Resp.success(userService.login(loginRequestDto));
 	}
 	
-	//Validation of token
-	@GetMapping("/validate")
-	public Resp<?> validateToken( @RequestHeader("Token")String authHeader) {
+	//Current User
+	@GetMapping("/current-user")
+	public Resp<?> currentUser() {
 
-	    String token = authHeader;
+	    Authentication authentication =
+	            SecurityContextHolder
+	                    .getContext()
+	                    .getAuthentication();
 
-	    boolean valid = jwtUtil.validateToken(token);
-
-	    return Resp.success(valid);
+	    return Resp.success(
+	            authentication.getName());
 	}
 	
-	//Extract Email
-	@GetMapping("/email")
-	public Resp<?> getEmail(
-	        @RequestHeader("Token") String authHeader) {
+	//Current User Role
+	@GetMapping("/current-role")
+	public Resp<?> currentRole() {
 
-	    String token = authHeader;
+	    Authentication authentication =
+	            SecurityContextHolder
+	                    .getContext()
+	                    .getAuthentication();
 
-	    String email = jwtUtil.extractEmail(token);
-
-	    return Resp.success(email);
+	    return Resp.success(
+	            authentication.getAuthorities());
 	}
-
 	
+	//Current User Profile
+	@GetMapping("/profile")
+	public Resp<?> getProfile() {
+
+	    return Resp.success(
+	            userService.getCurrentUserProfile());
+	}
 }
