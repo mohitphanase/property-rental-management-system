@@ -35,6 +35,19 @@ public class SecurityConfig {
             
             .requestMatchers("/properties/**")
             .authenticated()
+            
+            .requestMatchers("/bookings/**")
+            .authenticated()
+
+            .requestMatchers("/payments/**")
+            .authenticated()
+
+            .requestMatchers("/reviews/**")
+            .authenticated()
+
+            .requestMatchers("/wishlists/**")
+            .authenticated()
+            
             .anyRequest()
             .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

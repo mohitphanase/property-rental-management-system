@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.rental.entity.Booking;
 import com.rental.entity.BookingStatus;
+import com.rental.entity.User;
 
 public interface BookingDao extends JpaRepository<Booking, Long> {
 
@@ -34,4 +35,5 @@ public interface BookingDao extends JpaRepository<Booking, Long> {
     @Query("SELECT b.property.propertyId, b.property.title, COUNT(b) as totalBookings " + "FROM Booking b " + "GROUP BY b.property.propertyId, b.property.title " + "ORDER BY totalBookings DESC")
     List<Object[]> findTopPropertiesByBookingCount();
     
+    List<Booking> findByPropertyOwner(User owner);
 }
