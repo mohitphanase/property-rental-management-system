@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.rental.daos.PropertyDao;
@@ -27,10 +28,18 @@ public class ReviewService {
 	private PropertyDao propertyDao;
 	
 	public Review addReview(ReviewDto dto) {
-		
-		User tenant = userDao.findById(dto.getTenant_Id()).orElseThrow();
-		
-		Property property = propertyDao.findById(dto.getProperty_Id()).orElseThrow();
+
+		 String email = SecurityContextHolder
+	                .getContext()
+	                .getAuthentication()
+	                .getName();
+
+	        User tenant = userDao.findByEmail(email);
+
+	        Property property = propertyDao
+	                .findById(dto.getProperty_Id())
+	                .orElseThrow(() ->
+	                        new RuntimeException("Property not found"));
 		
 		Review review = new Review();
 		

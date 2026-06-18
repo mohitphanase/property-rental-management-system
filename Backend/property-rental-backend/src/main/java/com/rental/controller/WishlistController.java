@@ -31,11 +31,10 @@ public class WishlistController {
 		 return wishlistService.addWishlist(dto); 
 	}
 	
-	@GetMapping("/user/{userId}")
-	public List<Wishlist> getWishlist(
-			@PathVariable Long userId){
+	@GetMapping("/user")
+	public List<Wishlist> getWishlist(){
 		
-		return wishlistService.getWishlist(userId);
+		return wishlistService.getWishlist();
 	}
 	
 	@DeleteMapping("/{wishlistId}")
