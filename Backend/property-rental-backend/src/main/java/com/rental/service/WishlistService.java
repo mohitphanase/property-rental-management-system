@@ -4,6 +4,7 @@ package com.rental.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.rental.daos.PropertyDao;
@@ -28,9 +29,17 @@ public class WishlistService {
 	
 	public Wishlist addWishlist(WishlistDto dto) {
 		
-		User user = userDao.findById(dto.getUserId()).orElseThrow();
-		
-		Property property = propertyDao.findById(dto.getUserId()).orElseThrow();
+		String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userDao.findByEmail(email);
+
+        Property property = propertyDao
+                .findById(dto.getPropertyId())
+                .orElseThrow(() ->
+                        new RuntimeException("Property not found"));
 		
 		Wishlist wishlist = new Wishlist();
 		wishlist.setUser(user);
@@ -40,15 +49,40 @@ public class WishlistService {
 		
 	}
 	
-	public List<Wishlist> getWishlist(Long userId){
+	public List<Wishlist> getWishlist(){
 		
-		User user = userDao.findById(userId).orElseThrow();
-		
+		  String email = SecurityContextHolder
+	                .getContext()
+	                .getAuthentication()
+	                .getName();
+
+	        User user = userDao.findByEmail(email);
+
 		return wishlistDao.findByUser(user);
 	}
 	
 	public void deleteWishlist(Long wishlistId) {
-		wishlistDao.deleteById(wishlistId);
+
+		 Wishlist wishlist = wishlistDao.findById(wishlistId)
+	                .orElseThrow(() ->
+	                        new RuntimeException("Wishlist not found"));
+
+	        String email = SecurityContextHolder
+	                .getContext()
+	                .getAuthentication()
+	                .getName();
+
+	        User user = userDao.findByEmail(email);
+
+	        if (!wishlist.getUser()
+	                .getUserId()
+	                .equals(user.getUserId())) {
+
+	            throw new RuntimeException(
+	                    "You can delete only your own wishlist items");
+	        }
+
+	        wishlistDao.delete(wishlist);
 	}
 
 }
