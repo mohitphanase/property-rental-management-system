@@ -12,8 +12,8 @@ import com.rental.entity.Booking;
 import com.rental.service.BookingService;
 
 @RestController
-@RequestMapping("/booking")
-public class Booking_PaymentController {
+@RequestMapping("/bookings")
+public class BookingController {
 
     @Autowired
     private BookingService bookingService;
@@ -21,20 +21,12 @@ public class Booking_PaymentController {
 
 
     @Autowired
-    public Booking_PaymentController(BookingService bookingService) {
+    public BookingController(BookingService bookingService) {
         this.bookingService = bookingService;
     }
-
-    // Get all bookings of a tenant-user
-    @GetMapping("/user/{userId}")
-    public Resp<?> getUserBookings(@PathVariable Long userId) {
-
-        return Resp.success(
-                bookingService.getUserBookingDtos(userId)
-        );
-    }
+    
     // Add Booking of a tenant
-    @PostMapping("/add")
+    @PostMapping
     public Resp<?> addBooking(@RequestBody BookingRequestDto dto) {
 
         Booking booking = bookingService.addBooking(dto);
@@ -42,16 +34,14 @@ public class Booking_PaymentController {
 
     }
 
-    // Set Booking Status
-    @PutMapping("/{bookingId}/statusa")
-    public Resp<?> updateBookingStatus( @PathVariable Long bookingId, @RequestBody BookingStatusDto dto) {
+    // Get all bookings of a tenant-user
+    @GetMapping("/user/{userId}")
+    public Resp<?> getUserBookings(@PathVariable Long userId) {
 
-        Booking booking = bookingService.updateBookingStatus(bookingId, dto.getStatus());
-
-        return Resp.success(booking);
+        return Resp.success( bookingService.getUserBookingDtos(userId));
     }
-
-
+    
+    
     @GetMapping("/{bookingId}")
     public Resp<?> getBooking(@PathVariable Long bookingId) {
         return Resp.success(

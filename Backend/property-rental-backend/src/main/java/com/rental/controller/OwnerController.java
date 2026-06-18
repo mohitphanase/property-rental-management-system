@@ -16,8 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.rental.dto.AddPropertyDto;
+import com.rental.dto.BookingStatusDto;
 import com.rental.dto.Resp;
+import com.rental.entity.Booking;
 import com.rental.entity.PropertyType;
+import com.rental.service.BookingService;
 import com.rental.service.PropertyImageServiceImpl;
 import com.rental.service.PropertyServiceImpl;
 
@@ -27,11 +30,13 @@ public class OwnerController {
 	
 	private PropertyServiceImpl propertyService;
 	private PropertyImageServiceImpl imageService;
+	private BookingService bookingService;
 
     @Autowired
-    public OwnerController(PropertyServiceImpl propertyService,PropertyImageServiceImpl imageService) {
+    public OwnerController(PropertyServiceImpl propertyService,PropertyImageServiceImpl imageService,BookingService bookingService) {
         this.propertyService = propertyService;
         this.imageService = imageService;
+        this.bookingService = bookingService;
     }
     
     
@@ -78,6 +83,24 @@ public class OwnerController {
         imageService.deleteImage(imageId);
 
         return Resp.success("Image deleted successfully");
+    }
+    
+    
+    // Set Booking Status
+    @PutMapping("/bookings/{bookingId}/status")
+    public Resp<?> updateBookingStatus( @PathVariable Long bookingId, @RequestBody BookingStatusDto dto) {
+
+        Booking booking = bookingService.updateBookingStatus(bookingId, dto.getStatus());
+
+        return Resp.success(booking);
+    }
+    
+    // get owner booking
+    @GetMapping("/bookings")
+    public Resp<?> getOwnerBookings() {
+
+        return Resp.success(
+                bookingService.getOwnerBookings());
     }
 }
     

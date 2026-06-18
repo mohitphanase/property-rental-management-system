@@ -11,6 +11,7 @@ import com.rental.entity.BookingStatus;
 import com.rental.entity.Property;
 import com.rental.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.rental.daos.BookingDao;
@@ -105,5 +106,17 @@ public class BookingService {
             return dto;
 
         }).toList();
+    }
+    
+    public List<Booking> getOwnerBookings() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User owner = userDao.findByEmail(email);
+
+        return bookingDao.findByPropertyOwner(owner);
     }
 }

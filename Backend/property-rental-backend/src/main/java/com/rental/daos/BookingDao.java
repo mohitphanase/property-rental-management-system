@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.rental.entity.Booking;
+import com.rental.entity.User;
 
 public interface BookingDao extends JpaRepository<Booking, Long> {
 
@@ -18,4 +19,6 @@ public interface BookingDao extends JpaRepository<Booking, Long> {
     );
 
     List<Booking> findByPropertyPropertyId(Long propertyId);
+    
+    List<Booking> findByPropertyOwner(User owner);
 }

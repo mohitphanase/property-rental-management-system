@@ -17,7 +17,7 @@ import com.rental.entity.Wishlist;
 import com.rental.service.WishlistService;
 
 @RestController
-@RequestMapping("/wishlist")
+@RequestMapping("/wishlists")
 @CrossOrigin("*")
 public class WishlistController {
 
