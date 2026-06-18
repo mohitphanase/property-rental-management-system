@@ -3,6 +3,8 @@ package com.rental.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -31,10 +33,12 @@ public class Booking {
 	
 	@ManyToOne
 	@JoinColumn(name="property_id")
+	@JsonIgnore
 	private Property property;
 	
 	@ManyToOne
 	@JoinColumn(name="tenant_id")
+	@JsonIgnore
 	private User tenant; 
 	
 	@Column(name="start_date")
