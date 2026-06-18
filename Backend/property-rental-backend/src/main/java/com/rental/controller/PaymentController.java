@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/payment")
+@RequestMapping("/payments")
 public class PaymentController {
 
     @Autowired
     private PaymentService paymentService;
 
-    @PostMapping("/add")
+    @PostMapping
     public Resp<?> addPayment(@RequestBody PaymentRequestDto dto){
         return Resp.success(paymentService.addPayment(dto));
     }

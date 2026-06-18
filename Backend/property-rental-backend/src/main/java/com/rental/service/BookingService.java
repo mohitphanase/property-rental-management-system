@@ -11,6 +11,7 @@ import com.rental.entity.BookingStatus;
 import com.rental.entity.Property;
 import com.rental.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.rental.daos.BookingDao;
@@ -37,8 +38,12 @@ public class BookingService {
         Property property = propertyDao.findById(dto.getPropertyId())
                 .orElseThrow(() -> new RuntimeException("Property not found"));
 
-        User tenant = userDao.findById(dto.getTenantId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User tenant = userDao.findByEmail(email);
 
         if (dto.getStartDate().isAfter(dto.getEndDate())) {
             throw new RuntimeException("Start date must be before end date");
@@ -58,6 +63,21 @@ public class BookingService {
     public Booking updateBookingStatus(Long bookingId,BookingStatus status) {
         Booking booking = bookingDao.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User owner = userDao.findByEmail(email);
+
+        if (!booking.getProperty()
+                .getOwner()
+                .getUserId()
+                .equals(owner.getUserId())) {
+
+            throw new RuntimeException(
+                    "You are not owner of this property");
+        }
         booking.setStatus(status);
         return bookingDao.save(booking);
     }
@@ -85,9 +105,18 @@ public class BookingService {
         return dto;
     }
 
-    public List<BookingResponseDto> getUserBookingDtos(Long userId) {
+    public List<BookingResponseDto> getUserBookingDtos() {
+    	
+    	String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
 
-        List<Booking> bookings = bookingDao.findByTenantUserId(userId);
+        User tenant = userDao.findByEmail(email);
+
+        List<Booking> bookings =
+                bookingDao.findByTenantUserId(
+                        tenant.getUserId());
 
         return bookings.stream().map(booking -> {
 
@@ -105,5 +134,17 @@ public class BookingService {
             return dto;
 
         }).toList();
+    }
+    
+    public List<Booking> getOwnerBookings() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User owner = userDao.findByEmail(email);
+
+        return bookingDao.findByPropertyOwner(owner);
     }
 }
