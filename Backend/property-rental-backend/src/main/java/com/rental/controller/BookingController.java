@@ -35,10 +35,10 @@ public class BookingController {
     }
 
     // Get all bookings of a tenant-user
-    @GetMapping("/user/{userId}")
-    public Resp<?> getUserBookings(@PathVariable Long userId) {
+    @GetMapping("/user")
+    public Resp<?> getUserBookings() {
 
-        return Resp.success( bookingService.getUserBookingDtos(userId));
+        return Resp.success( bookingService.getUserBookingDtos());
     }
     
     
