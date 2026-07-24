@@ -14,6 +14,7 @@ import { SERVER_URL } from '../../utils/config'
 
 import { getPropertyById } from '../../services/propertyService'
 import { getPaymentByBooking } from '../../services/paymentService'
+import { deleteBooking } from '../../services/bookingService'
 
 export default function BookingDetailsScreen({ route, navigation }) {
   const { booking } = route.params
@@ -80,9 +81,20 @@ export default function BookingDetailsScreen({ route, navigation }) {
         },
         {
           text: 'Yes',
-          onPress: () => {
-            // TODO: Call Cancel Booking API
-            Alert.alert('Success', 'Booking Cancelled')
+          onPress: async () => {
+            try {
+              await deleteBooking(booking.bookingId)
+
+              Alert.alert('Success', 'Booking cancelled successfully', [
+                {
+                  text: 'OK',
+                  onPress: () => navigation.pop(2),
+                },
+              ])
+            } catch (error) {
+              console.log(error.response?.data)
+              Alert.alert('Error', 'Unable to cancel booking.')
+            }
           },
         },
       ]
@@ -200,14 +212,28 @@ export default function BookingDetailsScreen({ route, navigation }) {
         <TouchableOpacity style={styles.payButton} onPress={onPayNow}>
           <Text style={styles.buttonText}>Proceed to Payment</Text>
         </TouchableOpacity>
+      ) : booking.status === 'CANCELLED' ? (
+        <View style={styles.pendingBox}>
+          <Text style={styles.pendingText}>❌ Booking Cancelled</Text>
+        </View>
       ) : (
         <View style={styles.pendingBox}>
           <Text style={styles.pendingText}>Waiting for owner approval.</Text>
         </View>
       )}
 
-      <TouchableOpacity style={styles.cancelButton} onPress={onCancelBooking}>
-        <Text style={styles.cancelButtonText}>Cancel Booking</Text>
+      <TouchableOpacity
+        style={[
+          styles.cancelButton,
+          booking.status === 'CANCELLED' && { backgroundColor: '#BDBDBD' },
+        ]}
+        onPress={onCancelBooking}
+        disabled={booking.status === 'CANCELLED'}>
+        <Text style={styles.cancelButtonText}>
+          {booking.status === 'CANCELLED'
+            ? 'Booking Cancelled'
+            : 'Cancel Booking'}
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   )

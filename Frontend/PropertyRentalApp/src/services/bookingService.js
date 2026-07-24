@@ -14,3 +14,21 @@ export const getBookings = async () => {
     },
   })
 }
+export const deleteBooking = async bookingId => {
+  const token = await AsyncStorage.getItem(TOKEN_KEY)
+
+  return axios.delete(`${SERVER_URL}/bookings/${bookingId}`, {
+    headers: {
+      Token: token,
+    },
+  })
+}
+export const addBooking = async booking => {
+  const token = await AsyncStorage.getItem(TOKEN_KEY)
+
+  return axios.post(`${SERVER_URL}/bookings`, booking, {
+    headers: {
+      Token: token,
+    },
+  })
+}

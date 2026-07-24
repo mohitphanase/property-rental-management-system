@@ -147,4 +147,24 @@ public class BookingService {
 
         return bookingDao.findByPropertyOwner(owner);
     }
+    
+    public void deleteBooking(Long bookingId) {
+        Booking booking = bookingDao.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Delete only pending bookings
+        if (booking.getStatus() == BookingStatus.PENDING) {
+            bookingDao.delete(booking);
+            return;
+        }
+
+        // Approved bookings are cancelled instead of deleted
+        if (booking.getStatus() == BookingStatus.APPROVED) {
+            booking.setStatus(BookingStatus.CANCELLED);
+            bookingDao.save(booking);
+            return;
+        }
+
+        throw new RuntimeException("This booking cannot be cancelled.");
+    }
 }

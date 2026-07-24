@@ -48,6 +48,12 @@ public class BookingController {
                 bookingService.getBooking(bookingId)
         );
     }
+    
+    @DeleteMapping("/{bookingId}")
+    public Resp<?> deleteBooking(@PathVariable Long bookingId) {
+        bookingService.deleteBooking(bookingId);
+        return Resp.success("Booking cancelled successfully");
+    }
 
 
 }

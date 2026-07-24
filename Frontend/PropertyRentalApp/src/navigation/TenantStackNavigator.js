@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import TenantTabNavigator from './TenantTabNavigator'
 import BookingDetailsScreen from '../screens/tenant/BookingDetailsScreen'
 import PaymentScreen from '../screens/tenant/PaymentScreen'
+import BookingFormScreen from '../screens/tenant/BookingFormScreen'
 
 const Stack = createNativeStackNavigator()
 
@@ -26,6 +27,11 @@ export default function TenantStackNavigator() {
         name="PaymentScreen"
         component={PaymentScreen}
         options={{ title: 'Payment' }}
+      />
+      <Stack.Screen
+        name="BookingForm"
+        component={BookingFormScreen}
+        options={{ title: 'Booking Form' }}
       />
     </Stack.Navigator>
   )
