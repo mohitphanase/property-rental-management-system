@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 
 import { useNavigation } from '@react-navigation/native'
 import { getBookings } from '../../services/bookingService'
+import { useFocusEffect } from '@react-navigation/native'
 
 export default function BookingScreen() {
   const navigation = useNavigation()
@@ -21,11 +22,13 @@ export default function BookingScreen() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [selectedTab, setSelectedTab] = useState('ALL')
+  const [propertyImages, setPropertyImages] = useState({})
 
-  useEffect(() => {
-    loadBookings()
-  }, [])
-
+  useFocusEffect(
+    useCallback(() => {
+      loadBookings()
+    }, [])
+  )
   useEffect(() => {
     filterBookings(selectedTab)
   }, [bookings, selectedTab])
@@ -52,17 +55,6 @@ export default function BookingScreen() {
     loadBookings()
   }
 
-  const filterBookings = status => {
-    if (status === 'ALL') {
-      setFilteredBookings(bookings)
-      return
-    }
-
-    const data = bookings.filter(item => item.status === status)
-
-    setFilteredBookings(data)
-  }
-
   const getStatusStyle = status => {
     switch (status) {
       case 'APPROVED':
@@ -74,19 +66,56 @@ export default function BookingScreen() {
       case 'REJECTED':
         return styles.rejected
 
+      case 'CANCELLED':
+        return styles.cancelled
+
       default:
         return styles.pending
     }
   }
+  const filterBookings = status => {
+    if (status === 'ALL') {
+      setFilteredBookings(bookings)
+      return
+    }
+
+    const data = bookings.filter(item => item.status === status)
+
+    setFilteredBookings(data)
+  }
+  const onBookNow = async () => {
+    try {
+      await addBooking({
+        propertyId,
+        tenantId: user.userId,
+        startDate,
+        endDate,
+      })
+
+      Alert.alert('Success', 'Booking created successfully.', [
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('Booking'),
+        },
+      ])
+    } catch (error) {
+      Alert.alert('Error', error.response?.data?.message || 'Booking failed.')
+    }
+  }
+
   const renderBooking = ({ item }) => {
     return (
       <View style={styles.card}>
         {/* Property Image Placeholder */}
-        {/* <Image
-          source={require('')}
+        <Image
+          source={
+            propertyImages[item.propertyId]
+              ? { uri: `${SERVER_URL}${propertyImages[item.propertyId]}` }
+              : require('../../../assets/property_placeholder.png')
+          }
           style={styles.propertyImage}
           resizeMode="cover"
-        /> */}
+        />
 
         <View style={styles.cardContent}>
           <View style={styles.headerRow}>
@@ -133,7 +162,7 @@ export default function BookingScreen() {
 
       {/* Filter Tabs */}
       <View style={styles.tabContainer}>
-        {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map(tab => (
+        {['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'].map(tab => (
           <TouchableOpacity
             key={tab}
             style={[styles.tab, selectedTab === tab && styles.activeTab]}
@@ -185,6 +214,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F4F6F8',
   },
+  propertyImage: {
+    width: '100%',
+    height: 220,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
 
   screenTitle: {
     fontSize: 28,
@@ -214,6 +249,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#555',
     fontWeight: '600',
+  },
+  cancelled: {
+    backgroundColor: '#9C27B0',
   },
 
   activeTabText: {
