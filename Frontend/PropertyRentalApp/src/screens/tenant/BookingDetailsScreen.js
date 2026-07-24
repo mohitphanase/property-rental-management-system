@@ -15,6 +15,7 @@ import { SERVER_URL } from '../../utils/config'
 import { getPropertyById } from '../../services/propertyService'
 import { getPaymentByBooking } from '../../services/paymentService'
 import { deleteBooking } from '../../services/bookingService'
+import COLORS from '../../theme/colors'
 
 export default function BookingDetailsScreen({ route, navigation }) {
   const { booking } = route.params
@@ -135,14 +136,20 @@ export default function BookingDetailsScreen({ route, navigation }) {
           </Text>
 
           <Text style={styles.location}>
+            <Text style={styles.label}>Location: </Text>
             {property?.city || property?.location}
           </Text>
 
-          <Text style={styles.value}>₹{property?.rent}</Text>
+          <Text style={styles.label}>Booking Period:</Text>
           <Text style={styles.value}>
             {booking.startDate} - {booking.endDate}
           </Text>
-          <Text style={styles.totalAmount}>₹{property?.rent}</Text>
+          <Text style={styles.label}>Rent:</Text>
+          <Text style={styles.totalAmount}>
+            ₹{property?.price ?? property?.rent}
+          </Text>
+
+          <Text style={styles.label}>Status:</Text>
 
           <View style={[styles.statusBadge, getStatusStyle(booking.status)]}>
             <Text style={styles.statusText}>{booking.status}</Text>
@@ -240,6 +247,197 @@ export default function BookingDetailsScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+
+  heading: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 15,
+  },
+
+  propertyCard: {
+    backgroundColor: COLORS.card,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 18,
+    padding: 15,
+    flexDirection: 'row',
+
+    elevation: 5,
+    shadowColor: COLORS.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+
+  propertyImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    backgroundColor: COLORS.placeholder,
+    marginRight: 15,
+  },
+
+  propertyInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+
+  propertyName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.text,
+  },
+
+  location: {
+    fontSize: 14,
+    color: COLORS.subText,
+    marginTop: 5,
+    marginBottom: 12,
+  },
+
+  statusBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+
+  statusText: {
+    color: COLORS.white,
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+
+  approved: {
+    backgroundColor: COLORS.success,
+  },
+
+  pending: {
+    backgroundColor: COLORS.warning,
+  },
+
+  rejected: {
+    backgroundColor: COLORS.error,
+  },
+
+  cancelled: {
+    backgroundColor: COLORS.cancelled,
+  },
+
+  detailsCard: {
+    backgroundColor: COLORS.card,
+    marginHorizontal: 20,
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 20,
+
+    elevation: 5,
+    shadowColor: COLORS.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 0.5,
+    borderBottomColor: COLORS.border,
+  },
+
+  label: {
+    fontSize: 15,
+    color: COLORS.subText,
+  },
+
+  value: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.text,
+  },
+
+  totalAmount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+  },
+
+  paymentCard: {
+    backgroundColor: COLORS.card,
+    marginHorizontal: 20,
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 25,
+
+    elevation: 5,
+    shadowColor: COLORS.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+
+  paymentTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 15,
+  },
+
+  payButton: {
+    backgroundColor: COLORS.primary,
+    marginHorizontal: 20,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
+
+  cancelButton: {
+    marginHorizontal: 20,
+    borderWidth: 1.5,
+    borderColor: COLORS.error,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 40,
+    backgroundColor: COLORS.white,
+  },
+
+  cancelButtonText: {
+    color: COLORS.error,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
   pendingBox: {
     marginHorizontal: 20,
     marginBottom: 15,
@@ -254,195 +452,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '600',
   },
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F7FA',
-  },
 
-  heading: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#222',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 15,
-  },
-
-  propertyCard: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    borderRadius: 18,
-    padding: 15,
-    flexDirection: 'row',
-
-    elevation: 5,
-
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-  },
-
-  propertyImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
-    backgroundColor: '#E0E0E0',
-    marginRight: 15,
-  },
-
-  propertyInfo: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-
-  propertyName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-
-  location: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 5,
-    marginBottom: 12,
-  },
-
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-
-  statusText: {
-    color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-
-  approved: {
-    backgroundColor: '#4CAF50',
-  },
-
-  pending: {
-    backgroundColor: '#FF9800',
-  },
-
-  rejected: {
-    backgroundColor: '#F44336',
-  },
-
-  detailsCard: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 20,
-
-    elevation: 5,
-
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-  },
-
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#EEEEEE',
-  },
-
-  label: {
-    fontSize: 15,
-    color: '#666',
-  },
-
-  value: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#222',
-  },
-
-  totalLabel: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-
-  totalAmount: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1976D2',
-  },
-
-  paymentCard: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 25,
-
-    elevation: 5,
-
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-  },
-
-  paymentTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 15,
-  },
-
-  payButton: {
-    backgroundColor: '#1976D2',
-    marginHorizontal: 20,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: 'bold',
-  },
-
-  cancelButton: {
-    marginHorizontal: 20,
-    borderWidth: 1.5,
-    borderColor: '#F44336',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginBottom: 40,
-    backgroundColor: '#FFFFFF',
-  },
-
-  cancelButtonText: {
-    color: '#F44336',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   successBox: {
     backgroundColor: '#E8F5E9',
     marginHorizontal: 20,
@@ -452,7 +462,7 @@ const styles = StyleSheet.create({
   },
 
   successText: {
-    color: '#2E7D32',
+    color: COLORS.success,
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',

@@ -8,11 +8,14 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
+  ScrollView,
 } from 'react-native'
 
 import { useNavigation } from '@react-navigation/native'
 import { getBookings } from '../../services/bookingService'
 import { useFocusEffect } from '@react-navigation/native'
+import COLORS from '../../theme/colors'
+import { getPropertyById } from '../../services/propertyService'
 
 export default function BookingScreen() {
   const navigation = useNavigation()
@@ -37,13 +40,26 @@ export default function BookingScreen() {
     try {
       const response = await getBookings()
 
-      console.log(response.data)
+      const bookingList = response.data.data
 
-      setBookings(response.data.data)
+      const updatedBookings = await Promise.all(
+        bookingList.map(async booking => {
+          try {
+            const propertyResponse = await getPropertyById(booking.propertyId)
+
+            return {
+              ...booking,
+              ...propertyResponse.data.data,
+            }
+          } catch (e) {
+            return booking
+          }
+        })
+      )
+
+      setBookings(updatedBookings)
     } catch (error) {
-      console.log('Status:', error.response?.status)
-      console.log('Data:', error.response?.data)
-      console.log('Message:', error.message)
+      console.log(error)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -126,13 +142,39 @@ export default function BookingScreen() {
             </View>
           </View>
 
-          <Text style={styles.infoText}>Property ID : {item.propertyId}</Text>
+          <Text style={styles.infoText}>
+            <Text style={styles.label}>Property Name: </Text>
+            {item.propertyName || item.title}
+          </Text>
 
-          <Text style={styles.infoText}>Tenant ID : {item.tenantId}</Text>
+          <Text style={styles.infoText}>
+            <Text style={styles.label}>Location: </Text>
+            {item.location || item.city}
+          </Text>
 
-          <Text style={styles.infoText}>Start Date : {item.startDate}</Text>
+          <Text style={styles.infoText}>
+            <Text style={styles.label}>Rent: </Text>₹{item.price ?? item.rent}
+          </Text>
 
-          <Text style={styles.infoText}>End Date : {item.endDate}</Text>
+          <Text style={styles.infoText}>
+            <Text style={styles.label}>Property ID: </Text>
+            {item.propertyId}
+          </Text>
+
+          <Text style={styles.infoText}>
+            <Text style={styles.label}>Tenant ID: </Text>
+            {item.tenantId}
+          </Text>
+
+          <Text style={styles.infoText}>
+            <Text style={styles.label}>Start Date: </Text>
+            {item.startDate}
+          </Text>
+
+          <Text style={styles.infoText}>
+            <Text style={styles.label}>End Date: </Text>
+            {item.endDate}
+          </Text>
 
           <TouchableOpacity
             style={styles.detailsButton}
@@ -161,7 +203,10 @@ export default function BookingScreen() {
       <Text style={styles.screenTitle}>My Bookings</Text>
 
       {/* Filter Tabs */}
-      <View style={styles.tabContainer}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabContainer}>
         {['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'].map(tab => (
           <TouchableOpacity
             key={tab}
@@ -176,7 +221,7 @@ export default function BookingScreen() {
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       <FlatList
         data={filteredBookings}
@@ -203,7 +248,7 @@ export default function BookingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6F8',
+    backgroundColor: COLORS.background,
     paddingHorizontal: 15,
     paddingTop: 15,
   },
@@ -212,62 +257,55 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F4F6F8',
-  },
-  propertyImage: {
-    width: '100%',
-    height: 220,
-    borderRadius: 12,
-    marginBottom: 20,
+    backgroundColor: COLORS.background,
   },
 
   screenTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#222',
+    color: COLORS.text,
     marginBottom: 18,
   },
 
   tabContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 18,
+    paddingHorizontal: 5,
+    paddingVertical: 8,
+    marginBottom: 15,
   },
 
   tab: {
-    backgroundColor: '#EAEAEA',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    marginRight: 10,
     borderRadius: 20,
+    height: 40,
+    backgroundColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   activeTab: {
-    backgroundColor: '#1976D2',
+    backgroundColor: COLORS.primary,
   },
 
   tabText: {
-    fontSize: 13,
-    color: '#555',
+    fontSize: 10,
     fontWeight: '600',
-  },
-  cancelled: {
-    backgroundColor: '#9C27B0',
+    color: COLORS.subText,
   },
 
   activeTabText: {
-    color: '#FFF',
+    color: COLORS.white,
   },
-
   card: {
     flexDirection: 'row',
-    backgroundColor: '#FFF',
+    backgroundColor: COLORS.card,
     borderRadius: 16,
     padding: 12,
     marginBottom: 15,
 
     elevation: 5,
-
-    shadowColor: '#000',
+    shadowColor: COLORS.shadow,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -280,7 +318,7 @@ const styles = StyleSheet.create({
     width: 95,
     height: 95,
     borderRadius: 12,
-    backgroundColor: '#DDD',
+    backgroundColor: COLORS.placeholder,
     marginRight: 12,
   },
 
@@ -299,12 +337,12 @@ const styles = StyleSheet.create({
   bookingTitle: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#222',
+    color: COLORS.text,
   },
 
   infoText: {
     fontSize: 14,
-    color: '#555',
+    color: COLORS.subText,
     marginBottom: 4,
   },
 
@@ -315,44 +353,59 @@ const styles = StyleSheet.create({
   },
 
   statusText: {
-    color: '#FFF',
+    color: COLORS.white,
     fontSize: 11,
     fontWeight: 'bold',
   },
 
   approved: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: COLORS.success,
   },
 
   pending: {
-    backgroundColor: '#FF9800',
+    backgroundColor: COLORS.warning,
   },
 
   rejected: {
-    backgroundColor: '#F44336',
+    backgroundColor: COLORS.error,
+  },
+
+  cancelled: {
+    backgroundColor: COLORS.cancelled,
   },
 
   detailsButton: {
     marginTop: 12,
-    backgroundColor: '#1976D2',
+    backgroundColor: COLORS.primary,
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
+
+    elevation: 2,
+    shadowColor: COLORS.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
   },
 
   detailsButtonText: {
-    color: '#FFF',
+    color: COLORS.white,
     fontSize: 15,
     fontWeight: 'bold',
   },
 
   emptyContainer: {
-    marginTop: 80,
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 80,
   },
 
   emptyText: {
     fontSize: 16,
-    color: '#777',
+    color: COLORS.subText,
   },
 })
