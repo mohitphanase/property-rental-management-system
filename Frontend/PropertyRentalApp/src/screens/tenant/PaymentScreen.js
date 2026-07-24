@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
 import { addPayment } from '../../services/paymentService'
+import COLORS from '../../theme/colors'
 
 export default function PaymentScreen({ route, navigation }) {
   const { booking, property, amount } = route.params
@@ -87,7 +88,7 @@ export default function PaymentScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FA',
+    backgroundColor: COLORS.background,
     padding: 20,
   },
 
@@ -95,15 +96,16 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#222',
+    color: COLORS.text,
   },
 
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.card,
     borderRadius: 15,
     padding: 20,
+
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: COLORS.shadow,
     shadowOpacity: 0.15,
     shadowRadius: 4,
     shadowOffset: {
@@ -120,74 +122,103 @@ const styles = StyleSheet.create({
 
   label: {
     fontSize: 16,
-    color: '#666',
+    color: COLORS.subText,
   },
 
   value: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#222',
+    color: COLORS.text,
   },
 
   amount: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1976D2',
+    color: COLORS.primary,
   },
 
-  payButton: {
-    marginTop: 30,
-    backgroundColor: '#1976D2',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
   propertyCard: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.card,
     borderRadius: 15,
     padding: 20,
     marginBottom: 20,
+
     elevation: 5,
+    shadowColor: COLORS.shadow,
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
   },
 
   cardTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 15,
-    color: '#1976D2',
+    color: COLORS.primary,
   },
+
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginVertical: 20,
+    color: COLORS.text,
   },
 
   paymentOption: {
-    backgroundColor: '#1976D2',
+    backgroundColor: COLORS.buttonPrimary,
     padding: 15,
     borderRadius: 10,
     marginBottom: 15,
+
+    elevation: 3,
+    shadowColor: COLORS.shadow,
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
   },
 
   paymentText: {
-    color: '#fff',
+    color: COLORS.white,
     fontSize: 18,
     textAlign: 'center',
     fontWeight: 'bold',
   },
 
+  payButton: {
+    marginTop: 30,
+    backgroundColor: COLORS.buttonPrimary,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+
+    elevation: 4,
+    shadowColor: COLORS.shadow,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+  },
+
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
   disabled: {
-    backgroundColor: '#BDBDBD',
+    backgroundColor: COLORS.disabled,
   },
 
   disabledText: {
-    color: '#fff',
+    color: COLORS.white,
     fontSize: 18,
     textAlign: 'center',
     fontWeight: 'bold',

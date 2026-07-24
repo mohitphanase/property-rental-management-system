@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native'
 
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { addBooking } from '../../services/bookingService'
+import COLORS from '../../theme/colors'
 
 const BookingFormScreen = ({ route, navigation }) => {
   const { property } = route.params
@@ -108,7 +109,7 @@ export default BookingFormScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: COLORS.background,
     padding: 20,
   },
 
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 25,
-    color: '#222',
+    color: COLORS.text,
   },
 
   label: {
@@ -124,34 +125,49 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 6,
     marginTop: 10,
+    color: COLORS.text,
   },
 
   propertyName: {
     fontSize: 18,
-    color: '#1976D2',
     fontWeight: 'bold',
+    color: COLORS.primary,
     marginBottom: 20,
   },
 
   dateInput: {
-    backgroundColor: '#FFF',
+    backgroundColor: COLORS.white,
     borderWidth: 1,
-    borderColor: '#DDD',
+    borderColor: COLORS.border,
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
   },
 
+  dateText: {
+    fontSize: 16,
+    color: COLORS.text,
+  },
+
   button: {
     marginTop: 20,
-    backgroundColor: '#2E7D32',
+    backgroundColor: COLORS.primary,
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
+
+    elevation: 4,
+    shadowColor: COLORS.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
 
   buttonText: {
-    color: '#FFF',
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
