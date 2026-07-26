@@ -1,28 +1,110 @@
-import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import React, { useEffect, useState } from "react"
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native"
+import Icon from "react-native-vector-icons/MaterialIcons"
 
-import { useNavigation } from '@react-navigation/native'
-import COLORS from '../../theme/colors'
+import COLORS from "../../theme/colors"
+import { SERVER_URL } from "../../utils/config"
+import { getWishlist } from "../../services/wishlistService"
 
-export default function WishlistScreen() {
-  const navigation = useNavigation()
+export default function WishlistScreen({ navigation }) {
+  const [wishlist, setWishlist] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const onBookNow = () => {
-    navigation.navigate('BookingForm', {
-      property: {
-        propertyId: 1,
-        title: 'Sample Property',
-      },
-    })
+  useEffect(() => {
+    loadWishlist()
+  }, [])
+
+  const loadWishlist = async () => {
+    try {
+      const response = await getWishlist()
+      setWishlist(response.data.data)
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const renderItem = ({ item }) => {
+    const property = item.property
+
+    return (
+      <View style={styles.card}>
+        <Image
+          source={
+            property?.propertyImage
+              ? { uri: `${SERVER_URL}${property.propertyImage}` }
+              : require("../../../assets/property_placeholder.png")
+          }
+          style={styles.image}
+        />
+
+        <View style={styles.details}>
+          <Text style={styles.name}>
+            {property?.title || property?.propertyName}
+          </Text>
+
+          <Text style={styles.location}>
+            📍 {property?.city || property?.location}
+          </Text>
+
+          <Text style={styles.price}>₹{property?.price || property?.rent}</Text>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() =>
+              navigation.navigate("PropertyDetails", {
+                propertyId: property.propertyId,
+              })
+            }
+          >
+            <Text style={styles.buttonText}>View Property</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Icon
+          name="favorite"
+          size={26}
+          color={COLORS.error}
+          style={styles.favorite}
+        />
+      </View>
+    )
+  }
+
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    )
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Wishlist Screen</Text>
+      <Text style={styles.heading}>My Wishlist</Text>
 
-      <TouchableOpacity style={styles.bookButton} onPress={onBookNow}>
-        <Text style={styles.bookButtonText}>Book Now</Text>
-      </TouchableOpacity>
+      <FlatList
+        data={wishlist}
+        keyExtractor={(item) => item.wishlistId.toString()}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Icon name="favorite-border" size={80} color={COLORS.placeholder} />
+
+            <Text style={styles.emptyText}>No properties in wishlist</Text>
+          </View>
+        }
+      />
     </View>
   )
 }
@@ -30,38 +112,92 @@ export default function WishlistScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
     backgroundColor: COLORS.background,
+    padding: 16,
   },
 
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  heading: {
+    fontSize: 28,
+    fontWeight: "bold",
     color: COLORS.text,
     marginBottom: 20,
   },
 
-  bookButton: {
-    backgroundColor: COLORS.buttonSecondary,
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 10,
+  card: {
+    backgroundColor: COLORS.card,
+    borderRadius: 15,
+    marginBottom: 18,
+    overflow: "hidden",
 
     elevation: 4,
     shadowColor: COLORS.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
   },
 
-  bookButtonText: {
+  image: {
+    width: "100%",
+    height: 180,
+    backgroundColor: COLORS.placeholder,
+  },
+
+  details: {
+    padding: 15,
+  },
+
+  name: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.text,
+  },
+
+  location: {
+    fontSize: 15,
+    color: COLORS.subText,
+    marginTop: 5,
+  },
+
+  price: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.primary,
+    marginTop: 10,
+  },
+
+  button: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 15,
+    alignItems: "center",
+  },
+
+  buttonText: {
     color: COLORS.white,
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
+    fontSize: 15,
+  },
+
+  favorite: {
+    position: "absolute",
+    top: 15,
+    right: 15,
+  },
+
+  emptyContainer: {
+    marginTop: 120,
+    alignItems: "center",
+  },
+
+  emptyText: {
+    marginTop: 15,
+    fontSize: 18,
+    color: COLORS.subText,
   },
 })
