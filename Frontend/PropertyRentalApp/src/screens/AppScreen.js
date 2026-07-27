@@ -84,7 +84,7 @@ export default function AppScreen() {
         ) : user?.role === "OWNER" ? (
           <Stack.Screen
             name="OwnerHome"
-            component={OwnerHomeScreen}
+            component={OwnerHomeScreen} 
           />
         ) : (
           <Stack.Screen

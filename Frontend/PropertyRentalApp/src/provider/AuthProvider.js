@@ -20,9 +20,18 @@ export default function AuthProvider({ children }) {
   //   loadUser();
   // }, []);
 
+  // useEffect(() => {
+  // setLoading(false);
+  // }, []);
+
   useEffect(() => {
-  setLoading(false);
-  }, []);
+  const showSplash = async () => {
+    await new Promise(resolve => setTimeout(resolve, 3000)); // 3 seconds
+    setLoading(false);
+  };
+
+  showSplash();
+}, []);
 
   const loadUser = async () => {
     try {
