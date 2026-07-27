@@ -1,4 +1,4 @@
-import React, { useContext } from "react"
+import React, { useContext } from 'react'
 import {
   View,
   Text,
@@ -6,27 +6,40 @@ import {
   Image,
   TouchableOpacity,
   Alert,
-} from "react-native"
-import Icon from "react-native-vector-icons/MaterialIcons"
-import COLORS from "../../theme/colors"
-import { AuthContext } from "../../provider/AuthProvider"
-import LinearGradient from "react-native-linear-gradient"
+} from 'react-native'
+import Icon from 'react-native-vector-icons/MaterialIcons'
+import COLORS from '../../theme/colors'
+import { AuthContext } from '../../provider/AuthProvider'
+import LinearGradient from 'react-native-linear-gradient'
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useContext(AuthContext)
 
+  const onLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: logout,
+      },
+    ])
+  }
   return (
     <View style={styles.container}>
       <Image
-        source={require("../../../assets/profile.png")}
+        source={require('../../../assets/profile.png')}
         style={styles.profileImage}
       />
 
       <Text style={styles.name}>
-        {user?.fullName || user?.name || "Tenant"}
+        {user?.fullName || user?.name || 'Tenant'}
       </Text>
 
-      <Text style={styles.role}>{user?.role || "TENANT"}</Text>
+      <Text style={styles.role}>{user?.role || 'TENANT'}</Text>
 
       <View style={styles.card}>
         <View style={styles.row}>
@@ -48,9 +61,13 @@ export default function ProfileScreen({ navigation }) {
 
       <TouchableOpacity
         style={styles.changePasswordButton}
-        onPress={() => navigation.navigate("ChangePassword")}
-      >
-        <Text style={styles.changePasswordText}>🔒 Change Password</Text>
+        onPress={() => navigation.navigate('ChangePassword')}>
+        <Icon name="lock-reset" size={22} style={styles.changePasswordIcon} />
+        <Text style={styles.changePasswordText}>Change Password</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+        <Icon name="logout" size={22} style={styles.logoutIcon} />
+        <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </View>
   )
@@ -60,7 +77,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    alignItems: "center",
+    alignItems: 'center',
     padding: 20,
   },
 
@@ -74,7 +91,7 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: COLORS.text,
   },
 
@@ -85,7 +102,7 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    width: "100%",
+    width: '100%',
     backgroundColor: COLORS.card,
     borderRadius: 15,
     padding: 20,
@@ -103,8 +120,8 @@ const styles = StyleSheet.create({
   },
 
   row: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 18,
   },
 
@@ -117,16 +134,16 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 16,
     color: COLORS.text,
-    fontWeight: "600",
+    fontWeight: '600',
     marginLeft: 15,
   },
 
   button: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
 
-    width: "100%",
+    width: '100%',
     backgroundColor: COLORS.primary,
     paddingVertical: 14,
     borderRadius: 12,
@@ -134,11 +151,11 @@ const styles = StyleSheet.create({
   },
 
   logoutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
 
-    width: "100%",
+    width: '100%',
     backgroundColor: COLORS.error,
     paddingVertical: 14,
     borderRadius: 12,
@@ -147,16 +164,19 @@ const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 
   changePasswordButton: {
     marginTop: 25,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+
     backgroundColor: COLORS.buttonPrimary,
     borderRadius: 14,
     paddingVertical: 15,
-    alignItems: "center",
-    justifyContent: "center",
 
     elevation: 5,
     shadowColor: COLORS.shadow,
@@ -168,10 +188,46 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
 
+  changePasswordIcon: {
+    color: COLORS.white,
+    marginRight: 8,
+  },
+
   changePasswordText: {
     color: COLORS.white,
     fontSize: 17,
-    fontWeight: "700",
+    fontWeight: '700',
     letterSpacing: 0.5,
+  },
+  logoutButton: {
+    marginTop: 15,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    backgroundColor: COLORS.error,
+    borderRadius: 14,
+    paddingVertical: 15,
+
+    elevation: 5,
+    shadowColor: COLORS.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+  },
+
+  logoutIcon: {
+    color: COLORS.white,
+    marginRight: 8,
+  },
+
+  logoutText: {
+    color: COLORS.white,
+    fontSize: 17,
+    fontWeight: '700',
   },
 })

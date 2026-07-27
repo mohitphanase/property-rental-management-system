@@ -57,7 +57,11 @@ export default function BookingScreen() {
         })
       )
 
-      setBookings(updatedBookings)
+      const sortedBookings = updatedBookings.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      )
+
+      setBookings(sortedBookings)
     } catch (error) {
       console.log(error)
     } finally {

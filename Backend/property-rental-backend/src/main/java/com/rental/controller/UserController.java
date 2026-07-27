@@ -1,6 +1,7 @@
 package com.rental.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,10 @@ import com.rental.dto.Resp;
 import com.rental.security.JwtUtil;
 import com.rental.service.UserServiceImpl;
 import com.rental.dto.LoginResponseDto;
+import org.springframework.web.bind.annotation.PutMapping;
+import com.rental.dto.ChangePasswordDto;
+import org.springframework.web.bind.annotation.PutMapping;
+import com.rental.dto.ChangePasswordDto;
 
 @RestController
 @RequestMapping("/user")
@@ -75,5 +80,12 @@ public class UserController {
 
 	    return Resp.success(
 	            userService.getCurrentUserProfile());
+	}
+	@PutMapping("/change-password")
+	public Resp<?> changePassword(@RequestBody ChangePasswordDto dto) {
+
+	    userService.changePassword(dto);
+
+	    return Resp.success("Password changed successfully.");
 	}
 }

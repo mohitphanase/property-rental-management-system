@@ -219,29 +219,25 @@ export default function BookingDetailsScreen({ route, navigation }) {
         <TouchableOpacity style={styles.payButton} onPress={onPayNow}>
           <Text style={styles.buttonText}>Proceed to Payment</Text>
         </TouchableOpacity>
+      ) : booking.status === 'REJECTED' ? (
+        <View style={styles.rejectedBox}>
+          <Text style={styles.rejectedText}>❌ Booking Rejected by Owner</Text>
+        </View>
       ) : booking.status === 'CANCELLED' ? (
         <View style={styles.pendingBox}>
-          <Text style={styles.pendingText}>❌ Booking Cancelled</Text>
+          <Text style={styles.pendingText}>🚫 Booking Cancelled</Text>
         </View>
       ) : (
         <View style={styles.pendingBox}>
-          <Text style={styles.pendingText}>Waiting for owner approval.</Text>
+          <Text style={styles.pendingText}>⏳ Waiting for owner approval.</Text>
         </View>
       )}
 
-      <TouchableOpacity
-        style={[
-          styles.cancelButton,
-          booking.status === 'CANCELLED' && { backgroundColor: '#BDBDBD' },
-        ]}
-        onPress={onCancelBooking}
-        disabled={booking.status === 'CANCELLED'}>
-        <Text style={styles.cancelButtonText}>
-          {booking.status === 'CANCELLED'
-            ? 'Booking Cancelled'
-            : 'Cancel Booking'}
-        </Text>
-      </TouchableOpacity>
+      {booking.status !== 'REJECTED' && booking.status !== 'CANCELLED' && (
+        <TouchableOpacity style={styles.cancelButton} onPress={onCancelBooking}>
+          <Text style={styles.cancelButtonText}>Cancel Booking</Text>
+        </TouchableOpacity>
+      )}
     </ScrollView>
   )
 }
@@ -465,6 +461,20 @@ const styles = StyleSheet.create({
     color: COLORS.success,
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  rejectedBox: {
+    marginHorizontal: 20,
+    marginBottom: 15,
+    backgroundColor: '#FDECEC',
+    padding: 15,
+    borderRadius: 12,
+  },
+
+  rejectedText: {
+    color: COLORS.error,
+    fontSize: 15,
+    fontWeight: '600',
     textAlign: 'center',
   },
 })

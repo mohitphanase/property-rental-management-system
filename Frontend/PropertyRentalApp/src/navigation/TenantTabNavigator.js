@@ -21,21 +21,6 @@ export default function TenantTabNavigator() {
         headerTitleAlign: 'center',
         tabBarActiveTintColor: '#1565C0',
         tabBarInactiveTintColor: 'gray',
-        headerRight: () => (
-          <TouchableOpacity
-            style={{ marginRight: 15 }}
-            onPress={() =>
-              Alert.alert('Logout', 'Are you sure you want to logout?', [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Logout',
-                  onPress: logout,
-                },
-              ])
-            }>
-            <Icon name="logout" size={24} color="#D32F2F" />
-          </TouchableOpacity>
-        ),
 
         tabBarIcon: ({ color, size }) => {
           let icon = 'home'
