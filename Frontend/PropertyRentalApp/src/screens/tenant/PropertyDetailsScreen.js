@@ -43,17 +43,6 @@ export default function PropertyDetailsScreen({ route, navigation }) {
         <Text style={styles.section}>Description</Text>
 
         <Text style={styles.description}>{property.description}</Text>
-
-        <TouchableOpacity
-          style={styles.bookButton}
-          onPress={() =>
-            navigation.navigate("BookProperty", {
-              property,
-            })
-          }
-        >
-          <Text style={styles.buttonText}>Book Now</Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   )
