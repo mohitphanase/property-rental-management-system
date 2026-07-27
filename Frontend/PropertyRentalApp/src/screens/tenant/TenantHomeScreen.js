@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react"
+import React, { useContext, useEffect, useState } from 'react'
 
 import {
   View,
@@ -10,16 +10,16 @@ import {
   Image,
   ActivityIndicator,
   Alert,
-} from "react-native"
+} from 'react-native'
 
-import Icon from "react-native-vector-icons/MaterialIcons"
+import Icon from 'react-native-vector-icons/MaterialIcons'
 
-import COLORS from "../../theme/colors"
-import { AuthContext } from "../../provider/AuthProvider"
-import { getProperties } from "../../services/propertyService"
-import { SERVER_URL } from "../../utils/config"
-import { useNavigation } from "@react-navigation/native"
-import { addWishlist } from "../../services/wishlistService"
+import COLORS from '../../theme/colors'
+import { AuthContext } from '../../provider/AuthProvider'
+import { getProperties } from '../../services/propertyService'
+import { SERVER_URL } from '../../utils/config'
+import { useNavigation } from '@react-navigation/native'
+import { addWishlist } from '../../services/wishlistService'
 
 export default function TenantHomeScreen() {
   const navigation = useNavigation()
@@ -28,50 +28,50 @@ export default function TenantHomeScreen() {
   const [properties, setProperties] = useState([])
   const [filteredProperties, setFilteredProperties] = useState([])
 
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
-  const [selectedCity, setSelectedCity] = useState("All Cities")
+  const [selectedCity, setSelectedCity] = useState('All Cities')
 
   useEffect(() => {
     loadProperties()
   }, [])
 
-  const handleWishlist = async (propertyId) => {
+  const handleWishlist = async propertyId => {
     try {
       await addWishlist(propertyId)
 
-      Alert.alert("Success", "Property added to wishlist.")
+      Alert.alert('Success', 'Property added to wishlist.')
 
-      navigation.navigate("Wishlist")
+      navigation.navigate('Wishlist')
     } catch (error) {
       console.log(error.response?.data)
       console.log(error.response?.status)
 
       Alert.alert(
-        "Error",
-        error.response?.data?.message || "Unable to add property.",
+        'Error',
+        error.response?.data?.message || 'Unable to add property.'
       )
     }
   }
 
   const showFilter = () => {
-    Alert.alert("Filter Properties", "Choose Property Type", [
+    Alert.alert('Filter Properties', 'Choose Property Type', [
       {
-        text: "Apartment",
-        onPress: () => console.log("Apartment"),
+        text: 'Apartment',
+        onPress: () => console.log('Apartment'),
       },
       {
-        text: "Villa",
-        onPress: () => console.log("Villa"),
+        text: 'Villa',
+        onPress: () => console.log('Villa'),
       },
       {
-        text: "House",
-        onPress: () => console.log("House"),
+        text: 'House',
+        onPress: () => console.log('House'),
       },
       {
-        text: "Cancel",
-        style: "cancel",
+        text: 'Cancel',
+        style: 'cancel',
       },
     ])
   }
@@ -91,15 +91,15 @@ export default function TenantHomeScreen() {
     }
   }
 
-  const searchProperty = (text) => {
+  const searchProperty = text => {
     setSearch(text)
 
-    if (text === "") {
+    if (text === '') {
       setFilteredProperties(properties)
       return
     }
 
-    const result = properties.filter((item) => {
+    const result = properties.filter(item => {
       return (
         item.propertyName?.toLowerCase().includes(text.toLowerCase()) ||
         item.city?.toLowerCase().includes(text.toLowerCase())
@@ -109,14 +109,14 @@ export default function TenantHomeScreen() {
     setFilteredProperties(result)
   }
 
-  const sortProperties = (option) => {
+  const sortProperties = option => {
     let data = [...filteredProperties]
 
-    if (option === "LowToHigh") {
+    if (option === 'LowToHigh') {
       data.sort((a, b) => (a.price ?? a.rent) - (b.price ?? b.rent))
     }
 
-    if (option === "HighToLow") {
+    if (option === 'HighToLow') {
       data.sort((a, b) => (b.price ?? b.rent) - (a.price ?? a.rent))
     }
 
@@ -131,15 +131,14 @@ export default function TenantHomeScreen() {
           source={
             item.image
               ? { uri: item.image }
-              : require("../../../assets/property_placeholder.png")
+              : require('../../../assets/property_placeholder.png')
           }
           style={styles.image}
         />
 
         <TouchableOpacity
           style={styles.wishlistBtn}
-          onPress={() => handleWishlist(item.propertyId)}
-        >
+          onPress={() => handleWishlist(item.propertyId)}>
           <Icon name="favorite-border" size={28} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -174,22 +173,20 @@ export default function TenantHomeScreen() {
           <TouchableOpacity
             style={styles.detailsButton}
             onPress={() =>
-              navigation.navigate("PropertyDetails", {
+              navigation.navigate('PropertyDetails', {
                 property: item,
               })
-            }
-          >
+            }>
             <Text style={styles.detailsButtonText}>View Details</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.bookButton}
             onPress={() =>
-              navigation.navigate("BookProperty", {
+              navigation.navigate('BookingForm', {
                 property: item,
               })
-            }
-          >
+            }>
             <Text style={styles.bookButtonText}>Book Now</Text>
           </TouchableOpacity>
         </View>
@@ -208,7 +205,7 @@ export default function TenantHomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>
-        Hello 👋 {user?.name || user?.fullName || user?.firstName || "Tenant"}
+        Hello 👋 {user?.name || user?.fullName || user?.firstName || 'Tenant'}
       </Text>
 
       <Text style={styles.title}>Find Your Dream Property</Text>
@@ -216,7 +213,7 @@ export default function TenantHomeScreen() {
       <View style={styles.filterRow}>
         <View style={styles.cityRow}>
           <Icon name="location-on" size={20} color="red" />
-          <Text style={styles.cityText}>{selectedCity || "All Cities"}</Text>
+          <Text style={styles.cityText}>{selectedCity || 'All Cities'}</Text>
         </View>
 
         <TouchableOpacity onPress={sortProperties}>
@@ -228,7 +225,7 @@ export default function TenantHomeScreen() {
       <FlatList
         data={filteredProperties}
         renderItem={renderProperty}
-        keyExtractor={(item) => item.propertyId.toString()}
+        keyExtractor={item => item.propertyId.toString()}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingBottom: 20,
@@ -246,8 +243,8 @@ const styles = StyleSheet.create({
     paddingTop: 15,
   },
   topRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginVertical: 15,
   },
   detailsButton: {
@@ -255,13 +252,13 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingVertical: 12,
     borderRadius: 10,
-    alignItems: "center",
+    alignItems: 'center',
   },
 
   detailsButtonText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 
   search: {
@@ -279,44 +276,44 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     borderRadius: 12,
     backgroundColor: COLORS.primary,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   locationRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 15,
   },
 
   sort: {
     color: COLORS.primary,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 
   card: {
     backgroundColor: COLORS.card,
     borderRadius: 18,
-    overflow: "hidden",
+    overflow: 'hidden',
     marginBottom: 25,
     elevation: 4,
   },
 
   image: {
-    width: "100%",
+    width: '100%',
     height: 220,
   },
 
   wishlistBtn: {
-    position: "absolute",
+    position: 'absolute',
     top: 15,
     right: 15,
     width: 45,
     height: 45,
     borderRadius: 25,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   details: {
@@ -325,20 +322,20 @@ const styles = StyleSheet.create({
 
   price: {
     fontSize: 22,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: COLORS.success,
   },
 
   title: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: COLORS.text,
     marginTop: 5,
   },
 
   row: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 8,
   },
 
@@ -354,8 +351,8 @@ const styles = StyleSheet.create({
   },
 
   buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginTop: 20,
   },
 
@@ -365,7 +362,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     marginRight: 8,
-    alignItems: "center",
+    alignItems: 'center',
   },
 
   bookBtn: {
@@ -374,37 +371,37 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     marginLeft: 8,
-    alignItems: "center",
+    alignItems: 'center',
   },
 
   btnText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
   },
   loader: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: COLORS.background,
   },
 
   welcome: {
     fontSize: 18,
     color: COLORS.subText,
-    fontWeight: "500",
+    fontWeight: '500',
   },
 
   title: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: COLORS.text,
     marginTop: 5,
     marginBottom: 20,
   },
 
   searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
   },
 
@@ -436,8 +433,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     borderRadius: 12,
     backgroundColor: COLORS.primary,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
 
     elevation: 3,
     shadowColor: COLORS.shadow,
@@ -451,7 +448,7 @@ const styles = StyleSheet.create({
 
   heading: {
     fontSize: 22,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: COLORS.text,
     marginBottom: 15,
   },
@@ -460,7 +457,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.card,
     borderRadius: 18,
     marginBottom: 20,
-    overflow: "hidden",
+    overflow: 'hidden',
 
     elevation: 5,
     shadowColor: COLORS.shadow,
@@ -473,14 +470,14 @@ const styles = StyleSheet.create({
   },
 
   propertyImage: {
-    width: "100%",
+    width: '100%',
     height: 220,
     backgroundColor: COLORS.placeholder,
   },
 
   propertyTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: COLORS.text,
     marginHorizontal: 15,
     marginTop: 15,
@@ -495,7 +492,7 @@ const styles = StyleSheet.create({
 
   price: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: COLORS.success,
     marginHorizontal: 15,
     marginTop: 12,
@@ -506,7 +503,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     paddingVertical: 14,
     borderRadius: 12,
-    alignItems: "center",
+    alignItems: 'center',
 
     elevation: 3,
     shadowColor: COLORS.shadow,
@@ -521,19 +518,19 @@ const styles = StyleSheet.create({
   detailsText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 
   emptyContainer: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 80,
   },
 
   emptyText: {
     fontSize: 18,
     color: COLORS.subText,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 
   description: {
@@ -544,8 +541,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginTop: 18,
   },
 
@@ -556,7 +553,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 14,
-    alignItems: "center",
+    alignItems: 'center',
     marginRight: 8,
 
     elevation: 3,
@@ -572,7 +569,7 @@ const styles = StyleSheet.create({
   detailsButtonText: {
     color: COLORS.primary,
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 
   bookButton: {
@@ -580,7 +577,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 14,
-    alignItems: "center",
+    alignItems: 'center',
     marginLeft: 8,
 
     elevation: 3,
@@ -596,6 +593,6 @@ const styles = StyleSheet.create({
   bookButtonText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 })

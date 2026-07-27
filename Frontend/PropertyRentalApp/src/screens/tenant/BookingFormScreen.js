@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native'
 
 import DateTimePicker from '@react-native-community/datetimepicker'
@@ -14,19 +14,27 @@ const BookingFormScreen = ({ route, navigation }) => {
   const [showStartPicker, setShowStartPicker] = useState(false)
   const [showEndPicker, setShowEndPicker] = useState(false)
 
+  useEffect(() => {
+    console.log('Selected Property:', property)
+    console.log('Property ID:', property?.propertyId)
+  }, [])
+
   const onConfirmBooking = async () => {
     if (endDate < startDate) {
       Alert.alert('Validation', 'End Date must be greater than Start Date.')
       return
     }
 
+    const bookingRequest = {
+      propertyId: property.propertyId,
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+    }
+
+    console.log('Booking Request:', bookingRequest)
+
     try {
-      await addBooking({
-        propertyId: property.propertyId,
-        tenantId: 2, // Replace with logged-in user id
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0],
-      })
+      await addBooking(bookingRequest)
 
       Alert.alert('Success', 'Booking created successfully.', [
         {
@@ -43,11 +51,17 @@ const BookingFormScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Book Property</Text>
+      <View style={styles.propertyCard}>
+        <Text style={styles.propertyTitle}>🏠 {property?.title}</Text>
 
-      <Text style={styles.label}>Property</Text>
+        <Text style={styles.propertyInfo}>📍 {property?.city}</Text>
 
-      <Text style={styles.propertyName}>{property?.title}</Text>
+        <Text style={styles.propertyInfo}>🏡 {property?.propertyType}</Text>
+
+        <Text style={styles.propertyPrice}>₹ {property?.price} / Month</Text>
+
+        <Text style={styles.description}>{property?.description}</Text>
+      </View>
 
       <Text style={styles.label}>Start Date</Text>
 
@@ -61,7 +75,6 @@ const BookingFormScreen = ({ route, navigation }) => {
         <DateTimePicker
           value={startDate}
           mode="date"
-          display="default"
           minimumDate={new Date()}
           onChange={(event, selectedDate) => {
             setShowStartPicker(false)
@@ -85,7 +98,6 @@ const BookingFormScreen = ({ route, navigation }) => {
         <DateTimePicker
           value={endDate}
           mode="date"
-          display="default"
           minimumDate={startDate}
           onChange={(event, selectedDate) => {
             setShowEndPicker(false)
@@ -116,23 +128,29 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 25,
     color: COLORS.text,
+    marginBottom: 25,
   },
 
   label: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 6,
-    marginTop: 10,
     color: COLORS.text,
+    marginTop: 12,
+    marginBottom: 6,
   },
 
   propertyName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: COLORS.primary,
-    marginBottom: 20,
+    marginBottom: 10,
+  },
+
+  info: {
+    fontSize: 16,
+    color: COLORS.subText,
+    marginBottom: 10,
   },
 
   dateInput: {
@@ -144,31 +162,70 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
-  dateText: {
-    fontSize: 16,
-    color: COLORS.text,
-  },
-
   button: {
-    marginTop: 20,
+    marginTop: 25,
     backgroundColor: COLORS.primary,
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
-
-    elevation: 4,
-    shadowColor: COLORS.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
   },
 
   buttonText: {
     color: COLORS.white,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+
+  propertyCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 25,
+
+    borderWidth: 1,
+    borderColor: COLORS.border,
+
+    elevation: 5,
+    shadowColor: COLORS.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+  },
+
+  propertyTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 12,
+  },
+
+  propertyInfo: {
+    fontSize: 16,
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+
+  propertyPrice: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: COLORS.success,
+    marginVertical: 10,
+  },
+
+  description: {
+    fontSize: 15,
+    color: COLORS.subText,
+    lineHeight: 22,
+  },
+
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 8,
+    marginTop: 12,
   },
 })
