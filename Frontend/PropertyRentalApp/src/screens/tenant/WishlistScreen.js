@@ -7,12 +7,13 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native"
 import Icon from "react-native-vector-icons/MaterialIcons"
 
 import COLORS from "../../theme/colors"
 import { SERVER_URL } from "../../utils/config"
-import { getWishlist } from "../../services/wishlistService"
+import { getWishlist, removeWishlist } from "../../services/wishlistService"
 
 export default function WishlistScreen({ navigation }) {
   const [wishlist, setWishlist] = useState([])
@@ -25,11 +26,31 @@ export default function WishlistScreen({ navigation }) {
   const loadWishlist = async () => {
     try {
       const response = await getWishlist()
-      setWishlist(response.data.data)
+
+      console.log("Wishlist:", response.data)
+
+      setWishlist(response.data)
     } catch (error) {
-      console.log(error)
+      console.log(error.response?.data || error.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleRemoveWishlist = async (wishlistId) => {
+    try {
+      await removeWishlist(wishlistId)
+
+      // Remove from UI immediately
+      setWishlist((prev) =>
+        prev.filter((item) => item.wishlistId !== wishlistId),
+      )
+
+      Alert.alert("Success", "Property removed from wishlist.")
+    } catch (error) {
+      console.log(error.response?.data || error.message)
+
+      Alert.alert("Error", "Unable to remove property.")
     }
   }
 
@@ -62,7 +83,7 @@ export default function WishlistScreen({ navigation }) {
             style={styles.button}
             onPress={() =>
               navigation.navigate("PropertyDetails", {
-                propertyId: property.propertyId,
+                property: property,
               })
             }
           >
@@ -70,12 +91,12 @@ export default function WishlistScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <Icon
-          name="favorite"
-          size={26}
-          color={COLORS.error}
+        <TouchableOpacity
           style={styles.favorite}
-        />
+          onPress={() => handleRemoveWishlist(item.wishlistId)}
+        >
+          <Icon name="favorite" size={28} color={COLORS.error} />
+        </TouchableOpacity>
       </View>
     )
   }
