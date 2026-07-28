@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState, useCallback } from 'react'
 
 import {
   View,
@@ -10,16 +10,18 @@ import {
   Image,
   ActivityIndicator,
   Alert,
+  Modal,
 } from 'react-native'
 
 import Icon from 'react-native-vector-icons/MaterialIcons'
+import { useFocusEffect } from '@react-navigation/native'
 
 import COLORS from '../../theme/colors'
 import { AuthContext } from '../../provider/AuthProvider'
 import { getProperties } from '../../services/propertyService'
 import { SERVER_URL } from '../../utils/config'
 import { useNavigation } from '@react-navigation/native'
-import { addWishlist } from '../../services/wishlistService'
+import { addWishlist, getWishlist } from '../../services/wishlistService'
 
 export default function TenantHomeScreen() {
   const navigation = useNavigation()
@@ -27,15 +29,20 @@ export default function TenantHomeScreen() {
 
   const [properties, setProperties] = useState([])
   const [filteredProperties, setFilteredProperties] = useState([])
+  const [wishlistIds, setWishlistIds] = useState([])
+  const [cityModalVisible, setCityModalVisible] = useState(false)
 
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
   const [selectedCity, setSelectedCity] = useState('All Cities')
 
-  useEffect(() => {
-    loadProperties()
-  }, [])
+  useFocusEffect(
+    useCallback(() => {
+      loadProperties()
+      loadWishlist()
+    }, [])
+  )
 
   const handleWishlist = async propertyId => {
     try {
@@ -55,6 +62,21 @@ export default function TenantHomeScreen() {
     }
   }
 
+  const cities = ['All Cities', ...new Set(properties.map(item => item.city))]
+  const loadWishlist = async () => {
+    try {
+      const response = await getWishlist()
+
+      const ids = response.data.map(item => item.property.propertyId)
+
+      setWishlistIds(ids)
+    } catch (error) {
+      console.log(error.response?.data || error.message)
+    }
+  }
+  const isWishlisted = propertyId => {
+    return wishlistIds.includes(propertyId)
+  }
   const showFilter = () => {
     Alert.alert('Filter Properties', 'Choose Property Type', [
       {
@@ -94,21 +116,60 @@ export default function TenantHomeScreen() {
   const searchProperty = text => {
     setSearch(text)
 
-    if (text === '') {
-      setFilteredProperties(properties)
-      return
-    }
+    const searchText = text.toLowerCase()
 
     const result = properties.filter(item => {
       return (
-        item.propertyName?.toLowerCase().includes(text.toLowerCase()) ||
-        item.city?.toLowerCase().includes(text.toLowerCase())
+        item.title?.toLowerCase().includes(searchText) ||
+        item.city?.toLowerCase().includes(searchText)
       )
     })
 
     setFilteredProperties(result)
   }
 
+  const showCityFilter = () => {
+    const cities = [
+      'All Cities',
+      ...new Set(properties.map(item => item.city)),
+      'Cancel',
+    ]
+
+    Alert.alert(
+      'Select City',
+      'Choose a city',
+      cities.map(city => ({
+        text: city,
+        onPress: () => {
+          if (city === 'Cancel') return
+
+          setSelectedCity(city)
+
+          if (city === 'All Cities') {
+            setFilteredProperties(properties)
+          } else {
+            setFilteredProperties(properties.filter(item => item.city === city))
+          }
+        },
+      }))
+    )
+  }
+  const showSortOptions = () => {
+    Alert.alert('Sort By', '', [
+      {
+        text: 'Price : Low to High',
+        onPress: () => sortProperties('LowToHigh'),
+      },
+      {
+        text: 'Price : High to Low',
+        onPress: () => sortProperties('HighToLow'),
+      },
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+    ])
+  }
   const sortProperties = option => {
     let data = [...filteredProperties]
 
@@ -139,7 +200,13 @@ export default function TenantHomeScreen() {
         <TouchableOpacity
           style={styles.wishlistBtn}
           onPress={() => handleWishlist(item.propertyId)}>
-          <Icon name="favorite-border" size={28} color="#fff" />
+          <Icon
+            name={
+              isWishlisted(item.propertyId) ? 'favorite' : 'favorite-border'
+            }
+            size={28}
+            color="#fff"
+          />
         </TouchableOpacity>
       </View>
 
@@ -210,16 +277,30 @@ export default function TenantHomeScreen() {
 
       <Text style={styles.title}>Find Your Dream Property</Text>
 
-      <View style={styles.filterRow}>
-        <View style={styles.cityRow}>
-          <Icon name="location-on" size={20} color="red" />
-          <Text style={styles.cityText}>{selectedCity || 'All Cities'}</Text>
-        </View>
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.search}
+          placeholder="Search by property or city..."
+          placeholderTextColor={COLORS.placeholder}
+          value={search}
+          onChangeText={searchProperty}
+        />
+      </View>
 
-        <TouchableOpacity onPress={sortProperties}>
-          <Text style={styles.sortText}>Sort ▼</Text>
+      <View style={styles.filterRow}>
+        <TouchableOpacity
+          style={styles.cityButton}
+          onPress={() => setCityModalVisible(true)}>
+          <Icon name="location-on" size={20} color={COLORS.primary} />
+          <Text style={styles.cityText}>{selectedCity}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.sortButton} onPress={showSortOptions}>
+          <Icon name="sort" size={20} color={COLORS.white} />
+          <Text style={styles.sortButtonText}>Sort</Text>
         </TouchableOpacity>
       </View>
+
       <Text style={styles.heading}>Featured Properties</Text>
 
       <FlatList
@@ -231,6 +312,53 @@ export default function TenantHomeScreen() {
           paddingBottom: 20,
         }}
       />
+      <Modal visible={cityModalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Select City</Text>
+
+            <FlatList
+              data={cities}
+              keyExtractor={item => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.cityItem}
+                  onPress={() => {
+                    setSelectedCity(item)
+
+                    if (item === 'All Cities') {
+                      setFilteredProperties(properties)
+                    } else {
+                      setFilteredProperties(
+                        properties.filter(property => property.city === item)
+                      )
+                    }
+
+                    setCityModalVisible(false)
+                  }}>
+                  <Icon
+                    name={
+                      selectedCity === item
+                        ? 'radio-button-checked'
+                        : 'radio-button-unchecked'
+                    }
+                    size={22}
+                    color={COLORS.primary}
+                  />
+
+                  <Text style={styles.cityItemText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setCityModalVisible(false)}>
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   )
 }
@@ -594,5 +722,93 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 16,
     fontWeight: '700',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+
+  cityButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.card,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+
+  cityText: {
+    marginLeft: 6,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+
+  sortButtonText: {
+    color: COLORS.white,
+    marginLeft: 5,
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalContainer: {
+    width: '90%',
+    maxHeight: '70%',
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: 20,
+  },
+
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+
+  cityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+
+  cityItemText: {
+    marginLeft: 12,
+    fontSize: 17,
+    color: COLORS.text,
+  },
+
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+
+  closeText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 })
