@@ -27,3 +27,13 @@ export const getWishlist = async () => {
     },
   })
 }
+
+export const removeWishlist = async (wishlistId) => {
+  const token = await AsyncStorage.getItem(TOKEN_KEY)
+
+  return axios.delete(`${SERVER_URL}/wishlists/${wishlistId}`, {
+    headers: {
+      Token: token,
+    },
+  })
+}
