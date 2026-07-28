@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useCallback } from 'react'
 import {
   View,
   Text,
@@ -8,26 +8,28 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-} from "react-native"
-import Icon from "react-native-vector-icons/MaterialIcons"
+} from 'react-native'
+import Icon from 'react-native-vector-icons/MaterialIcons'
+import { useFocusEffect } from '@react-navigation/native'
 
-import COLORS from "../../theme/colors"
-import { SERVER_URL } from "../../utils/config"
-import { getWishlist, removeWishlist } from "../../services/wishlistService"
+import COLORS from '../../theme/colors'
+import { SERVER_URL } from '../../utils/config'
+import { getWishlist, removeWishlist } from '../../services/wishlistService'
 
 export default function WishlistScreen({ navigation }) {
   const [wishlist, setWishlist] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadWishlist()
-  }, [])
-
+  useFocusEffect(
+    useCallback(() => {
+      loadWishlist()
+    }, [])
+  )
   const loadWishlist = async () => {
     try {
       const response = await getWishlist()
 
-      console.log("Wishlist:", response.data)
+      console.log(JSON.stringify(response.data, null, 2))
 
       setWishlist(response.data)
     } catch (error) {
@@ -37,20 +39,18 @@ export default function WishlistScreen({ navigation }) {
     }
   }
 
-  const handleRemoveWishlist = async (wishlistId) => {
+  const handleRemoveWishlist = async wishlistId => {
     try {
       await removeWishlist(wishlistId)
 
       // Remove from UI immediately
-      setWishlist((prev) =>
-        prev.filter((item) => item.wishlistId !== wishlistId),
-      )
+      setWishlist(prev => prev.filter(item => item.wishlistId !== wishlistId))
 
-      Alert.alert("Success", "Property removed from wishlist.")
+      Alert.alert('Success', 'Property removed from wishlist.')
     } catch (error) {
       console.log(error.response?.data || error.message)
 
-      Alert.alert("Error", "Unable to remove property.")
+      Alert.alert('Error', 'Unable to remove property.')
     }
   }
 
@@ -63,7 +63,7 @@ export default function WishlistScreen({ navigation }) {
           source={
             property?.propertyImage
               ? { uri: `${SERVER_URL}${property.propertyImage}` }
-              : require("../../../assets/property_placeholder.png")
+              : require('../../../assets/property_placeholder.png')
           }
           style={styles.image}
         />
@@ -82,19 +82,17 @@ export default function WishlistScreen({ navigation }) {
           <TouchableOpacity
             style={styles.button}
             onPress={() =>
-              navigation.navigate("PropertyDetails", {
+              navigation.navigate('PropertyDetails', {
                 property: property,
               })
-            }
-          >
+            }>
             <Text style={styles.buttonText}>View Property</Text>
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity
           style={styles.favorite}
-          onPress={() => handleRemoveWishlist(item.wishlistId)}
-        >
+          onPress={() => handleRemoveWishlist(item.wishlistId)}>
           <Icon name="favorite" size={28} color={COLORS.error} />
         </TouchableOpacity>
       </View>
@@ -115,7 +113,7 @@ export default function WishlistScreen({ navigation }) {
 
       <FlatList
         data={wishlist}
-        keyExtractor={(item) => item.wishlistId.toString()}
+        keyExtractor={item => item.wishlistId.toString()}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
@@ -139,13 +137,13 @@ const styles = StyleSheet.create({
 
   loader: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   heading: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: COLORS.text,
     marginBottom: 20,
   },
@@ -154,7 +152,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.card,
     borderRadius: 15,
     marginBottom: 18,
-    overflow: "hidden",
+    overflow: 'hidden',
 
     elevation: 4,
     shadowColor: COLORS.shadow,
@@ -163,7 +161,7 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    width: "100%",
+    width: '100%',
     height: 180,
     backgroundColor: COLORS.placeholder,
   },
@@ -174,7 +172,7 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: COLORS.text,
   },
 
@@ -186,7 +184,7 @@ const styles = StyleSheet.create({
 
   price: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: COLORS.primary,
     marginTop: 10,
   },
@@ -196,24 +194,24 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     marginTop: 15,
-    alignItems: "center",
+    alignItems: 'center',
   },
 
   buttonText: {
     color: COLORS.white,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     fontSize: 15,
   },
 
   favorite: {
-    position: "absolute",
+    position: 'absolute',
     top: 15,
     right: 15,
   },
 
   emptyContainer: {
     marginTop: 120,
-    alignItems: "center",
+    alignItems: 'center',
   },
 
   emptyText: {

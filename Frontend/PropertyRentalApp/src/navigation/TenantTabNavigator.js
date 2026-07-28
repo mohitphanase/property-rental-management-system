@@ -7,6 +7,8 @@ import TenantHomeScreen from '../screens/tenant/TenantHomeScreen'
 import WishlistScreen from '../screens/tenant/WishlistScreen'
 import BookingScreen from '../screens/tenant/BookingScreen'
 import ProfileScreen from '../screens/tenant/ProfileScreen'
+import ReviewScreen from '../screens/tenant/ReviewScreen'
+
 import { useContext } from 'react'
 import { AuthContext } from '../provider/AuthProvider'
 
@@ -28,6 +30,7 @@ export default function TenantTabNavigator() {
           if (route.name === 'Home') icon = 'home'
           else if (route.name === 'Wishlist') icon = 'favorite'
           else if (route.name === 'Booking') icon = 'calendar-month'
+          else if (route.name === 'Review') icon = 'rate-review'
           else if (route.name === 'Profile') icon = 'person'
 
           return <Icon name={icon} size={size} color={color} />
@@ -36,6 +39,7 @@ export default function TenantTabNavigator() {
       <Tab.Screen name="Home" component={TenantHomeScreen} />
       <Tab.Screen name="Wishlist" component={WishlistScreen} />
       <Tab.Screen name="Booking" component={BookingScreen} />
+      <Tab.Screen name="Review" component={ReviewScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   )
