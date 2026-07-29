@@ -23,7 +23,7 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth ->
         auth
-            .requestMatchers("/user/register","/user/login")
+            .requestMatchers("/user/register","/user/login","/uploads/**")
             .permitAll()
             .requestMatchers("/admin/**")
             .hasAuthority("ADMIN")

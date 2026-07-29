@@ -51,7 +51,11 @@ public class Property {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // One Property -> Many Images
-    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PropertyImage> images;
+    @OneToMany(
+    	    mappedBy = "property",
+    	    cascade = CascadeType.ALL,
+    	    orphanRemoval = true,
+    	    fetch = FetchType.EAGER
+    	)
+    	private List<PropertyImage> images;
 }

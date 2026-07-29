@@ -17,6 +17,8 @@ import com.rental.entity.Property;
 import com.rental.entity.PropertyType;
 import com.rental.entity.User;
 import com.rental.security.JwtUtil;
+import com.rental.dto.PropertyImageResponseDto;
+
 
 import jakarta.transaction.Transactional;
 
@@ -58,7 +60,7 @@ public class PropertyServiceImpl {
 
         property = propertyDao.save(property);
 
-        return modelMapper.map(property,PropertyResponseDto.class);
+        return convertToDto(property);
     }
 
 	
@@ -66,10 +68,10 @@ public class PropertyServiceImpl {
 
 	public List<PropertyResponseDto> getAllProperties() {
 
-	    return propertyDao.findAll()
-	            .stream()
-	            .map(property -> modelMapper.map(property, PropertyResponseDto.class))
-	            .toList();
+		return propertyDao.findAll()
+		        .stream()
+		        .map(this::convertToDto)
+		        .toList();
 	}
     
    // GET /properties/{id}
@@ -80,7 +82,7 @@ public class PropertyServiceImpl {
                 .orElseThrow(() ->
                         new RuntimeException("Property not found"));
 
-        return modelMapper.map(property, PropertyResponseDto.class);
+        return convertToDto(property);
     }
     
  
@@ -113,7 +115,7 @@ public class PropertyServiceImpl {
 
         return propertyDao.findByCity(city)
                 .stream()
-                .map(property ->modelMapper.map(property,PropertyResponseDto.class))
+                .map(this::convertToDto)
                 .toList();
     }
 
@@ -124,7 +126,7 @@ public class PropertyServiceImpl {
 
         return propertyDao.findByPropertyType(propertyType)
                 .stream()
-                .map(property ->modelMapper.map(property,PropertyResponseDto.class))
+                .map(this::convertToDto)
                 .toList();
     }
     
@@ -136,10 +138,28 @@ public class PropertyServiceImpl {
 
         return propertyDao.findByCityAndPropertyType(city,propertyType)
                 .stream()
-                .map(property ->modelMapper.map( property,PropertyResponseDto.class))
+                .map(this::convertToDto)
                 .toList();
     }
-    
+    private PropertyResponseDto convertToDto(Property property) {
+
+        PropertyResponseDto dto = modelMapper.map(property, PropertyResponseDto.class);
+
+        dto.setOwnerId(property.getOwner().getUserId());
+        dto.setOwnerName(property.getOwner().getName());
+        dto.setOwnerPhone(property.getOwner().getPhone());
+
+        if (property.getImages() != null) {
+            dto.setImages(
+                property.getImages()
+                        .stream()
+                        .map(image -> modelMapper.map(image, PropertyImageResponseDto.class))
+                        .toList()
+            );
+        }
+
+        return dto;
+    }
     
     
     
