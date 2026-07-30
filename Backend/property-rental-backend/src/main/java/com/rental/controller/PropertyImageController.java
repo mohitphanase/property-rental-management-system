@@ -23,11 +23,17 @@ public class PropertyImageController {
     
 
     // Get Images
+
+
     @GetMapping("/{propertyId}")
     public Resp<?> getImages(@PathVariable Long propertyId) {
 
+        System.out.println("User: " +
+            org.springframework.security.core.context.SecurityContextHolder
+                .getContext()
+                .getAuthentication());
+
         return Resp.success(imageService.getImagesByProperty(propertyId));
     }
-
     
 }

@@ -80,11 +80,16 @@ public class PropertyImageServiceImpl {
         image.setImageUrl("uploads/" + fileName);
 
         image = propertyImageDao.save(image);
+        System.out.println("Working Directory : " + System.getProperty("user.dir"));
+        System.out.println("Upload Path       : " + uploadPath);
+        System.out.println("Destination File  : " + destinationFile.getAbsolutePath());
 
         return modelMapper.map(
                 image,
                 PropertyImageResponseDto.class);
+        
     }
+    
 
     // Get Images By Property
     public List<PropertyImageResponseDto> getImagesByProperty(Long propertyId) {

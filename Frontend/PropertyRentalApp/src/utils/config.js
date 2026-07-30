@@ -1,4 +1,4 @@
-export const SERVER_URL = 'http://10.77.4.188:8080'
+export const SERVER_URL = 'http://172.18.4.22:8080'
 
 export const TOKEN_KEY = 'token'
 
