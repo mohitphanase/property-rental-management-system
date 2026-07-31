@@ -1,40 +1,33 @@
 
-
 import React, { useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import { AuthContext } from "../provider/AuthProvider";
+import { AuthContext } from '../provider/AuthProvider'
 
-import SplashScreen from "./auth/SplashScreen";
-import LoginScreen from "./auth/LoginScreen";
-import RegisterScreen from "./auth/RegisterScreen";
-import TenantHomeScreen from "./tenant/TenantHomeScreen";
+import SplashScreen from './auth/SplashScreen'
+import LoginScreen from './auth/LoginScreen'
+import RegisterScreen from './auth/RegisterScreen'
+
 import OwnerNavigator from "../navigation/OwnerNavigator";
+import TenantTabNavigator from '../navigation/TenantTabNavigator'
 
-const Stack = createNativeStackNavigator();
+import TenantStackNavigator from '../navigation/TenantStackNavigator'
+
+const Stack = createNativeStackNavigator()
 
 export default function AppScreen() {
-  const { loading, token, user } = useContext(AuthContext);
+  const { loading, token, user } = useContext(AuthContext)
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {loading ? (
-          <Stack.Screen
-            name="Splash"
-            component={SplashScreen}
-          />
+          <Stack.Screen name="Splash" component={SplashScreen} />
         ) : !token ? (
           <>
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-            />
-            <Stack.Screen
-              name="Register"
-              component={RegisterScreen}
-            />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
           </>
         ) : user?.role === "OWNER" ? (
           <Stack.Screen
@@ -44,10 +37,11 @@ export default function AppScreen() {
         ) : (
           <Stack.Screen
             name="TenantHome"
-            component={TenantHomeScreen}
+            component={TenantStackNavigator}
+            options={{ headerShown: false }}
           />
         )}
       </Stack.Navigator>
     </NavigationContainer>
-  );
+  )
 }

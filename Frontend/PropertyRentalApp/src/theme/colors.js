@@ -1,26 +1,43 @@
-
 const COLORS = {
-  primary: "#2563EB",
-  secondary: "#10B981",
+   // Primary Colors
+  primary: '#2563EB',
+  secondary: '#10B981',
 
-  white: "#FFFFFF",
-  black: "#000000",
-  gray: "#6B7280",
+  // Base Colors
+  white: '#FFFFFF',
+  black: '#000000',
+  gray: '#6B7280',
 
-  background: "#F8FAFC",
-  card: "#FFFFFF",
+  // Backgrounds
+  background: '#F8FAFC',
+  card: '#FFFFFF',
 
-  text: "#1E293B",
-  subText: "#64748B",
+  // Text
+  text: '#1E293B',
+  subText: '#64748B',
+  placeholder: '#94A3B8',
 
-  border: "#CBD5E1",
+  // Borders
+  border: '#CBD5E1',
 
-  success: "#22C55E",
-  warning: "#F59E0B",
-  error: "#EF4444",
-  danger: "#EF4444",
+  // Status Colors
+  success: '#22C55E',      // Approved
+  warning: '#F59E0B',      // Pending
+  error: '#EF4444',        // Rejected
+  danger: '#EF4444',
+  cancelled: '#9C27B0',    // Cancelled
 
-  placeholder: "#94A3B8",
+  // Extra Colors
+  info: '#0EA5E9',
+  disabled: '#D1D5DB',
+
+  // Buttons
+  buttonPrimary: '#2563EB',
+  buttonSecondary: '#10B981',
+  buttonDanger: '#DC2626',
+
+  // Shadows
+  shadow: '#00000020',
 };
 
 export default COLORS;

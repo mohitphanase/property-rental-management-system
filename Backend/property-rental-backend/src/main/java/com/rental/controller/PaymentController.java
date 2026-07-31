@@ -6,6 +6,8 @@ import com.rental.dto.Resp;
 import com.rental.entity.Payment;
 import com.rental.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,5 +23,15 @@ public class PaymentController {
     @PostMapping
     public Resp<?> addPayment(@RequestBody PaymentRequestDto dto){
         return Resp.success(paymentService.addPayment(dto));
+    }
+    @GetMapping("/booking/{bookingId}")
+    public Resp<?> getPaymentByBooking(@PathVariable Long bookingId) {
+        Payment payment = paymentService.getPaymentByBooking(bookingId);
+
+        if (payment == null) {
+            return Resp.success(null);
+        }
+
+        return Resp.success(payment);
     }
 }

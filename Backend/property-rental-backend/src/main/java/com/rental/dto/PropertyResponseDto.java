@@ -2,6 +2,7 @@ package com.rental.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.rental.entity.PropertyType;
 
@@ -22,6 +23,10 @@ public class PropertyResponseDto {
 
     private PropertyType propertyType;
     
+<<<<<<< HEAD
+=======
+    private List<PropertyImageResponseDto> images;
+>>>>>>> main
     private String imageUrl;
 
 }

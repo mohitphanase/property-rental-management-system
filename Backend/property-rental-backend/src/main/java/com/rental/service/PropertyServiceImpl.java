@@ -17,6 +17,7 @@ import com.rental.entity.Property;
 import com.rental.entity.PropertyType;
 import com.rental.entity.User;
 import com.rental.security.JwtUtil;
+import com.rental.dto.PropertyImageResponseDto;
 
 import jakarta.transaction.Transactional;
 
@@ -58,19 +59,27 @@ public class PropertyServiceImpl {
 
         property = propertyDao.save(property);
 
-        return modelMapper.map(property,PropertyResponseDto.class);
+        return convertToDto(property);
     }
 
 	
     // GET /properties
 
-	public List<PropertyResponseDto> getAllProperties() {
+    public List<PropertyResponseDto> getAllProperties() {
 
+<<<<<<< HEAD
 	    return propertyDao.findAll()
 	            .stream()
 	            .map(property -> modelMapper.map(property, PropertyResponseDto.class))
 	            .toList();
 	}
+=======
+        return propertyDao.findAll()
+                .stream()
+                .map(this::convertToDto)
+                .toList();
+    }
+>>>>>>> main
     
    // GET /properties/{id}
 //
@@ -128,7 +137,7 @@ public class PropertyServiceImpl {
 
         return propertyDao.findByCity(city)
                 .stream()
-                .map(property ->modelMapper.map(property,PropertyResponseDto.class))
+                .map(this::convertToDto)
                 .toList();
     }
 
@@ -139,7 +148,7 @@ public class PropertyServiceImpl {
 
         return propertyDao.findByPropertyType(propertyType)
                 .stream()
-                .map(property ->modelMapper.map(property,PropertyResponseDto.class))
+                .map(this::convertToDto)
                 .toList();
     }
     
@@ -151,10 +160,36 @@ public class PropertyServiceImpl {
 
         return propertyDao.findByCityAndPropertyType(city,propertyType)
                 .stream()
-                .map(property ->modelMapper.map( property,PropertyResponseDto.class))
+                .map(this::convertToDto)
                 .toList();
     }
     
+    private PropertyResponseDto convertToDto(Property property) {
+
+        System.out.println("Property ID: " + property.getPropertyId());
+
+        if (property.getImages() == null) {
+            System.out.println("Images = null");
+        } else {
+            System.out.println("Images Count = " + property.getImages().size());
+            property.getImages().forEach(img ->
+                System.out.println("Image = " + img.getImageUrl())
+            );
+        }
+
+        PropertyResponseDto dto = modelMapper.map(property, PropertyResponseDto.class);
+
+        if (property.getImages() != null) {
+            dto.setImages(
+                property.getImages()
+                        .stream()
+                        .map(image -> modelMapper.map(image, PropertyImageResponseDto.class))
+                        .toList()
+            );
+        }
+
+        return dto;
+    }
     
     public List<PropertyResponseDto> getOwnerProperties() {
 

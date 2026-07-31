@@ -2,6 +2,7 @@ package com.rental.service;
 
 import java.time.LocalDateTime;
 
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,12 +16,15 @@ import com.rental.dto.RegisterRequestDto;
 import com.rental.dto.UserProfileDto;
 import com.rental.entity.User;
 import com.rental.security.JwtUtil;
+import org.springframework.security.core.Authentication;
+import com.rental.dto.ChangePasswordDto;
 
 import jakarta.transaction.Transactional;
 
 @Transactional
 @Service
 public class UserServiceImpl {
+	
 	private UserDao userDao;
 	private ModelMapper modelMapper;
 	private PasswordEncoder passwordEncoder;
@@ -79,6 +83,30 @@ public class UserServiceImpl {
 	    return modelMapper.map(
 	            user,
 	            UserProfileDto.class);
+	}
+	
+	public void changePassword(ChangePasswordDto dto) {
+
+	    Authentication authentication =
+	            SecurityContextHolder
+	                    .getContext()
+	                    .getAuthentication();
+
+	    String email = authentication.getName();
+
+	    User user = userDao.findByEmail(email);
+
+	    if (user == null) {
+	        throw new RuntimeException("User not found.");
+	    }
+
+	    if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+	        throw new RuntimeException("Current password is incorrect.");
+	    }
+
+	    user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+
+	    userDao.save(user);
 	}
 	
 	
