@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.rental.entity.Property;
 import com.rental.entity.PropertyType;
+import com.rental.entity.User;
 
 public interface PropertyDao extends JpaRepository<Property, Long> {
 
@@ -20,5 +21,7 @@ public interface PropertyDao extends JpaRepository<Property, Long> {
 
     // Get all properties of a specific owner
     List<Property> findByOwnerUserId(Long ownerId);
+    
+    List<Property> findByOwner(User owner);
 }
 

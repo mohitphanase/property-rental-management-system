@@ -24,5 +24,6 @@ public class PropertyResponseDto {
     private PropertyType propertyType;
     
     private List<PropertyImageResponseDto> images;
+    private String imageUrl;
 
 }

@@ -102,6 +102,16 @@ public class OwnerController {
         return Resp.success(
                 bookingService.getOwnerBookings());
     }
+    
+    @GetMapping
+    public Resp<?> getMyProperties() {
+        return Resp.success(propertyService.getOwnerProperties());
+    }
+    
+    @GetMapping("/{propertyId}")
+    public Resp<?> getPropertyDetails(@PathVariable Long propertyId) {
+        return Resp.success(propertyService.getPropertyById(propertyId));
+    }
 }
     
     
