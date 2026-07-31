@@ -23,5 +23,7 @@ public interface PropertyDao extends JpaRepository<Property, Long> {
     List<Property> findByOwnerUserId(Long ownerId);
     
     List<Property> findByOwner(User owner);
+    
+    long countByOwner(User owner);
 }
 

@@ -37,4 +37,8 @@ public interface BookingDao extends JpaRepository<Booking, Long> {
     List<Object[]> findTopPropertiesByBookingCount();
 
     List<Booking> findByPropertyOwner(User owner);
+    
+    long countByPropertyOwner(User owner);
+
+    long countByPropertyOwnerAndStatus(User owner, BookingStatus status);
 }

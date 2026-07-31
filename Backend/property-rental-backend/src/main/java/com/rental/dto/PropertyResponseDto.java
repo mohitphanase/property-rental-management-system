@@ -23,7 +23,10 @@ public class PropertyResponseDto {
 
     private PropertyType propertyType;
     
+<<<<<<< HEAD
+=======
     private List<PropertyImageResponseDto> images;
+>>>>>>> main
     private String imageUrl;
 
 }
