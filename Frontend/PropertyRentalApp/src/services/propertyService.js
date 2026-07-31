@@ -1,23 +1,41 @@
-import axios from "axios"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { SERVER_URL, TOKEN_KEY } from "../utils/config"
+import api from './api'
 
-export const getProperties = async () => {
-  const token = await AsyncStorage.getItem(TOKEN_KEY)
+// Add Property
+export const addProperty = async data => {
+  return await api.post('/owner/properties', data)
+}
 
-  return axios.get(`${SERVER_URL}/properties`, {
+// Upload Property Image
+export const uploadPropertyImage = async (propertyId, imageUri) => {
+  const formData = new FormData()
+
+  formData.append('file', {
+    uri: imageUri,
+    name: 'property.jpg',
+    type: 'image/jpeg',
+  })
+
+  return await api.post(`/owner/properties/${propertyId}/images`, formData, {
     headers: {
-      Token: token,
+      'Content-Type': 'multipart/form-data',
     },
   })
 }
 
-export const getPropertyById = async (propertyId) => {
-  const token = await AsyncStorage.getItem(TOKEN_KEY)
-
-  return axios.get(`${SERVER_URL}/properties/${propertyId}`, {
-    headers: {
-      Token: token,
-    },
-  })
+// Get My Properties
+export const getMyProperties = async () => {
+  return await api.get('/owner/properties')
 }
+
+// Get Property By Id
+export const getPropertyById = async propertyId => {
+  return await api.get(`/owner/properties/${propertyId}`)
+}
+
+//editProperty by id
+export const updateProperty = async (propertyId, data) =>
+  api.put(`/owner/properties/${propertyId}`, data)
+
+//deleteProperty by id
+export const deleteProperty = async propertyId =>
+  api.delete(`/owner/properties/${propertyId}`)
