@@ -73,16 +73,31 @@ public class PropertyServiceImpl {
 	}
     
    // GET /properties/{id}
+//
+//    public PropertyResponseDto getPropertyById(Long propertyId) {
+//
+//        Property property = propertyDao.findById(propertyId)
+//                .orElseThrow(() ->
+//                        new RuntimeException("Property not found"));
+//
+//        return modelMapper.map(property, PropertyResponseDto.class);
+//    }
+//    
+	
+	public PropertyResponseDto getPropertyById(Long propertyId) {
 
-    public PropertyResponseDto getPropertyById(Long propertyId) {
+	    Property property = propertyDao.findById(propertyId)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Property not found"));
 
-        Property property = propertyDao.findById(propertyId)
-                .orElseThrow(() ->
-                        new RuntimeException("Property not found"));
+	    PropertyResponseDto dto = modelMapper.map(property, PropertyResponseDto.class);
 
-        return modelMapper.map(property, PropertyResponseDto.class);
-    }
-    
+	    if (property.getImages() != null && !property.getImages().isEmpty()) {
+	        dto.setImageUrl(property.getImages().get(0).getImageUrl());
+	    }
+
+	    return dto;
+	}
  
     // PUT /properties/{id}
     public Property updateProperty(Long propertyId,AddPropertyDto dto) {
@@ -141,12 +156,34 @@ public class PropertyServiceImpl {
     }
     
     
-    
-    
-    
-    
-    
-    
+    public List<PropertyResponseDto> getOwnerProperties() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User owner = userDao.findByEmail(email);
+
+        return propertyDao.findByOwner(owner)
+                .stream()
+                .map(property -> {
+
+                    PropertyResponseDto dto =
+                            modelMapper.map(property, PropertyResponseDto.class);
+
+                    if (property.getImages() != null &&
+                        !property.getImages().isEmpty()) {
+
+                        dto.setImageUrl(
+                                property.getImages().get(0).getImageUrl()
+                        );
+                    }
+
+                    return dto;
+                })
+                .toList();
+    }
     
 
 }

@@ -21,5 +21,7 @@ public class PropertyResponseDto {
     private BigDecimal price;
 
     private PropertyType propertyType;
+    
+    private String imageUrl;
 
 }
