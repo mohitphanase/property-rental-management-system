@@ -26,9 +26,11 @@
 //   getProfile,
 // };
 
+import { SERVER_URL } from "../utils/config";
 import api from "./api";
 
 export const login = async (credentials) => {
+  console.log("server:", SERVER_URL)
   const response = await api.post("/user/login", credentials);
   return response.data;
 };

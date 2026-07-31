@@ -53,7 +53,7 @@ import SplashScreen from './auth/SplashScreen'
 import LoginScreen from './auth/LoginScreen'
 import RegisterScreen from './auth/RegisterScreen'
 
-import OwnerHomeScreen from './owner/OwnerHomeScreen'
+import OwnerNavigator from "../navigation/OwnerNavigator";
 import TenantTabNavigator from '../navigation/TenantTabNavigator'
 
 import TenantStackNavigator from '../navigation/TenantStackNavigator'
@@ -73,8 +73,11 @@ export default function AppScreen() {
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
           </>
-        ) : user?.role === 'OWNER' ? (
-          <Stack.Screen name="OwnerHome" component={OwnerHomeScreen} />
+        ) : user?.role === "OWNER" ? (
+          <Stack.Screen
+            name="Owner"
+            component={OwnerNavigator}
+          />
         ) : (
           <Stack.Screen
             name="TenantHome"

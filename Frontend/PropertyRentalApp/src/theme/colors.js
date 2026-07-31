@@ -1,11 +1,12 @@
 const COLORS = {
-  // Primary Colors
+   // Primary Colors
   primary: '#2563EB',
   secondary: '#10B981',
 
   // Base Colors
   white: '#FFFFFF',
   black: '#000000',
+  gray: '#6B7280',
 
   // Backgrounds
   background: '#F8FAFC',
@@ -20,10 +21,11 @@ const COLORS = {
   border: '#CBD5E1',
 
   // Status Colors
-  success: '#22C55E', // Approved
-  warning: '#F59E0B', // Pending
-  error: '#EF4444', // Rejected
-  cancelled: '#9C27B0', // Cancelled
+  success: '#22C55E',      // Approved
+  warning: '#F59E0B',      // Pending
+  error: '#EF4444',        // Rejected
+  danger: '#EF4444',
+  cancelled: '#9C27B0',    // Cancelled
 
   // Extra Colors
   info: '#0EA5E9',
@@ -36,6 +38,6 @@ const COLORS = {
 
   // Shadows
   shadow: '#00000020',
-}
+};
 
-export default COLORS
+export default COLORS;

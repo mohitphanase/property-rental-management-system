@@ -22,6 +22,7 @@
 
 import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import AuthProvider from "./src/provider/AuthProvider";
 import AppScreen from "./src/screens/AppScreen";

@@ -16,13 +16,13 @@ export default function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
 
-  // useEffect(() => {
-  //   loadUser();
-  // }, []);
-
   useEffect(() => {
-  setLoading(false);
+    loadUser();
   }, []);
+
+  // useEffect(() => {
+  // setLoading(false);
+  // }, []);
 
   const loadUser = async () => {
     try {
@@ -36,7 +36,7 @@ export default function AuthProvider({ children }) {
       if (savedUser) {
         setUser(JSON.parse(savedUser));
       }
-      await new Promise(resolve => setTimeout(resolve, 4000));
+      await new Promise(resolve => setTimeout(resolve, 5000));
 
     } catch (error) {
       console.log("Load User Error:", error);
