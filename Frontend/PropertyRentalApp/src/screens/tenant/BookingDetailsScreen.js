@@ -15,7 +15,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons'
 
 import { getPropertyImages } from '../../services/propertyImageService'
 import { SERVER_URL } from '../../utils/config'
-import { getPropertyById } from '../../services/propertyService'
+import { getPropertyById } from '../../services/propertyServicet'
 import { getPaymentByBooking } from '../../services/paymentService'
 import { deleteBooking } from '../../services/bookingService'
 import COLORS from '../../theme/colors'

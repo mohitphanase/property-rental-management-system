@@ -67,19 +67,12 @@ public class PropertyServiceImpl {
 
     public List<PropertyResponseDto> getAllProperties() {
 
-<<<<<<< HEAD
-	    return propertyDao.findAll()
-	            .stream()
-	            .map(property -> modelMapper.map(property, PropertyResponseDto.class))
-	            .toList();
-	}
-=======
         return propertyDao.findAll()
                 .stream()
                 .map(this::convertToDto)
                 .toList();
     }
->>>>>>> main
+
     
    // GET /properties/{id}
 //

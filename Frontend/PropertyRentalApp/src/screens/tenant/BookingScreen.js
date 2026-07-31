@@ -16,7 +16,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
 import { getBookings } from '../../services/bookingService'
-import { getPropertyById } from '../../services/propertyService'
+import { getPropertyById } from '../../services/propertyServicet'
 import { SERVER_URL } from '../../utils/config'
 import COLORS from '../../theme/colors'
 

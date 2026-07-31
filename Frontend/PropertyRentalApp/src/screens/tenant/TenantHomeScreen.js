@@ -17,7 +17,7 @@ import { useNavigation } from '@react-navigation/native'
 
 import COLORS from '../../theme/colors'
 import { AuthContext } from '../../provider/AuthProvider'
-import { getProperties } from '../../services/propertyService'
+import { getProperties } from '../../services/propertyServicet'
 import { SERVER_URL } from '../../utils/config'
 import { addWishlist, getWishlist } from '../../services/wishlistService'
 
