@@ -5,6 +5,7 @@ const COLORS = {
 
   white: "#FFFFFF",
   black: "#000000",
+  gray: "#6B7280",
 
   background: "#F8FAFC",
   card: "#FFFFFF",
@@ -17,6 +18,7 @@ const COLORS = {
   success: "#22C55E",
   warning: "#F59E0B",
   error: "#EF4444",
+  danger: "#EF4444",
 
   placeholder: "#94A3B8",
 };

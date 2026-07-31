@@ -53,9 +53,8 @@ import { AuthContext } from "../provider/AuthProvider";
 import SplashScreen from "./auth/SplashScreen";
 import LoginScreen from "./auth/LoginScreen";
 import RegisterScreen from "./auth/RegisterScreen";
-
-import OwnerHomeScreen from "./owner/OwnerHomeScreen";
 import TenantHomeScreen from "./tenant/TenantHomeScreen";
+import OwnerNavigator from "../navigation/OwnerNavigator";
 
 const Stack = createNativeStackNavigator();
 
@@ -83,8 +82,8 @@ export default function AppScreen() {
           </>
         ) : user?.role === "OWNER" ? (
           <Stack.Screen
-            name="OwnerHome"
-            component={OwnerHomeScreen}
+            name="Owner"
+            component={OwnerNavigator}
           />
         ) : (
           <Stack.Screen

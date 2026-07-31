@@ -10,12 +10,28 @@ const api = axios.create({
   },
 });
 
+// api.interceptors.request.use(
+//   async (config) => {
+//     const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+//     if (token) {
+//       config.headers.Token = `${token}`;
+//     }
+
+//     return config;
+//   },
+//   (error) => Promise.reject(error)
+// );
+
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem(TOKEN_KEY);
 
+    console.log("Token:", token);
+    console.log("URL:", config.url);
+
     if (token) {
-      config.headers.Token = `${token}`;
+      config.headers.Token = token;
     }
 
     return config;
