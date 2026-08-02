@@ -77,6 +77,11 @@ public class PropertyController {
         return Resp.success(propertyService.getPropertyById(id));
     }
     
+    @GetMapping("/details/{id}")
+    public Resp<?> getPropertyDetails(@PathVariable Long id) {
+
+        return Resp.success(propertyService.getPropertyDetails(id));
+    }
 }
     
     

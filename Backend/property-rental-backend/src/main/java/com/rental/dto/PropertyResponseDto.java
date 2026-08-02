@@ -23,7 +23,11 @@ public class PropertyResponseDto {
 
     private PropertyType propertyType;
     
-
+    // Add these three fields
+    private Long ownerId;
+    private String ownerName;
+    private String ownerPhone;
+    
     private List<PropertyImageResponseDto> images;
 
     private String imageUrl;
