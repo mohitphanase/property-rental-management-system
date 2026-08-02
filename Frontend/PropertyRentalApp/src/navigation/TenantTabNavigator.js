@@ -1,41 +1,27 @@
 import React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import Icon from 'react-native-vector-icons/MaterialIcons'
-import {
-  View,
-  TouchableOpacity,
-  Alert,
-  StyleSheet,
-  Platform,
-} from 'react-native'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { View, StyleSheet, Platform } from 'react-native'
+
 import TenantHomeScreen from '../screens/tenant/TenantHomeScreen'
 import WishlistScreen from '../screens/tenant/WishlistScreen'
 import BookingScreen from '../screens/tenant/BookingScreen'
 import ProfileScreen from '../screens/tenant/ProfileScreen'
 import ReviewScreen from '../screens/tenant/ReviewScreen'
 
-import { useContext } from 'react'
-import { AuthContext } from '../provider/AuthProvider'
+import COLORS from '../theme/colors' // Utilizing your global theme
 
 const Tab = createBottomTabNavigator()
 
-const PRIMARY = '#1565C0'
-const PRIMARY_LIGHT = '#E3F2FD'
-const INACTIVE = 'gray'
-
 export default function TenantTabNavigator() {
-  const { logout } = useContext(AuthContext)
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerTitle: 'Property Rental',
-        headerTitleAlign: 'center',
-        tabBarActiveTintColor: PRIMARY,
-        tabBarInactiveTintColor: INACTIVE,
+        headerShown: false, // This completely removes the top header
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.placeholder,
 
-        tabBarShowLabel: true,
-        tabBarLabelStyle: styles.label,
+        tabBarShowLabel: false,
         tabBarStyle: styles.tabBar,
         tabBarItemStyle: styles.tabItem,
 
@@ -76,7 +62,7 @@ const styles = StyleSheet.create({
     bottom: Platform.OS === 'ios' ? 24 : 16,
     height: 68,
     borderRadius: 24,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.card || '#fff',
     borderTopWidth: 0,
     elevation: 8,
     shadowColor: '#000',
@@ -89,11 +75,6 @@ const styles = StyleSheet.create({
   tabItem: {
     paddingVertical: 4,
   },
-  label: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 2,
-  },
   iconWrap: {
     width: 40,
     height: 32,
@@ -102,6 +83,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconWrapActive: {
-    backgroundColor: PRIMARY_LIGHT,
+    backgroundColor: (COLORS.primary || '#1565C0') + '15', // Matches your 15% opacity styling
   },
 })

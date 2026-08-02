@@ -77,17 +77,17 @@ export default function PaymentScreen({ route, navigation }) {
   const getAlertStyle = type => {
     switch (type) {
       case 'success':
-        return { icon: 'check-circle', color: COLORS.success || '#28A745' }
+        return { icon: 'check-circle', color: COLORS.success }
       case 'error':
-        return { icon: 'error', color: COLORS.error || '#DC3545' }
+        return { icon: 'error', color: COLORS.error }
       default:
-        return { icon: 'warning', color: COLORS.warning || '#F5A623' }
+        return { icon: 'warning', color: COLORS.warning }
     }
   }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Fixed Top Bar Header */}
+      {/* Seamless Top Bar Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -95,8 +95,8 @@ export default function PaymentScreen({ route, navigation }) {
           onPress={() => navigation.goBack()}>
           <Icon
             name="arrow-back-ios"
-            size={20}
-            color={COLORS.text || '#212529'}
+            size={18}
+            color={COLORS.text}
             style={styles.backIcon}
           />
         </TouchableOpacity>
@@ -107,15 +107,13 @@ export default function PaymentScreen({ route, navigation }) {
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}>
-        {/* Property Details Card */}
+        {/* Invoice-Style Details Card */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Icon
-              name="receipt-long"
-              size={24}
-              color={COLORS.primary || '#007BFF'}
-            />
-            <Text style={styles.cardTitle}>Booking Details</Text>
+            <View style={styles.iconCircle}>
+              <Icon name="receipt-long" size={22} color={COLORS.primary} />
+            </View>
+            <Text style={styles.cardTitle}>Payment Summary</Text>
           </View>
 
           <View style={styles.row}>
@@ -125,21 +123,15 @@ export default function PaymentScreen({ route, navigation }) {
             </Text>
           </View>
 
-          <View style={styles.divider} />
-
           <View style={styles.row}>
             <Text style={styles.label}>Type</Text>
             <Text style={styles.value}>{property?.propertyType || 'N/A'}</Text>
           </View>
 
-          <View style={styles.divider} />
-
           <View style={styles.row}>
             <Text style={styles.label}>City</Text>
             <Text style={styles.value}>{property?.city || 'N/A'}</Text>
           </View>
-
-          <View style={styles.divider} />
 
           <View style={styles.row}>
             <Text style={styles.label}>Description</Text>
@@ -148,6 +140,10 @@ export default function PaymentScreen({ route, navigation }) {
             </Text>
           </View>
 
+          {/* Dashed Divider */}
+          <View style={styles.dashedDivider} />
+
+          {/* Highlighted Total Box */}
           <View style={styles.totalBox}>
             <Text style={styles.totalLabel}>Total Amount</Text>
             <Text style={styles.amount}>
@@ -156,40 +152,41 @@ export default function PaymentScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* Payment Methods */}
-        <Text style={styles.sectionTitle}>Select Payment Method</Text>
+        {/* Payment Methods Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Select Payment Method</Text>
+        </View>
 
+        {/* Active Cash Payment Option */}
         <TouchableOpacity
-          style={styles.paymentOption}
+          style={styles.paymentOptionActive}
           activeOpacity={0.8}
           onPress={onCashPayment}>
-          <View style={styles.paymentIconBox}>
-            <Icon name="payments" size={24} color="#FFFFFF" />
+          <View style={styles.paymentIconBoxActive}>
+            <Icon name="payments" size={24} color={COLORS.white} />
           </View>
-          <Text style={styles.paymentText}>Cash Payment</Text>
-          <Icon
-            name="chevron-right"
-            size={24}
-            color={COLORS.primary || '#007BFF'}
-          />
+          <View style={styles.paymentTextContainer}>
+            <Text style={styles.paymentTextActive}>Cash Payment</Text>
+            <Text style={styles.paymentSubText}>Pay directly to owner</Text>
+          </View>
+          <Icon name="chevron-right" size={24} color={COLORS.primary} />
         </TouchableOpacity>
 
+        {/* Disabled Online Payment Option */}
         <TouchableOpacity
-          style={[styles.paymentOption, styles.disabledOption]}
+          style={styles.paymentOptionDisabled}
           activeOpacity={0.9}
           onPress={onOnlinePayment}>
-          <View
-            style={[
-              styles.paymentIconBox,
-              { backgroundColor: COLORS.placeholder || '#ADB5BD' },
-            ]}>
-            <Icon name="credit-card" size={24} color="#FFFFFF" />
+          <View style={styles.paymentIconBoxDisabled}>
+            <Icon name="credit-card" size={22} color={COLORS.white} />
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={styles.paymentTextContainer}>
             <Text style={styles.disabledText}>Online Payment</Text>
-            <Text style={styles.maintenanceText}>Under Maintenance</Text>
+            <Text style={styles.maintenanceText}>
+              Currently under maintenance
+            </Text>
           </View>
-          <Icon name="lock" size={20} color={COLORS.placeholder || '#ADB5BD'} />
+          <Icon name="lock-outline" size={20} color={COLORS.placeholder} />
         </TouchableOpacity>
       </ScrollView>
 
@@ -232,10 +229,10 @@ export default function PaymentScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background || '#F8F9FA',
+    backgroundColor: COLORS.background,
   },
 
-  /* Top Bar Header */
+  /* Seamless Header */
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -244,187 +241,230 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     paddingTop:
       Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
-    backgroundColor: COLORS.background || '#F8F9FA',
+    backgroundColor: COLORS.background,
   },
   backButton: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    backgroundColor: '#FFFFFF',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.card,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
+    elevation: 2,
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     borderWidth: 1,
-    borderColor: '#E9ECEF',
+    borderColor: COLORS.border,
   },
   backIcon: {
-    marginLeft: 6, // centers the iOS arrow visually
+    marginLeft: 6,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text || '#111827',
+    fontSize: 18,
+    fontWeight: '800',
+    color: COLORS.text,
+    letterSpacing: 0.3,
   },
   headerSpacer: {
-    width: 45,
+    width: 44,
   },
 
   scrollContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 40,
   },
 
-  /* Card Styles */
+  /* Invoice-Style Card */
   card: {
-    backgroundColor: COLORS.card || '#FFFFFF',
+    backgroundColor: COLORS.card,
     borderRadius: 20,
     padding: 20,
-    marginBottom: 25,
-    elevation: 5,
-    shadowColor: '#000',
+    marginBottom: 30,
+    elevation: 4,
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
   },
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.primary + '15',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   cardTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: COLORS.text || '#212529',
-    marginLeft: 10,
+    color: COLORS.text,
+    marginLeft: 12,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingVertical: 10,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: COLORS.border || '#F1F3F5',
+    paddingVertical: 12,
   },
   label: {
-    fontSize: 15,
-    color: COLORS.subText || '#868E96',
-    fontWeight: '500',
+    fontSize: 14,
+    color: COLORS.subText,
+    fontWeight: '600',
     flex: 1,
   },
   value: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.text || '#343A40',
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
     flex: 2,
     textAlign: 'right',
+  },
+  dashedDivider: {
+    height: 1,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderStyle: 'dashed',
+    marginVertical: 15,
   },
   totalBox: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: (COLORS.primary || '#007BFF') + '10',
-    padding: 15,
-    borderRadius: 14,
-    marginTop: 15,
+    backgroundColor: COLORS.primary + '10',
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    borderRadius: 16,
+    marginTop: 5,
   },
   totalLabel: {
     fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.primary || '#007BFF',
+    fontWeight: '800',
+    color: COLORS.primary,
   },
   amount: {
     fontSize: 24,
     fontWeight: '800',
-    color: COLORS.primary || '#007BFF',
+    color: COLORS.primary,
   },
 
-  /* Payment Options */
+  /* Payment Methods Section */
+  sectionHeader: {
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text || '#212529',
-    marginBottom: 15,
-    marginLeft: 4,
+    fontWeight: '800',
+    color: COLORS.text,
   },
-  paymentOption: {
+
+  /* Active Payment Option */
+  paymentOptionActive: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.card || '#FFFFFF',
-    padding: 15,
+    backgroundColor: COLORS.card,
+    padding: 16,
     borderRadius: 16,
-    marginBottom: 15,
+    marginBottom: 16,
     borderWidth: 1.5,
-    borderColor: COLORS.primary || '#007BFF',
-    elevation: 2,
-    shadowColor: COLORS.primary || '#007BFF',
+    borderColor: COLORS.primary,
+    elevation: 3,
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
   },
-  paymentIconBox: {
-    width: 45,
-    height: 45,
-    borderRadius: 12,
-    backgroundColor: COLORS.primary || '#007BFF',
+  paymentIconBoxActive: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15,
+    marginRight: 16,
   },
-  paymentText: {
+  paymentTextContainer: {
     flex: 1,
-    color: COLORS.text || '#212529',
-    fontSize: 16,
-    fontWeight: '700',
+    justifyContent: 'center',
   },
-  disabledOption: {
-    borderColor: COLORS.border || '#E9ECEF',
-    backgroundColor: '#F8F9FA',
-    shadowOpacity: 0,
-    elevation: 0,
+  paymentTextActive: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  paymentSubText: {
+    fontSize: 12,
+    color: COLORS.subText,
+    fontWeight: '500',
+  },
+
+  /* Disabled Payment Option */
+  paymentOptionDisabled: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  paymentIconBoxDisabled: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: COLORS.placeholder,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
   disabledText: {
-    color: COLORS.subText || '#6C757D',
+    color: COLORS.placeholder,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
+    marginBottom: 2,
   },
   maintenanceText: {
     fontSize: 12,
-    color: COLORS.warning || '#F5A623',
+    color: COLORS.warning,
     fontWeight: '600',
-    marginTop: 2,
   },
 
   /* Custom Alert Modal Styling */
   alertOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   alertBox: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 25,
+    backgroundColor: COLORS.card,
+    borderRadius: 28,
+    padding: 24,
     alignItems: 'center',
     elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
   },
   alertIconContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -432,27 +472,27 @@ const styles = StyleSheet.create({
   alertTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: COLORS.text || '#212529',
+    color: COLORS.text,
     marginBottom: 10,
     textAlign: 'center',
   },
   alertMessage: {
     fontSize: 15,
-    color: COLORS.subText || '#6C757D',
+    color: COLORS.subText,
     textAlign: 'center',
-    marginBottom: 25,
+    marginBottom: 28,
     lineHeight: 22,
   },
   alertButton: {
     width: '100%',
-    paddingVertical: 15,
-    borderRadius: 14,
+    paddingVertical: 16,
+    borderRadius: 16,
     alignItems: 'center',
   },
   alertButtonText: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
     letterSpacing: 0.5,
   },
 })

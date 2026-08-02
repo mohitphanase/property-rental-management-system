@@ -172,6 +172,12 @@ public class PropertyServiceImpl {
 
         PropertyResponseDto dto = modelMapper.map(property, PropertyResponseDto.class);
 
+        // Owner Details
+        dto.setOwnerId(property.getOwner().getUserId());
+        dto.setOwnerName(property.getOwner().getName());
+        dto.setOwnerPhone(property.getOwner().getPhone());
+
+        // Property Images
         if (property.getImages() != null) {
             dto.setImages(
                 property.getImages()
@@ -183,7 +189,6 @@ public class PropertyServiceImpl {
 
         return dto;
     }
-    
     public List<PropertyResponseDto> getOwnerProperties() {
 
         String email = SecurityContextHolder
@@ -213,5 +218,12 @@ public class PropertyServiceImpl {
                 .toList();
     }
     
+    public PropertyResponseDto getPropertyDetails(Long propertyId) {
 
+        Property property = propertyDao.findById(propertyId)
+                .orElseThrow(() ->
+                        new RuntimeException("Property not found"));
+
+        return convertToDto(property);
+    }
 }
