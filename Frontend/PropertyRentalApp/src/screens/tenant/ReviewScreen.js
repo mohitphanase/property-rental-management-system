@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
-import COLORS from '../../theme/colors'
+import { ThemeContext } from '../../provider/ThemeProvider'
 
 export default function ReviewScreen() {
+  const { COLORS } = useContext(ThemeContext)
+  const styles = getStyles(COLORS)
   return (
     <View style={styles.container}>
       <Text style={styles.title}>My Reviews</Text>
@@ -13,25 +15,26 @@ export default function ReviewScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
+const getStyles = COLORS =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
 
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: COLORS.text,
-  },
+    title: {
+      fontSize: 26,
+      fontWeight: 'bold',
+      color: COLORS.text,
+    },
 
-  subtitle: {
-    marginTop: 10,
-    fontSize: 16,
-    color: COLORS.subText,
-    textAlign: 'center',
-  },
-})
+    subtitle: {
+      marginTop: 10,
+      fontSize: 16,
+      color: COLORS.subText,
+      textAlign: 'center',
+    },
+  })

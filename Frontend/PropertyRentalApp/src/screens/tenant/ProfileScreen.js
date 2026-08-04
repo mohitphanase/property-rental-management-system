@@ -10,14 +10,22 @@ import {
   Platform,
   SafeAreaView,
   StatusBar,
+  Switch,
 } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
-import COLORS from '../../theme/colors'
 import { AuthContext } from '../../provider/AuthProvider'
+// IMPORT your new ThemeContext here!
+import { ThemeContext } from '../../provider/ThemeProvider'
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useContext(AuthContext)
+
+  // Pull the global theme state and COLORS dynamically from context
+  const { isDarkMode, toggleTheme, COLORS } = useContext(ThemeContext)
+
+  // Generate dynamic styles based on the current theme colors
+  const styles = getStyles(COLORS)
 
   // Dynamic Custom Alert State
   const [alertConfig, setAlertConfig] = useState({
@@ -126,6 +134,35 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.sectionTitle}>Settings</Text>
 
             <View style={styles.card}>
+              {/* App Theme Toggle */}
+              <View style={styles.actionRow}>
+                <View
+                  style={[
+                    styles.iconBox,
+                    { backgroundColor: COLORS.text + '10' },
+                  ]}>
+                  <Icon
+                    name={isDarkMode ? 'dark-mode' : 'light-mode'}
+                    size={20}
+                    color={COLORS.text}
+                  />
+                </View>
+                <Text style={styles.actionText}>Dark Mode</Text>
+                <Switch
+                  trackColor={{
+                    false: COLORS.border,
+                    true: COLORS.primary + '80',
+                  }}
+                  thumbColor={isDarkMode ? COLORS.primary : '#f4f3f4'}
+                  ios_backgroundColor={COLORS.border}
+                  onValueChange={toggleTheme}
+                  value={isDarkMode}
+                />
+              </View>
+
+              <View style={styles.solidDivider} />
+
+              {/* Change Password */}
               <TouchableOpacity
                 style={styles.actionRow}
                 activeOpacity={0.7}
@@ -147,6 +184,7 @@ export default function ProfileScreen({ navigation }) {
 
               <View style={styles.solidDivider} />
 
+              {/* Help & Support */}
               <TouchableOpacity
                 style={styles.actionRow}
                 activeOpacity={0.7}
@@ -247,285 +285,287 @@ export default function ProfileScreen({ navigation }) {
   )
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  mainContainer: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
+// Wrap styles in a function so it updates when COLORS changes
+const getStyles = COLORS =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    mainContainer: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
 
-  /* Seamless Header */
-  header: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-    paddingTop:
-      Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
-    backgroundColor: COLORS.background,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.text,
-    letterSpacing: 0.3,
-  },
+    /* Seamless Header */
+    header: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 20,
+      paddingBottom: 15,
+      paddingTop:
+        Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
+      backgroundColor: COLORS.background,
+    },
+    headerTitle: {
+      fontSize: 20,
+      fontWeight: '800',
+      color: COLORS.text,
+      letterSpacing: 0.3,
+    },
 
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 40,
-  },
+    scrollContainer: {
+      flexGrow: 1,
+      paddingHorizontal: 16,
+      paddingBottom: 40,
+    },
 
-  /* Modern Profile Section */
-  profileSection: {
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  imageRing: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    backgroundColor: COLORS.card,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 4,
-    marginBottom: 16,
-    elevation: 6,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-  profileImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 55,
-    backgroundColor: COLORS.disabled,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 8,
-  },
-  roleChip: {
-    backgroundColor: COLORS.primary + '15',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  roleText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.primary,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
+    /* Modern Profile Section */
+    profileSection: {
+      alignItems: 'center',
+      marginVertical: 20,
+    },
+    imageRing: {
+      width: 110,
+      height: 110,
+      borderRadius: 55,
+      backgroundColor: COLORS.card,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 4,
+      marginBottom: 16,
+      elevation: 6,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+    },
+    profileImage: {
+      width: '100%',
+      height: '100%',
+      borderRadius: 55,
+      backgroundColor: COLORS.disabled || '#E9ECEF',
+    },
+    name: {
+      fontSize: 24,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 8,
+    },
+    roleChip: {
+      backgroundColor: COLORS.primary + '15',
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+      borderRadius: 12,
+    },
+    roleText: {
+      fontSize: 12,
+      fontWeight: '800',
+      color: COLORS.primary,
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+    },
 
-  /* Content Sections */
-  sectionContainer: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 12,
-    marginLeft: 4,
-  },
+    /* Content Sections */
+    sectionContainer: {
+      marginBottom: 24,
+    },
+    sectionTitle: {
+      fontSize: 17,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 12,
+      marginLeft: 4,
+    },
 
-  /* Premium Cards */
-  card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 20,
-    padding: 16,
-    elevation: 3,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.primary + '10',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  infoTextContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  label: {
-    fontSize: 12,
-    color: COLORS.subText,
-    fontWeight: '600',
-    marginBottom: 4,
-    textTransform: 'uppercase',
-  },
-  value: {
-    fontSize: 15,
-    color: COLORS.text,
-    fontWeight: '700',
-  },
-  dashedDivider: {
-    height: 1,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderStyle: 'dashed',
-    marginVertical: 14,
-  },
-  solidDivider: {
-    height: 1,
-    backgroundColor: COLORS.border,
-    marginVertical: 4,
-    marginLeft: 60,
-  },
+    /* Premium Cards */
+    card: {
+      backgroundColor: COLORS.card,
+      borderRadius: 20,
+      padding: 16,
+      elevation: 3,
+      shadowColor: COLORS.shadow || '#000',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 4,
+    },
+    iconBox: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: COLORS.primary + '10',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 16,
+    },
+    infoTextContainer: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    label: {
+      fontSize: 12,
+      color: COLORS.subText,
+      fontWeight: '600',
+      marginBottom: 4,
+      textTransform: 'uppercase',
+    },
+    value: {
+      fontSize: 15,
+      color: COLORS.text,
+      fontWeight: '700',
+    },
+    dashedDivider: {
+      height: 1,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderStyle: 'dashed',
+      marginVertical: 14,
+    },
+    solidDivider: {
+      height: 1,
+      backgroundColor: COLORS.border,
+      marginVertical: 4,
+      marginLeft: 60,
+    },
 
-  /* Actions & Settings */
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  actionText: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
+    /* Actions & Settings */
+    actionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 8,
+    },
+    actionText: {
+      flex: 1,
+      fontSize: 15,
+      fontWeight: '700',
+      color: COLORS.text,
+    },
 
-  /* Logout Button */
-  logoutContainer: {
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  logoutButtonSoft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FEF2F2',
-    borderRadius: 16,
-    paddingVertical: 16,
-    borderWidth: 1,
-    borderColor: COLORS.error + '20',
-  },
-  logoutIcon: {
-    marginRight: 8,
-  },
-  logoutText: {
-    color: COLORS.error,
-    fontSize: 16,
-    fontWeight: '800',
-  },
+    /* Logout Button */
+    logoutContainer: {
+      marginTop: 10,
+      marginBottom: 20,
+    },
+    logoutButtonSoft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: COLORS.error + '10', // Tinted background
+      borderRadius: 16,
+      paddingVertical: 16,
+      borderWidth: 1,
+      borderColor: COLORS.error + '20',
+    },
+    logoutIcon: {
+      marginRight: 8,
+    },
+    logoutText: {
+      color: COLORS.error,
+      fontSize: 16,
+      fontWeight: '800',
+    },
 
-  /* Custom Modal Styling */
-  alertOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  alertBox: {
-    width: '100%',
-    backgroundColor: COLORS.card,
-    borderRadius: 28,
-    padding: 24,
-    alignItems: 'center',
-    elevation: 10,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-  },
-  alertIconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  alertTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  alertMessage: {
-    fontSize: 15,
-    color: COLORS.subText,
-    textAlign: 'center',
-    marginBottom: 28,
-    lineHeight: 22,
-  },
-  alertButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    gap: 12,
-  },
-  alertCancelButton: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: 16,
-    backgroundColor: COLORS.background,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-  },
-  alertCancelButtonText: {
-    color: COLORS.text,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  alertConfirmButton: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: 16,
-    backgroundColor: COLORS.error,
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: COLORS.error,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-  },
-  alertConfirmButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  alertSingleButton: {
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-  },
-  alertSingleButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '800',
-  },
-})
+    /* Custom Modal Styling */
+    alertOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    alertBox: {
+      width: '100%',
+      backgroundColor: COLORS.card,
+      borderRadius: 28,
+      padding: 24,
+      alignItems: 'center',
+      elevation: 10,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.1,
+      shadowRadius: 20,
+    },
+    alertIconContainer: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    alertTitle: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    alertMessage: {
+      fontSize: 15,
+      color: COLORS.subText,
+      textAlign: 'center',
+      marginBottom: 28,
+      lineHeight: 22,
+    },
+    alertButtonRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%',
+      gap: 12,
+    },
+    alertCancelButton: {
+      flex: 1,
+      paddingVertical: 16,
+      borderRadius: 16,
+      backgroundColor: COLORS.background,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      alignItems: 'center',
+    },
+    alertCancelButtonText: {
+      color: COLORS.text,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    alertConfirmButton: {
+      flex: 1,
+      paddingVertical: 16,
+      borderRadius: 16,
+      backgroundColor: COLORS.error,
+      alignItems: 'center',
+      elevation: 3,
+      shadowColor: COLORS.error,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.3,
+      shadowRadius: 5,
+    },
+    alertConfirmButtonText: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontWeight: '800',
+    },
+    alertSingleButton: {
+      width: '100%',
+      paddingVertical: 16,
+      borderRadius: 16,
+      backgroundColor: COLORS.primary,
+      alignItems: 'center',
+      elevation: 3,
+      shadowColor: COLORS.primary,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.3,
+      shadowRadius: 5,
+    },
+    alertSingleButtonText: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontWeight: '800',
+    },
+  })
