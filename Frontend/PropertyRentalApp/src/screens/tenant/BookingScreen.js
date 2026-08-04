@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useContext } from 'react'
 import {
   View,
   Text,
@@ -20,7 +20,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons'
 import { getBookings } from '../../services/bookingService'
 import { getPropertyById } from '../../services/propertyServicet'
 import { SERVER_URL } from '../../utils/config'
-import COLORS from '../../theme/colors'
+import { ThemeContext } from '../../provider/ThemeProvider'
 
 export default function BookingScreen() {
   const navigation = useNavigation()
@@ -31,6 +31,8 @@ export default function BookingScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [selectedTab, setSelectedTab] = useState('ALL')
   const [propertyImages, setPropertyImages] = useState({})
+  const { COLORS } = useContext(ThemeContext)
+  const styles = getStyles(COLORS)
 
   useFocusEffect(
     useCallback(() => {
@@ -290,245 +292,247 @@ export default function BookingScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: COLORS.subText,
-    fontWeight: '500',
-  },
+const getStyles = COLORS =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    loader: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: COLORS.background,
+    },
+    loadingText: {
+      marginTop: 12,
+      fontSize: 16,
+      color: COLORS.subText,
+      fontWeight: '500',
+    },
 
-  /* Header */
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 10,
-    paddingBottom: 15,
-    backgroundColor: COLORS.background,
-  },
-  screenTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.text,
-    letterSpacing: 0.5,
-  },
+    /* Header */
+    header: {
+      paddingHorizontal: 20,
+      paddingTop:
+        Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 10,
+      paddingBottom: 15,
+      backgroundColor: COLORS.background,
+    },
+    screenTitle: {
+      fontSize: 28,
+      fontWeight: '800',
+      color: COLORS.text,
+      letterSpacing: 0.5,
+    },
 
-  /* Tabs Styling */
-  tabWrapper: {
-    height: 48,
-    marginBottom: 10,
-  },
-  tabContainer: {
-    paddingHorizontal: 16,
-    alignItems: 'center',
-  },
-  tab: {
-    paddingHorizontal: 18,
-    height: 36,
-    marginRight: 10,
-    borderRadius: 18,
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  activeTab: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  tabText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.subText,
-  },
-  activeTabText: {
-    color: COLORS.white,
-    fontWeight: '700',
-  },
+    /* Tabs Styling */
+    tabWrapper: {
+      height: 48,
+      marginBottom: 10,
+    },
+    tabContainer: {
+      paddingHorizontal: 16,
+      alignItems: 'center',
+    },
+    tab: {
+      paddingHorizontal: 18,
+      height: 36,
+      marginRight: 10,
+      borderRadius: 18,
+      backgroundColor: COLORS.card,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    activeTab: {
+      backgroundColor: COLORS.primary,
+      borderColor: COLORS.primary,
+    },
+    tabText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: COLORS.subText,
+    },
+    activeTabText: {
+      color: COLORS.white,
+      fontWeight: '700',
+    },
 
-  /* List & Card Styling */
-  listContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 100, // Extra padding for tab bar if needed
-    paddingTop: 10,
-  },
-  card: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.card,
-    borderRadius: 20,
-    padding: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    elevation: 2,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-  },
-  imageWrapper: {
-    position: 'relative',
-    marginRight: 14,
-  },
-  propertyImage: {
-    width: 100,
-    height: 120,
-    borderRadius: 14,
-    backgroundColor: COLORS.disabled,
-  },
-  statusBadge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    borderRadius: 8,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  statusIcon: {
-    marginRight: 3,
-  },
-  statusText: {
-    color: COLORS.white,
-    fontSize: 9,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
+    /* List & Card Styling */
+    listContainer: {
+      paddingHorizontal: 16,
+      paddingBottom: 100, // Extra padding for tab bar if needed
+      paddingTop: 10,
+    },
+    card: {
+      flexDirection: 'row',
+      backgroundColor: COLORS.card,
+      borderRadius: 20,
+      padding: 12,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      elevation: 2,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 5,
+    },
+    imageWrapper: {
+      position: 'relative',
+      marginRight: 14,
+    },
+    propertyImage: {
+      width: 100,
+      height: 120,
+      borderRadius: 14,
+      backgroundColor: COLORS.disabled,
+    },
+    statusBadge: {
+      position: 'absolute',
+      top: 8,
+      left: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 6,
+      paddingVertical: 4,
+      borderRadius: 8,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+    },
+    statusIcon: {
+      marginRight: 3,
+    },
+    statusText: {
+      color: COLORS.white,
+      fontSize: 9,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+    },
 
-  /* Card Content */
-  cardContent: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  cardHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  bookingId: {
-    fontSize: 12,
-    color: COLORS.primary,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  dateAppliedText: {
-    fontSize: 10,
-    color: COLORS.placeholder,
-    fontWeight: '600',
-  },
-  propertyName: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 6,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  infoText: {
-    fontSize: 12,
-    color: COLORS.subText,
-    marginLeft: 4,
-    flex: 1,
-    fontWeight: '500',
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginTop: 6,
-  },
-  priceText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-  priceSubText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.subText,
-  },
-  detailsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primary + '15',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  detailsButtonText: {
-    color: COLORS.primary,
-    fontSize: 12,
-    fontWeight: '700',
-    marginRight: 2,
-  },
+    /* Card Content */
+    cardContent: {
+      flex: 1,
+      justifyContent: 'space-between',
+    },
+    cardHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 6,
+    },
+    bookingId: {
+      fontSize: 12,
+      color: COLORS.primary,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+    },
+    dateAppliedText: {
+      fontSize: 10,
+      color: COLORS.placeholder,
+      fontWeight: '600',
+    },
+    propertyName: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 6,
+    },
+    infoRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 4,
+    },
+    infoText: {
+      fontSize: 12,
+      color: COLORS.subText,
+      marginLeft: 4,
+      flex: 1,
+      fontWeight: '500',
+    },
+    cardFooter: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-end',
+      marginTop: 6,
+    },
+    priceText: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: COLORS.text,
+    },
+    priceSubText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: COLORS.subText,
+    },
+    detailsButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.primary + '15',
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 8,
+    },
+    detailsButtonText: {
+      color: COLORS.primary,
+      fontSize: 12,
+      fontWeight: '700',
+      marginRight: 2,
+    },
 
-  /* Empty State */
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-  },
-  emptyIconBox: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: COLORS.primary + '10',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 10,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: COLORS.subText,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 25,
-  },
-  exploreButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 14,
-    elevation: 3,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  exploreButtonText: {
-    color: COLORS.white,
-    fontWeight: '700',
-    fontSize: 15,
-  },
-})
+    /* Empty State */
+    emptyContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: 60,
+      paddingHorizontal: 20,
+    },
+    emptyIconBox: {
+      width: 90,
+      height: 90,
+      borderRadius: 45,
+      backgroundColor: COLORS.primary + '10',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    emptyTitle: {
+      fontSize: 20,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 10,
+    },
+    emptyText: {
+      fontSize: 15,
+      color: COLORS.subText,
+      textAlign: 'center',
+      lineHeight: 22,
+      marginBottom: 25,
+    },
+    exploreButton: {
+      backgroundColor: COLORS.primary,
+      paddingHorizontal: 24,
+      paddingVertical: 14,
+      borderRadius: 14,
+      elevation: 3,
+      shadowColor: COLORS.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+    },
+    exploreButtonText: {
+      color: COLORS.white,
+      fontWeight: '700',
+      fontSize: 15,
+    },
+  })

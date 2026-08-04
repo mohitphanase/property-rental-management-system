@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons'
 import DateTimePicker from '@react-native-community/datetimepicker'
 
 import { addBooking } from '../../services/bookingService'
-import COLORS from '../../theme/colors'
+import { ThemeContext } from '../../provider/ThemeProvider'
 import { SERVER_URL } from '../../utils/config'
 
 // Helper arrays for safe cross-platform date formatting
@@ -38,6 +38,8 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const BookingFormScreen = ({ route, navigation }) => {
   const { property } = route.params
 
+  const { COLORS } = useContext(ThemeContext)
+  const styles = getStyles(COLORS)
   const imageUrl =
     property?.images?.length > 0
       ? `${SERVER_URL}/${property.images[0].imageUrl}`
@@ -382,371 +384,372 @@ const BookingFormScreen = ({ route, navigation }) => {
 
 export default BookingFormScreen
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  contentContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 40,
-  },
+const getStyles = COLORS =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    contentContainer: {
+      paddingHorizontal: 16,
+      paddingTop: 10,
+      paddingBottom: 40,
+    },
 
-  /* Seamless Header */
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 15,
-    paddingTop:
-      Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
-    backgroundColor: COLORS.background,
-  },
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: COLORS.card,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  backIcon: {
-    marginLeft: 6,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.text,
-    letterSpacing: 0.3,
-  },
-  headerSpacer: {
-    width: 42,
-  },
+    /* Seamless Header */
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingBottom: 15,
+      paddingTop:
+        Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
+      backgroundColor: COLORS.background,
+    },
+    backButton: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: COLORS.card,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 2,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+    },
+    backIcon: {
+      marginLeft: 6,
+    },
+    headerTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: COLORS.text,
+      letterSpacing: 0.3,
+    },
+    headerSpacer: {
+      width: 42,
+    },
 
-  /* Compact Property Card */
-  propertyCard: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 12,
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 20,
-  },
-  propertyImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-    backgroundColor: COLORS.disabled,
-    marginRight: 14,
-  },
-  propertyDetails: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  propertySubText: {
-    fontSize: 12,
-    color: COLORS.subText,
-    fontWeight: '600',
-    marginBottom: 4,
-    textTransform: 'uppercase',
-  },
-  propertyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 6,
-    lineHeight: 22,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  propertyLocation: {
-    fontSize: 13,
-    color: COLORS.subText,
-    marginLeft: 4,
-    flex: 1,
-  },
+    /* Compact Property Card */
+    propertyCard: {
+      flexDirection: 'row',
+      backgroundColor: COLORS.card,
+      borderRadius: 16,
+      padding: 12,
+      alignItems: 'center',
+      elevation: 2,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 5,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      marginBottom: 20,
+    },
+    propertyImage: {
+      width: 80,
+      height: 80,
+      borderRadius: 12,
+      backgroundColor: COLORS.disabled,
+      marginRight: 14,
+    },
+    propertyDetails: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    propertySubText: {
+      fontSize: 12,
+      color: COLORS.subText,
+      fontWeight: '600',
+      marginBottom: 4,
+      textTransform: 'uppercase',
+    },
+    propertyTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: 6,
+      lineHeight: 22,
+    },
+    locationRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    propertyLocation: {
+      fontSize: 13,
+      color: COLORS.subText,
+      marginLeft: 4,
+      flex: 1,
+    },
 
-  divider: {
-    height: 1,
-    backgroundColor: COLORS.border,
-    marginBottom: 24,
-  },
+    divider: {
+      height: 1,
+      backgroundColor: COLORS.border,
+      marginBottom: 24,
+    },
 
-  /* Trip Dates Section */
-  sectionHeader: {
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  sectionSubTitle: {
-    fontSize: 14,
-    color: COLORS.subText,
-  },
+    /* Trip Dates Section */
+    sectionHeader: {
+      marginBottom: 16,
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 4,
+    },
+    sectionSubTitle: {
+      fontSize: 14,
+      color: COLORS.subText,
+    },
 
-  /* Interactive Calendar Widget */
-  calendarWidget: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  dateSelector: {
-    flex: 1,
-    backgroundColor: COLORS.primary + '10', // Soft primary tint
-    borderRadius: 20,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.primary + '30',
-  },
-  dateSelectorHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-    gap: 6,
-  },
-  dateLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  bigDateText: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 2,
-  },
-  monthYearText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  weekdayText: {
-    fontSize: 12,
-    color: COLORS.subText,
-    marginTop: 2,
-    fontWeight: '500',
-  },
-  widgetSeparator: {
-    width: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10,
-  },
-  arrowCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    position: 'absolute',
-  },
+    /* Interactive Calendar Widget */
+    calendarWidget: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 24,
+    },
+    dateSelector: {
+      flex: 1,
+      backgroundColor: COLORS.primary + '10', // Soft primary tint
+      borderRadius: 20,
+      padding: 16,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: COLORS.primary + '30',
+    },
+    dateSelectorHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 10,
+      gap: 6,
+    },
+    dateLabel: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: COLORS.primary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    bigDateText: {
+      fontSize: 36,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 2,
+    },
+    monthYearText: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: COLORS.text,
+    },
+    weekdayText: {
+      fontSize: 12,
+      color: COLORS.subText,
+      marginTop: 2,
+      fontWeight: '500',
+    },
+    widgetSeparator: {
+      width: 30,
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 10,
+    },
+    arrowCircle: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      backgroundColor: COLORS.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 3,
+      shadowColor: COLORS.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      position: 'absolute',
+    },
 
-  /* Pricing Summary Card */
-  pricingCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 20,
-  },
-  pricingTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 12,
-  },
-  pricingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-  },
-  pricingLabel: {
-    fontSize: 14,
-    color: COLORS.subText,
-    fontWeight: '500',
-  },
-  pricingValue: {
-    fontSize: 14,
-    color: COLORS.text,
-    fontWeight: '700',
-  },
+    /* Pricing Summary Card */
+    pricingCard: {
+      backgroundColor: COLORS.card,
+      borderRadius: 16,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      marginBottom: 20,
+    },
+    pricingTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: 12,
+    },
+    pricingRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 8,
+    },
+    pricingLabel: {
+      fontSize: 14,
+      color: COLORS.subText,
+      fontWeight: '500',
+    },
+    pricingValue: {
+      fontSize: 14,
+      color: COLORS.text,
+      fontWeight: '700',
+    },
 
-  /* Fixed Bottom Action Bar */
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.card,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 14,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    elevation: 10,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-  },
-  bottomPriceContainer: {
-    flex: 1,
-  },
-  bottomPriceLabel: {
-    fontSize: 12,
-    color: COLORS.subText,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  bottomPriceValue: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-  confirmButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 14,
-    elevation: 4,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    gap: 8,
-  },
-  confirmButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '800',
-  },
+    /* Fixed Bottom Action Bar */
+    bottomBar: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: COLORS.card,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      paddingVertical: 14,
+      paddingBottom: Platform.OS === 'ios' ? 30 : 14,
+      borderTopWidth: 1,
+      borderTopColor: COLORS.border,
+      elevation: 10,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: -4 },
+      shadowOpacity: 0.05,
+      shadowRadius: 5,
+    },
+    bottomPriceContainer: {
+      flex: 1,
+    },
+    bottomPriceLabel: {
+      fontSize: 12,
+      color: COLORS.subText,
+      fontWeight: '600',
+      textTransform: 'uppercase',
+    },
+    bottomPriceValue: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: COLORS.text,
+    },
+    confirmButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.primary,
+      paddingHorizontal: 24,
+      paddingVertical: 14,
+      borderRadius: 14,
+      elevation: 4,
+      shadowColor: COLORS.primary,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.3,
+      shadowRadius: 5,
+      gap: 8,
+    },
+    confirmButtonText: {
+      color: COLORS.white,
+      fontSize: 16,
+      fontWeight: '800',
+    },
 
-  /* iOS Picker Modal Styles */
-  iosPickerOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  iosPickerContainer: {
-    backgroundColor: COLORS.card,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingBottom: 30,
-  },
-  iosPickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  iosPickerDoneBtn: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.primary,
-  },
-  iosPicker: {
-    height: 320,
-    marginTop: 10,
-  },
+    /* iOS Picker Modal Styles */
+    iosPickerOverlay: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    iosPickerContainer: {
+      backgroundColor: COLORS.card,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      paddingBottom: 30,
+    },
+    iosPickerHeader: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border,
+    },
+    iosPickerDoneBtn: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: COLORS.primary,
+    },
+    iosPicker: {
+      height: 320,
+      marginTop: 10,
+    },
 
-  /* Custom Alert Modal Styling */
-  alertOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  alertBox: {
-    width: '100%',
-    backgroundColor: COLORS.card,
-    borderRadius: 28,
-    padding: 24,
-    alignItems: 'center',
-    elevation: 10,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-  },
-  alertIconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  alertTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  alertMessage: {
-    fontSize: 15,
-    color: COLORS.subText,
-    textAlign: 'center',
-    marginBottom: 28,
-    lineHeight: 22,
-  },
-  alertButton: {
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: 'center',
-  },
-  alertButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '800',
-  },
-})
+    /* Custom Alert Modal Styling */
+    alertOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    alertBox: {
+      width: '100%',
+      backgroundColor: COLORS.card,
+      borderRadius: 28,
+      padding: 24,
+      alignItems: 'center',
+      elevation: 10,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.1,
+      shadowRadius: 20,
+    },
+    alertIconContainer: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    alertTitle: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    alertMessage: {
+      fontSize: 15,
+      color: COLORS.subText,
+      textAlign: 'center',
+      marginBottom: 28,
+      lineHeight: 22,
+    },
+    alertButton: {
+      width: '100%',
+      paddingVertical: 16,
+      borderRadius: 16,
+      alignItems: 'center',
+    },
+    alertButtonText: {
+      color: COLORS.white,
+      fontSize: 16,
+      fontWeight: '800',
+    },
+  })

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import {
   View,
   Text,
@@ -13,10 +13,14 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
 import { addPayment } from '../../services/paymentService'
-import COLORS from '../../theme/colors'
+import { ThemeContext } from '../../provider/ThemeProvider'
 
 export default function PaymentScreen({ route, navigation }) {
   const { booking, property, amount } = route.params
+
+  // Pulling dynamic COLORS from global theme
+  const { COLORS } = useContext(ThemeContext)
+  const styles = getStyles(COLORS)
 
   // Custom Alert State
   const [alertConfig, setAlertConfig] = useState({
@@ -226,273 +230,274 @@ export default function PaymentScreen({ route, navigation }) {
   )
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
+const getStyles = COLORS =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
 
-  /* Seamless Header */
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-    paddingTop:
-      Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
-    backgroundColor: COLORS.background,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.card,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  backIcon: {
-    marginLeft: 6,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.text,
-    letterSpacing: 0.3,
-  },
-  headerSpacer: {
-    width: 44,
-  },
+    /* Seamless Header */
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingBottom: 15,
+      paddingTop:
+        Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
+      backgroundColor: COLORS.background,
+    },
+    backButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: COLORS.card,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 2,
+      shadowColor: COLORS.shadow || '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+    },
+    backIcon: {
+      marginLeft: 6,
+    },
+    headerTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: COLORS.text,
+      letterSpacing: 0.3,
+    },
+    headerSpacer: {
+      width: 44,
+    },
 
-  scrollContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 40,
-  },
+    scrollContainer: {
+      paddingHorizontal: 16,
+      paddingTop: 10,
+      paddingBottom: 40,
+    },
 
-  /* Invoice-Style Card */
-  card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 30,
-    elevation: 4,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.primary + '15',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginLeft: 12,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingVertical: 12,
-  },
-  label: {
-    fontSize: 14,
-    color: COLORS.subText,
-    fontWeight: '600',
-    flex: 1,
-  },
-  value: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.text,
-    flex: 2,
-    textAlign: 'right',
-  },
-  dashedDivider: {
-    height: 1,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderStyle: 'dashed',
-    marginVertical: 15,
-  },
-  totalBox: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: COLORS.primary + '10',
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    borderRadius: 16,
-    marginTop: 5,
-  },
-  totalLabel: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.primary,
-  },
-  amount: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: COLORS.primary,
-  },
+    /* Invoice-Style Card */
+    card: {
+      backgroundColor: COLORS.card,
+      borderRadius: 20,
+      padding: 20,
+      marginBottom: 30,
+      elevation: 4,
+      shadowColor: COLORS.shadow || '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 10,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    iconCircle: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: COLORS.primary + '15',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    cardTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginLeft: 12,
+    },
+    row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      paddingVertical: 12,
+    },
+    label: {
+      fontSize: 14,
+      color: COLORS.subText,
+      fontWeight: '600',
+      flex: 1,
+    },
+    value: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: COLORS.text,
+      flex: 2,
+      textAlign: 'right',
+    },
+    dashedDivider: {
+      height: 1,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderStyle: 'dashed',
+      marginVertical: 15,
+    },
+    totalBox: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: COLORS.primary + '10',
+      paddingHorizontal: 16,
+      paddingVertical: 18,
+      borderRadius: 16,
+      marginTop: 5,
+    },
+    totalLabel: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: COLORS.primary,
+    },
+    amount: {
+      fontSize: 24,
+      fontWeight: '800',
+      color: COLORS.primary,
+    },
 
-  /* Payment Methods Section */
-  sectionHeader: {
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
+    /* Payment Methods Section */
+    sectionHeader: {
+      marginBottom: 16,
+      paddingHorizontal: 4,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: COLORS.text,
+    },
 
-  /* Active Payment Option */
-  paymentOptionActive: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.card,
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 16,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    elevation: 3,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-  },
-  paymentIconBoxActive: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  paymentTextContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  paymentTextActive: {
-    color: COLORS.text,
-    fontSize: 16,
-    fontWeight: '800',
-    marginBottom: 2,
-  },
-  paymentSubText: {
-    fontSize: 12,
-    color: COLORS.subText,
-    fontWeight: '500',
-  },
+    /* Active Payment Option */
+    paymentOptionActive: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.card,
+      padding: 16,
+      borderRadius: 16,
+      marginBottom: 16,
+      borderWidth: 1.5,
+      borderColor: COLORS.primary,
+      elevation: 3,
+      shadowColor: COLORS.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 5,
+    },
+    paymentIconBoxActive: {
+      width: 48,
+      height: 48,
+      borderRadius: 14,
+      backgroundColor: COLORS.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 16,
+    },
+    paymentTextContainer: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    paymentTextActive: {
+      color: COLORS.text,
+      fontSize: 16,
+      fontWeight: '800',
+      marginBottom: 2,
+    },
+    paymentSubText: {
+      fontSize: 12,
+      color: COLORS.subText,
+      fontWeight: '500',
+    },
 
-  /* Disabled Payment Option */
-  paymentOptionDisabled: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  paymentIconBoxDisabled: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: COLORS.placeholder,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  disabledText: {
-    color: COLORS.placeholder,
-    fontSize: 16,
-    fontWeight: '800',
-    marginBottom: 2,
-  },
-  maintenanceText: {
-    fontSize: 12,
-    color: COLORS.warning,
-    fontWeight: '600',
-  },
+    /* Disabled Payment Option */
+    paymentOptionDisabled: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.background, // Fixed Hardcode!
+      padding: 16,
+      borderRadius: 16,
+      marginBottom: 15,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+    },
+    paymentIconBoxDisabled: {
+      width: 48,
+      height: 48,
+      borderRadius: 14,
+      backgroundColor: COLORS.placeholder,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 16,
+    },
+    disabledText: {
+      color: COLORS.placeholder,
+      fontSize: 16,
+      fontWeight: '800',
+      marginBottom: 2,
+    },
+    maintenanceText: {
+      fontSize: 12,
+      color: COLORS.warning,
+      fontWeight: '600',
+    },
 
-  /* Custom Alert Modal Styling */
-  alertOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  alertBox: {
-    width: '100%',
-    backgroundColor: COLORS.card,
-    borderRadius: 28,
-    padding: 24,
-    alignItems: 'center',
-    elevation: 10,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-  },
-  alertIconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  alertTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  alertMessage: {
-    fontSize: 15,
-    color: COLORS.subText,
-    textAlign: 'center',
-    marginBottom: 28,
-    lineHeight: 22,
-  },
-  alertButton: {
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: 'center',
-  },
-  alertButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-})
+    /* Custom Alert Modal Styling */
+    alertOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    alertBox: {
+      width: '100%',
+      backgroundColor: COLORS.card,
+      borderRadius: 28,
+      padding: 24,
+      alignItems: 'center',
+      elevation: 10,
+      shadowColor: COLORS.shadow || '#000',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.1,
+      shadowRadius: 20,
+    },
+    alertIconContainer: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    alertTitle: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    alertMessage: {
+      fontSize: 15,
+      color: COLORS.subText,
+      textAlign: 'center',
+      marginBottom: 28,
+      lineHeight: 22,
+    },
+    alertButton: {
+      width: '100%',
+      paddingVertical: 16,
+      borderRadius: 16,
+      alignItems: 'center',
+    },
+    alertButtonText: {
+      color: COLORS.white,
+      fontSize: 16,
+      fontWeight: '800',
+      letterSpacing: 0.5,
+    },
+  })

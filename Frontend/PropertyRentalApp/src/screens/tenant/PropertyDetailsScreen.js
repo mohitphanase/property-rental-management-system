@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import {
   View,
   Text,
@@ -14,13 +14,15 @@ import {
   StatusBar,
 } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
-import COLORS from '../../theme/colors'
+import { ThemeContext } from '../../provider/ThemeProvider'
 import { SERVER_URL } from '../../utils/config'
 import { addWishlist, getWishlist } from '../../services/wishlistService'
 
 export default function PropertyDetailsScreen({ route, navigation }) {
   const { property } = route.params
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const { COLORS } = useContext(ThemeContext)
+  const styles = getStyles(COLORS)
 
   useEffect(() => {
     loadWishlistStatus()
@@ -299,253 +301,254 @@ export default function PropertyDetailsScreen({ route, navigation }) {
   )
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  mainContainer: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 100,
-  },
+const getStyles = COLORS =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    mainContainer: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingBottom: 100,
+    },
 
-  /* Image & Header Section */
-  imageContainer: {
-    position: 'relative',
-    width: '100%',
-    height: 280,
-    backgroundColor: COLORS.disabled,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  topActionRow: {
-    position: 'absolute',
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 50,
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  topRightIcons: {
-    flexDirection: 'row',
-  },
-  circleIconButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: COLORS.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
+    /* Image & Header Section */
+    imageContainer: {
+      position: 'relative',
+      width: '100%',
+      height: 280,
+      backgroundColor: COLORS.disabled,
+    },
+    image: {
+      width: '100%',
+      height: '100%',
+      resizeMode: 'cover',
+    },
+    topActionRow: {
+      position: 'absolute',
+      top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 50,
+      left: 16,
+      right: 16,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    topRightIcons: {
+      flexDirection: 'row',
+    },
+    circleIconButton: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      backgroundColor: COLORS.white,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 4,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+    },
 
-  /* Title & Price Card */
-  titlePriceCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    backgroundColor: COLORS.card,
-    padding: 16,
-    marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 6,
-  },
-  locationText: {
-    fontSize: 13,
-    color: COLORS.subText,
-    lineHeight: 18,
-  },
-  priceContainer: {
-    alignItems: 'flex-end',
-  },
-  priceText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-  priceSubText: {
-    fontSize: 11,
-    color: COLORS.subText,
-    fontWeight: '600',
-    marginTop: 2,
-  },
+    /* Title & Price Card */
+    titlePriceCard: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      backgroundColor: COLORS.card,
+      padding: 16,
+      marginBottom: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 6,
+    },
+    locationText: {
+      fontSize: 13,
+      color: COLORS.subText,
+      lineHeight: 18,
+    },
+    priceContainer: {
+      alignItems: 'flex-end',
+    },
+    priceText: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: COLORS.text,
+    },
+    priceSubText: {
+      fontSize: 11,
+      color: COLORS.subText,
+      fontWeight: '600',
+      marginTop: 2,
+    },
 
-  /* Section Cards */
-  sectionCard: {
-    backgroundColor: COLORS.card,
-    padding: 16,
-    marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  sectionHeaderTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 14,
-  },
-  overviewGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  overviewItem: {
-    width: '48%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  overviewLabel: {
-    fontSize: 11,
-    color: COLORS.subText,
-    fontWeight: '500',
-  },
-  overviewValue: {
-    fontSize: 13,
-    color: COLORS.text,
-    fontWeight: '700',
-    marginTop: 2,
-  },
-  neighbourhoodRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  neighbourhoodText: {
-    fontSize: 14,
-    color: COLORS.text,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  descriptionText: {
-    fontSize: 14,
-    color: COLORS.subText,
-    lineHeight: 22,
-  },
+    /* Section Cards */
+    sectionCard: {
+      backgroundColor: COLORS.card,
+      padding: 16,
+      marginBottom: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border,
+    },
+    sectionHeaderTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: 14,
+    },
+    overviewGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+    },
+    overviewItem: {
+      width: '48%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.background,
+      padding: 12,
+      borderRadius: 12,
+      marginBottom: 12,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+    },
+    overviewLabel: {
+      fontSize: 11,
+      color: COLORS.subText,
+      fontWeight: '500',
+    },
+    overviewValue: {
+      fontSize: 13,
+      color: COLORS.text,
+      fontWeight: '700',
+      marginTop: 2,
+    },
+    neighbourhoodRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    neighbourhoodText: {
+      fontSize: 14,
+      color: COLORS.text,
+      fontWeight: '600',
+      marginLeft: 8,
+    },
+    descriptionText: {
+      fontSize: 14,
+      color: COLORS.subText,
+      lineHeight: 22,
+    },
 
-  /* Fixed Bottom Action Bar */
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.card,
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 12,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    elevation: 10,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    gap: 12,
-  },
-  bottomContactBtn: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    backgroundColor: COLORS.card,
-  },
-  bottomContactText: {
-    color: COLORS.primary,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  scheduleVisitBtn: {
-    flex: 1,
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  scheduleVisitText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '700',
-  },
+    /* Fixed Bottom Action Bar */
+    bottomBar: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: COLORS.card,
+      flexDirection: 'row',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+      borderTopWidth: 1,
+      borderTopColor: COLORS.border,
+      elevation: 10,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: -4 },
+      shadowOpacity: 0.05,
+      shadowRadius: 5,
+      gap: 12,
+    },
+    bottomContactBtn: {
+      flex: 1,
+      borderWidth: 1.5,
+      borderColor: COLORS.primary,
+      borderRadius: 12,
+      paddingVertical: 14,
+      alignItems: 'center',
+      backgroundColor: COLORS.card,
+    },
+    bottomContactText: {
+      color: COLORS.primary,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    scheduleVisitBtn: {
+      flex: 1,
+      backgroundColor: COLORS.primary,
+      borderRadius: 12,
+      paddingVertical: 14,
+      alignItems: 'center',
+      elevation: 3,
+      shadowColor: COLORS.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+    },
+    scheduleVisitText: {
+      color: COLORS.white,
+      fontSize: 16,
+      fontWeight: '700',
+    },
 
-  /* Custom Alert Modal Styling */
-  alertOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  alertBox: {
-    width: '100%',
-    backgroundColor: COLORS.card,
-    borderRadius: 24,
-    padding: 25,
-    alignItems: 'center',
-    elevation: 10,
-  },
-  alertIconContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  alertTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  alertMessage: {
-    fontSize: 14,
-    color: COLORS.subText,
-    textAlign: 'center',
-    marginBottom: 25,
-    lineHeight: 20,
-  },
-  alertButton: {
-    width: '100%',
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-  },
-  alertButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-})
+    /* Custom Alert Modal Styling */
+    alertOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    alertBox: {
+      width: '100%',
+      backgroundColor: COLORS.card,
+      borderRadius: 24,
+      padding: 25,
+      alignItems: 'center',
+      elevation: 10,
+    },
+    alertIconContainer: {
+      width: 70,
+      height: 70,
+      borderRadius: 35,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    alertTitle: {
+      fontSize: 20,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    alertMessage: {
+      fontSize: 14,
+      color: COLORS.subText,
+      textAlign: 'center',
+      marginBottom: 25,
+      lineHeight: 20,
+    },
+    alertButton: {
+      width: '100%',
+      paddingVertical: 14,
+      borderRadius: 14,
+      alignItems: 'center',
+    },
+    alertButtonText: {
+      color: COLORS.white,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+  })
