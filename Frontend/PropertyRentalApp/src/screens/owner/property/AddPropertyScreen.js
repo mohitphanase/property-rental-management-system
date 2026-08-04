@@ -15,7 +15,7 @@ import { Image } from "react-native";
 import CustomInput from "../../../components/common/CustomInput";
 import PrimaryButton from "../../../components/common/PrimaryButton";
 import COLORS from "../../../theme/colors";
-import { addProperty, uploadPropertyImage, } from "../../../services/PropertyService";
+import { addProperty, uploadPropertyImage, } from "../../../services/propertyService";
 
 export default function AddPropertyScreen({navigation}) {
   const [title, setTitle] = useState("");

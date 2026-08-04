@@ -9,7 +9,7 @@ import { useFocusEffect } from "@react-navigation/native"
 import PropertyCard from "../../../components/property/PropertyCard";
 import SectionHeader from "../../../components/common/SectionHeader";
 import COLORS from "../../../theme/colors";
-import { getMyProperties } from "../../../services/PropertyService";
+import { getMyProperties } from "../../../services/propertyService";
 import { SERVER_URL } from "../../../utils/config";
 
 

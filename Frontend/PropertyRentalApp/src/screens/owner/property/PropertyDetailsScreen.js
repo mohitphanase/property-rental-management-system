@@ -14,7 +14,7 @@ import { Alert } from "react-native";
 import COLORS from "../../../theme/colors";
 import { SERVER_URL } from "../../../utils/config";
 import PrimaryButton from "../../../components/common/PrimaryButton";
-import { getPropertyById, deleteProperty, } from "../../../services/PropertyService";
+import { getPropertyById, deleteProperty, } from "../../../services/propertyService";
 
 
 export default function PropertyDetailsScreen({ route, navigation }) {

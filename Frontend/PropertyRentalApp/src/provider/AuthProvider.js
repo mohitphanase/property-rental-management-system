@@ -12,13 +12,13 @@ export default function AuthProvider({ children }) {
   const [token, setToken] = useState(null)
   const [user, setUser] = useState(null)
 
-  // useEffect(() => {
-  //   loadUser()
-  // }, [])
-
   useEffect(() => {
-    setLoading(false)
-  }, [])
+    loadUser();
+  }, []);
+
+  // useEffect(() => {
+  //   setLoading(false)
+  // }, [])
 
   const loadUser = async () => {
     try {
