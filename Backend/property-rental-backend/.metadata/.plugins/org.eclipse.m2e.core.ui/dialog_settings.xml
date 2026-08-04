@@ -2,6 +2,7 @@
 <section name="Workbench">
 	<section name="MavenProjectImportWizardPage">
 		<list key="rootDirectory">
+			<item value="C:\Users\HP\OneDrive\Desktop\New Project\property-rental-management-system\Backend\property-rental-backend"/>
 			<item value="D:\New folder\property-rental-management-system\Backend\property-rental-backend"/>
 		</list>
 		<list key="projectNameTemplate">

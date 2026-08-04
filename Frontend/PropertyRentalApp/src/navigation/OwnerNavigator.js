@@ -6,7 +6,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DashboardScreen from "../screens/owner/dashboard/DashboardScreen";
 import PropertyNavigator from "./PropertyNavigator";
 import BookingListScreen from "../screens/owner/booking/BookingListScreen";
-import ProfileScreen from "../screens/owner/profile/ProfileScreen";
+import ProfileScreen from '../screens/tenant/ProfileScreen'
+import ProfileNavigator from "./PrrofileNavigator";
+
 import COLORS from './../theme/colors';
 
 
@@ -68,7 +70,7 @@ export default function OwnerNavigator() {
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
       <Tab.Screen name="Properties" component={PropertyNavigator} />
       <Tab.Screen name="Bookings" component={BookingListScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileNavigator} />
     </Tab.Navigator>
   );
 }

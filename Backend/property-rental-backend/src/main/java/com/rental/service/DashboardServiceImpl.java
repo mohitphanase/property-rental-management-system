@@ -48,8 +48,8 @@ public class DashboardServiceImpl {
                 BookingStatus.PENDING
         );
 
-        // Payment module is not implemented yet
-        Double totalEarnings = 0.0;
+        
+        Double totalEarnings = bookingDao.getTotalEarnings(owner);
 
         return new DashboardResponseDto(
                 totalProperties,

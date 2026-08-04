@@ -7,6 +7,7 @@ import PropertyDetailsScreen from "../screens/owner/property/PropertyDetailsScre
 import EditPropertyScreen from "../screens/owner/property/EditPropertyScreen";
 
 
+
 const Stack = createNativeStackNavigator();
 
 export default function PropertyNavigator() {
@@ -37,6 +38,8 @@ export default function PropertyNavigator() {
         name="EditProperty"
         component={EditPropertyScreen}
       />
+
+      
 
     </Stack.Navigator>
 
