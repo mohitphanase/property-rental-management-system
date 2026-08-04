@@ -19,23 +19,38 @@
 //   },
 // });
 
+import { StatusBar } from 'expo-status-bar'
+import { View } from 'react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { useContext } from 'react' // Make sure to import this
 
-import { StatusBar } from "expo-status-bar";
-import { View } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import AuthProvider from './src/provider/AuthProvider'
+import { ThemeProvider, ThemeContext } from './src/provider/ThemeProvider'
+import AppScreen from './src/screens/AppScreen'
 
-import AuthProvider from "./src/provider/AuthProvider";
-import AppScreen from "./src/screens/AppScreen";
+// 1. Create a wrapper component to consume the ThemeContext
+const RootApp = () => {
+  const { isDarkMode, COLORS } = useContext(ThemeContext)
 
+  return (
+    <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+      {/* 2. Automatically switch status bar text color based on theme */}
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+
+      <SafeAreaProvider>
+        <AppScreen />
+      </SafeAreaProvider>
+    </View>
+  )
+}
+
+// 3. Wrap RootApp inside your providers
 export default function App() {
   return (
-    <View style={{ flex: 1 }}>
-      <StatusBar style="dark" />
-
-      <AuthProvider>
-        <AppScreen />
-      </AuthProvider>
-
-    </View>
-  );
+    <AuthProvider>
+      <ThemeProvider>
+        <RootApp />
+      </ThemeProvider>
+    </AuthProvider>
+  )
 }

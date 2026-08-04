@@ -8,20 +8,31 @@ import {
   Modal,
   ScrollView,
   Platform,
+  SafeAreaView,
+  StatusBar,
+  Switch,
 } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
-import COLORS from '../../theme/colors'
 import { AuthContext } from '../../provider/AuthProvider'
+// IMPORT your new ThemeContext here!
+import { ThemeContext } from '../../provider/ThemeProvider'
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useContext(AuthContext)
 
-  // Custom Alert State for Confirmation
+  // Pull the global theme state and COLORS dynamically from context
+  const { isDarkMode, toggleTheme, COLORS } = useContext(ThemeContext)
+
+  // Generate dynamic styles based on the current theme colors
+  const styles = getStyles(COLORS)
+
+  // Dynamic Custom Alert State
   const [alertConfig, setAlertConfig] = useState({
     visible: false,
     title: '',
     message: '',
+    type: 'logout', // 'logout' or 'info'
     onConfirm: null,
   })
 
@@ -31,7 +42,19 @@ export default function ProfileScreen({ navigation }) {
       visible: true,
       title: 'Logout',
       message: 'Are you sure you want to log out of your account?',
+      type: 'logout',
       onConfirm: logout,
+    })
+  }
+
+  // Open the Help & Support modal
+  const onSupportPress = () => {
+    setAlertConfig({
+      visible: true,
+      title: 'Help & Support',
+      message: 'For assistance, please contact us at:\n\n📞 +91 98765 43210',
+      type: 'info',
+      onConfirm: null,
     })
   }
 
@@ -49,380 +72,500 @@ export default function ProfileScreen({ navigation }) {
   }
 
   return (
-    <View style={styles.mainContainer}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-        bounces={false}>
-        {/* Profile Header (Replaced Gradient with Solid View) */}
-        <View style={styles.headerBackground}>
-          <View style={styles.imageContainer}>
-            <Image
-              source={require('../../../assets/profile.png')}
-              style={styles.profileImage}
-            />
-          </View>
-          <Text style={styles.name}>
-            {user?.fullName || user?.name || 'Tenant'}
-          </Text>
-          <View style={styles.roleChip}>
-            <Text style={styles.roleText}>{user?.role || 'TENANT'}</Text>
-          </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.mainContainer}>
+        {/* Seamless Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>My Profile</Text>
         </View>
 
-        <View style={styles.contentContainer}>
-          <Text style={styles.sectionTitle}>Account Information</Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          bounces={true}>
+          {/* Modern Profile Avatar Section */}
+          <View style={styles.profileSection}>
+            <View style={styles.imageRing}>
+              <Image
+                source={require('../../../assets/profile.png')}
+                style={styles.profileImage}
+              />
+            </View>
+            <Text style={styles.name}>
+              {user?.fullName || user?.name || 'Tenant Name'}
+            </Text>
+            <View style={styles.roleChip}>
+              <Text style={styles.roleText}>{user?.role || 'TENANT'}</Text>
+            </View>
+          </View>
 
-          {/* Info Card */}
-          <View style={styles.card}>
-            <View style={styles.row}>
-              <View style={styles.iconBox}>
-                <Icon
-                  name="email"
-                  size={22}
-                  color={COLORS.primary || '#007BFF'}
+          {/* Account Information Card */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Account Details</Text>
+            <View style={styles.card}>
+              <View style={styles.row}>
+                <View style={styles.iconBox}>
+                  <Icon name="email" size={20} color={COLORS.primary} />
+                </View>
+                <View style={styles.infoTextContainer}>
+                  <Text style={styles.label}>Email Address</Text>
+                  <Text style={styles.value} numberOfLines={1}>
+                    {user?.email || 'Not Available'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.dashedDivider} />
+
+              <View style={styles.row}>
+                <View style={styles.iconBox}>
+                  <Icon name="verified-user" size={20} color={COLORS.primary} />
+                </View>
+                <View style={styles.infoTextContainer}>
+                  <Text style={styles.label}>Account Role</Text>
+                  <Text style={styles.value}>{user?.role || 'Tenant'}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Settings & Actions Section */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Settings</Text>
+
+            <View style={styles.card}>
+              {/* App Theme Toggle */}
+              <View style={styles.actionRow}>
+                <View
+                  style={[
+                    styles.iconBox,
+                    { backgroundColor: COLORS.text + '10' },
+                  ]}>
+                  <Icon
+                    name={isDarkMode ? 'dark-mode' : 'light-mode'}
+                    size={20}
+                    color={COLORS.text}
+                  />
+                </View>
+                <Text style={styles.actionText}>Dark Mode</Text>
+                <Switch
+                  trackColor={{
+                    false: COLORS.border,
+                    true: COLORS.primary + '80',
+                  }}
+                  thumbColor={isDarkMode ? COLORS.primary : '#f4f3f4'}
+                  ios_backgroundColor={COLORS.border}
+                  onValueChange={toggleTheme}
+                  value={isDarkMode}
                 />
               </View>
-              <View style={styles.infoTextContainer}>
-                <Text style={styles.label}>Email Address</Text>
-                <Text style={styles.value} numberOfLines={1}>
-                  {user?.email || 'N/A'}
-                </Text>
-              </View>
-            </View>
 
-            <View style={styles.divider} />
+              <View style={styles.solidDivider} />
 
-            <View style={styles.row}>
-              <View style={styles.iconBox}>
+              {/* Change Password */}
+              <TouchableOpacity
+                style={styles.actionRow}
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate('ChangePassword')}>
+                <View
+                  style={[
+                    styles.iconBox,
+                    { backgroundColor: COLORS.text + '10' },
+                  ]}>
+                  <Icon name="lock-outline" size={20} color={COLORS.text} />
+                </View>
+                <Text style={styles.actionText}>Change Password</Text>
                 <Icon
-                  name="badge"
+                  name="chevron-right"
                   size={22}
-                  color={COLORS.primary || '#007BFF'}
+                  color={COLORS.placeholder}
+                />
+              </TouchableOpacity>
+
+              <View style={styles.solidDivider} />
+
+              {/* Help & Support */}
+              <TouchableOpacity
+                style={styles.actionRow}
+                activeOpacity={0.7}
+                onPress={onSupportPress}>
+                <View
+                  style={[
+                    styles.iconBox,
+                    { backgroundColor: COLORS.text + '10' },
+                  ]}>
+                  <Icon name="help-outline" size={20} color={COLORS.text} />
+                </View>
+                <Text style={styles.actionText}>Help & Support</Text>
+                <Icon
+                  name="chevron-right"
+                  size={22}
+                  color={COLORS.placeholder}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Modern Soft Logout Button */}
+          <View style={styles.logoutContainer}>
+            <TouchableOpacity
+              style={styles.logoutButtonSoft}
+              activeOpacity={0.8}
+              onPress={onLogoutPress}>
+              <Icon
+                name="logout"
+                size={22}
+                color={COLORS.error}
+                style={styles.logoutIcon}
+              />
+              <Text style={styles.logoutText}>Logout Securely</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+
+        {/* Dynamic Custom Modal */}
+        <Modal transparent visible={alertConfig.visible} animationType="fade">
+          <View style={styles.alertOverlay}>
+            <View style={styles.alertBox}>
+              <View
+                style={[
+                  styles.alertIconContainer,
+                  {
+                    backgroundColor:
+                      alertConfig.type === 'logout'
+                        ? COLORS.error + '15'
+                        : COLORS.primary + '15',
+                  },
+                ]}>
+                <Icon
+                  name={
+                    alertConfig.type === 'logout' ? 'logout' : 'support-agent'
+                  }
+                  size={38}
+                  color={
+                    alertConfig.type === 'logout'
+                      ? COLORS.error
+                      : COLORS.primary
+                  }
                 />
               </View>
-              <View style={styles.infoTextContainer}>
-                <Text style={styles.label}>Account Role</Text>
-                <Text style={styles.value}>{user?.role || 'Tenant'}</Text>
-              </View>
+
+              <Text style={styles.alertTitle}>{alertConfig.title}</Text>
+              <Text style={styles.alertMessage}>{alertConfig.message}</Text>
+
+              {alertConfig.type === 'logout' ? (
+                <View style={styles.alertButtonRow}>
+                  <TouchableOpacity
+                    style={styles.alertCancelButton}
+                    activeOpacity={0.7}
+                    onPress={closeAlert}>
+                    <Text style={styles.alertCancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.alertConfirmButton}
+                    activeOpacity={0.7}
+                    onPress={handleConfirm}>
+                    <Text style={styles.alertConfirmButtonText}>Logout</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.alertSingleButton}
+                  activeOpacity={0.8}
+                  onPress={closeAlert}>
+                  <Text style={styles.alertSingleButtonText}>OK</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
-
-          <Text style={styles.sectionTitle}>Settings</Text>
-
-          {/* Action Buttons */}
-          <TouchableOpacity
-            style={styles.changePasswordButton}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate('ChangePassword')}>
-            <Icon
-              name="lock-outline"
-              size={22}
-              style={styles.buttonIconPrimary}
-            />
-            <Text style={styles.changePasswordText}>Change Password</Text>
-            <Icon
-              name="chevron-right"
-              size={22}
-              style={styles.buttonIconPrimaryRight}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.logoutButton}
-            activeOpacity={0.8}
-            onPress={onLogoutPress}>
-            <Icon name="logout" size={22} style={styles.logoutIcon} />
-            <Text style={styles.logoutText}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      {/* Custom Confirmation Modal */}
-      <Modal transparent visible={alertConfig.visible} animationType="fade">
-        <View style={styles.alertOverlay}>
-          <View style={styles.alertBox}>
-            <View style={styles.alertIconContainer}>
-              <Icon name="logout" size={38} color={COLORS.error || '#DC3545'} />
-            </View>
-
-            <Text style={styles.alertTitle}>{alertConfig.title}</Text>
-            <Text style={styles.alertMessage}>{alertConfig.message}</Text>
-
-            <View style={styles.alertButtonRow}>
-              <TouchableOpacity
-                style={styles.alertCancelButton}
-                activeOpacity={0.7}
-                onPress={closeAlert}>
-                <Text style={styles.alertCancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.alertConfirmButton}
-                activeOpacity={0.7}
-                onPress={handleConfirm}>
-                <Text style={styles.alertConfirmButtonText}>Logout</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </SafeAreaView>
   )
 }
 
-const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    backgroundColor: COLORS.background || '#F8F9FA',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingBottom: 40,
-  },
+// Wrap styles in a function so it updates when COLORS changes
+const getStyles = COLORS =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    mainContainer: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
 
-  /* Header Styles */
-  headerBackground: {
-    width: '100%',
-    backgroundColor: COLORS.primary || '#007BFF',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingBottom: 30,
-    alignItems: 'center',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-  },
-  imageContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 4,
-    marginBottom: 15,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
-  profileImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 60,
-  },
-  name: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  roleChip: {
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  roleText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
+    /* Seamless Header */
+    header: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 20,
+      paddingBottom: 15,
+      paddingTop:
+        Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
+      backgroundColor: COLORS.background,
+    },
+    headerTitle: {
+      fontSize: 20,
+      fontWeight: '800',
+      color: COLORS.text,
+      letterSpacing: 0.3,
+    },
 
-  /* Content Styles */
-  contentContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 25,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text || '#212529',
-    marginBottom: 15,
-    marginLeft: 4,
-  },
+    scrollContainer: {
+      flexGrow: 1,
+      paddingHorizontal: 16,
+      paddingBottom: 40,
+    },
 
-  /* Card Styles */
-  card: {
-    backgroundColor: COLORS.card || '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 30,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: COLORS.border || '#F1F3F5',
-    marginVertical: 10,
-  },
-  iconBox: {
-    width: 45,
-    height: 45,
-    borderRadius: 12,
-    backgroundColor: (COLORS.primary || '#007BFF') + '15',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  infoTextContainer: {
-    flex: 1,
-  },
-  label: {
-    fontSize: 13,
-    color: COLORS.subText || '#6C757D',
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  value: {
-    fontSize: 16,
-    color: COLORS.text || '#212529',
-    fontWeight: '700',
-  },
+    /* Modern Profile Section */
+    profileSection: {
+      alignItems: 'center',
+      marginVertical: 20,
+    },
+    imageRing: {
+      width: 110,
+      height: 110,
+      borderRadius: 55,
+      backgroundColor: COLORS.card,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 4,
+      marginBottom: 16,
+      elevation: 6,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+    },
+    profileImage: {
+      width: '100%',
+      height: '100%',
+      borderRadius: 55,
+      backgroundColor: COLORS.disabled || '#E9ECEF',
+    },
+    name: {
+      fontSize: 24,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 8,
+    },
+    roleChip: {
+      backgroundColor: COLORS.primary + '15',
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+      borderRadius: 12,
+    },
+    roleText: {
+      fontSize: 12,
+      fontWeight: '800',
+      color: COLORS.primary,
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+    },
 
-  /* Button Styles */
-  changePasswordButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.card || '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: COLORS.primary || '#007BFF',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    marginBottom: 15,
-    elevation: 2,
-    shadowColor: COLORS.primary || '#007BFF',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  buttonIconPrimary: {
-    color: COLORS.primary || '#007BFF',
-    marginRight: 12,
-  },
-  changePasswordText: {
-    flex: 1,
-    color: COLORS.primary || '#007BFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  buttonIconPrimaryRight: {
-    color: COLORS.primary || '#007BFF',
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: (COLORS.error || '#DC3545') + '15',
-    borderRadius: 16,
-    paddingVertical: 16,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-  },
-  logoutIcon: {
-    color: COLORS.error || '#DC3545',
-    marginRight: 8,
-  },
-  logoutText: {
-    color: COLORS.error || '#DC3545',
-    fontSize: 16,
-    fontWeight: '700',
-  },
+    /* Content Sections */
+    sectionContainer: {
+      marginBottom: 24,
+    },
+    sectionTitle: {
+      fontSize: 17,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 12,
+      marginLeft: 4,
+    },
 
-  /* Custom Alert Modal Styling */
-  alertOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  alertBox: {
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 25,
-    alignItems: 'center',
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-  },
-  alertIconContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: (COLORS.error || '#DC3545') + '15',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  alertTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.text || '#212529',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  alertMessage: {
-    fontSize: 15,
-    color: COLORS.subText || '#6C757D',
-    textAlign: 'center',
-    marginBottom: 30,
-    lineHeight: 22,
-  },
-  alertButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    gap: 15,
-  },
-  alertCancelButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 14,
-    backgroundColor: '#F8F9FA',
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    alignItems: 'center',
-  },
-  alertCancelButtonText: {
-    color: COLORS.text || '#212529',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  alertConfirmButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 14,
-    backgroundColor: COLORS.error || '#DC3545',
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: COLORS.error || '#DC3545',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  alertConfirmButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-})
+    /* Premium Cards */
+    card: {
+      backgroundColor: COLORS.card,
+      borderRadius: 20,
+      padding: 16,
+      elevation: 3,
+      shadowColor: COLORS.shadow || '#000',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 4,
+    },
+    iconBox: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: COLORS.primary + '10',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 16,
+    },
+    infoTextContainer: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    label: {
+      fontSize: 12,
+      color: COLORS.subText,
+      fontWeight: '600',
+      marginBottom: 4,
+      textTransform: 'uppercase',
+    },
+    value: {
+      fontSize: 15,
+      color: COLORS.text,
+      fontWeight: '700',
+    },
+    dashedDivider: {
+      height: 1,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderStyle: 'dashed',
+      marginVertical: 14,
+    },
+    solidDivider: {
+      height: 1,
+      backgroundColor: COLORS.border,
+      marginVertical: 4,
+      marginLeft: 60,
+    },
+
+    /* Actions & Settings */
+    actionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 8,
+    },
+    actionText: {
+      flex: 1,
+      fontSize: 15,
+      fontWeight: '700',
+      color: COLORS.text,
+    },
+
+    /* Logout Button */
+    logoutContainer: {
+      marginTop: 10,
+      marginBottom: 20,
+    },
+    logoutButtonSoft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: COLORS.error + '10', // Tinted background
+      borderRadius: 16,
+      paddingVertical: 16,
+      borderWidth: 1,
+      borderColor: COLORS.error + '20',
+    },
+    logoutIcon: {
+      marginRight: 8,
+    },
+    logoutText: {
+      color: COLORS.error,
+      fontSize: 16,
+      fontWeight: '800',
+    },
+
+    /* Custom Modal Styling */
+    alertOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    alertBox: {
+      width: '100%',
+      backgroundColor: COLORS.card,
+      borderRadius: 28,
+      padding: 24,
+      alignItems: 'center',
+      elevation: 10,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.1,
+      shadowRadius: 20,
+    },
+    alertIconContainer: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    alertTitle: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    alertMessage: {
+      fontSize: 15,
+      color: COLORS.subText,
+      textAlign: 'center',
+      marginBottom: 28,
+      lineHeight: 22,
+    },
+    alertButtonRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%',
+      gap: 12,
+    },
+    alertCancelButton: {
+      flex: 1,
+      paddingVertical: 16,
+      borderRadius: 16,
+      backgroundColor: COLORS.background,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      alignItems: 'center',
+    },
+    alertCancelButtonText: {
+      color: COLORS.text,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    alertConfirmButton: {
+      flex: 1,
+      paddingVertical: 16,
+      borderRadius: 16,
+      backgroundColor: COLORS.error,
+      alignItems: 'center',
+      elevation: 3,
+      shadowColor: COLORS.error,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.3,
+      shadowRadius: 5,
+    },
+    alertConfirmButtonText: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontWeight: '800',
+    },
+    alertSingleButton: {
+      width: '100%',
+      paddingVertical: 16,
+      borderRadius: 16,
+      backgroundColor: COLORS.primary,
+      alignItems: 'center',
+      elevation: 3,
+      shadowColor: COLORS.primary,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.3,
+      shadowRadius: 5,
+    },
+    alertSingleButtonText: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontWeight: '800',
+    },
+  })

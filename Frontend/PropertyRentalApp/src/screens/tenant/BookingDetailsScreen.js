@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import {
   View,
   Text,
@@ -18,7 +18,7 @@ import { SERVER_URL } from '../../utils/config'
 import { getPropertyById } from '../../services/propertyServicet'
 import { getPaymentByBooking } from '../../services/paymentService'
 import { deleteBooking } from '../../services/bookingService'
-import COLORS from '../../theme/colors'
+import { ThemeContext } from '../../provider/ThemeProvider'
 
 export default function BookingDetailsScreen({ route, navigation }) {
   const { booking } = route.params
@@ -27,12 +27,16 @@ export default function BookingDetailsScreen({ route, navigation }) {
   const [propertyImage, setPropertyImage] = useState(null)
   const [isPaid, setIsPaid] = useState(false)
 
+  // Pulling dynamic COLORS from global theme
+  const { COLORS } = useContext(ThemeContext)
+  const styles = getStyles(COLORS)
+
   // Custom Alert State
   const [alertConfig, setAlertConfig] = useState({
     visible: false,
     title: '',
     message: '',
-    type: 'info', // 'success' | 'error' | 'warning' | 'confirm'
+    type: 'info',
     onConfirm: null,
     onClose: null,
   })
@@ -48,10 +52,7 @@ export default function BookingDetailsScreen({ route, navigation }) {
       const response = await getPropertyById(booking.propertyId)
       setProperty(response.data.data)
     } catch (error) {
-      console.log('=== loadProperty ===')
-      console.log('Status:', error.response?.status)
-      console.log('URL:', error.config?.url)
-      console.log('Response:', error.response?.data)
+      console.log('=== loadProperty Error ===', error)
     }
   }
 
@@ -62,10 +63,7 @@ export default function BookingDetailsScreen({ route, navigation }) {
         setPropertyImage(response.data.data[0].imageUrl)
       }
     } catch (error) {
-      console.log('=== loadPropertyImage ===')
-      console.log('Status:', error.response?.status)
-      console.log('URL:', error.config?.url)
-      console.log('Response:', error.response?.data)
+      console.log('=== loadPropertyImage Error ===', error)
     }
   }
 
@@ -76,10 +74,7 @@ export default function BookingDetailsScreen({ route, navigation }) {
         setIsPaid(true)
       }
     } catch (error) {
-      console.log('=== checkPayment ===')
-      console.log('Status:', error.response?.status)
-      console.log('URL:', error.config?.url)
-      console.log('Response:', error.response?.data)
+      console.log('=== checkPayment Error ===', error)
     }
   }
 
@@ -91,7 +86,6 @@ export default function BookingDetailsScreen({ route, navigation }) {
     })
   }
 
-  // --- Custom Alert Logic ---
   const closeAlert = () => {
     const { onClose } = alertConfig
     setAlertConfig({ ...alertConfig, visible: false })
@@ -116,19 +110,18 @@ export default function BookingDetailsScreen({ route, navigation }) {
           setTimeout(() => {
             setAlertConfig({
               visible: true,
-              title: 'Success',
+              title: 'Cancelled',
               message: 'Booking cancelled successfully.',
               type: 'success',
               onClose: () => navigation.pop(2),
             })
           }, 400)
         } catch (error) {
-          console.log(error.response?.data)
           setTimeout(() => {
             setAlertConfig({
               visible: true,
               title: 'Error',
-              message: 'Unable to cancel booking.',
+              message: 'Unable to cancel booking at this time.',
               type: 'error',
             })
           }, 400)
@@ -140,17 +133,16 @@ export default function BookingDetailsScreen({ route, navigation }) {
   const getAlertStyle = type => {
     switch (type) {
       case 'success':
-        return { icon: 'check-circle', color: COLORS.success || '#28A745' }
+        return { icon: 'check-circle', color: COLORS.success }
       case 'error':
-        return { icon: 'error', color: COLORS.error || '#DC3545' }
+        return { icon: 'error', color: COLORS.error }
       case 'confirm':
-        return { icon: 'help-outline', color: COLORS.warning || '#F5A623' }
+        return { icon: 'help-outline', color: COLORS.warning }
       default:
-        return { icon: 'info', color: COLORS.primary || '#007BFF' }
+        return { icon: 'info', color: COLORS.primary }
     }
   }
 
-  // --- Status UI Logic ---
   const getStatusStyle = status => {
     switch (status) {
       case 'APPROVED':
@@ -179,568 +171,602 @@ export default function BookingDetailsScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Fixed Top Bar with added margin/padding for the status bar */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          activeOpacity={0.8}
-          onPress={() => navigation.goBack()}>
-          <Icon
-            name="arrow-back-ios"
-            size={20}
-            color={COLORS.text || '#212529'}
-            style={styles.backIcon}
-          />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Booking Summary</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}>
-        {/* Property Overview Card */}
-        <View style={styles.propertyCard}>
-          <Image
-            source={
-              propertyImage
-                ? { uri: `${SERVER_URL}/${propertyImage}` }
-                : require('../../../assets/property_placeholder.png')
-            }
-            style={styles.propertyImage}
-          />
-          <View style={styles.propertyInfo}>
-            <Text style={styles.propertyName} numberOfLines={1}>
-              {property?.title || property?.propertyName || 'Loading...'}
-            </Text>
-
-            <View style={styles.locationRow}>
-              <Icon
-                name="location-on"
-                size={14}
-                color={COLORS.primary || '#007BFF'}
-              />
-              <Text style={styles.locationText} numberOfLines={1}>
-                {property?.city || property?.location || 'Unknown Location'}
-              </Text>
-            </View>
-
-            <View style={styles.priceRow}>
-              <Text style={styles.priceLabel}>
-                Rent:{' '}
-                <Text style={styles.totalAmount}>
-                  ₹{property?.price ?? property?.rent ?? '0'}/mo
-                </Text>
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Booking Details Section */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Booking Details</Text>
-          <View style={styles.detailsCard}>
-            <View style={styles.row}>
-              <Text style={styles.label}>Booking ID</Text>
-              <Text style={styles.value}>#{booking.bookingId}</Text>
-            </View>
-            <View style={styles.divider} />
-
-            <View style={styles.row}>
-              <Text style={styles.label}>Booking Date</Text>
-              <Text style={styles.value}>{booking.createdAt}</Text>
-            </View>
-            <View style={styles.divider} />
-
-            <View style={styles.row}>
-              <Text style={styles.label}>Start Date</Text>
-              <Text style={[styles.value, styles.dateHighlight]}>
-                {booking.startDate}
-              </Text>
-            </View>
-            <View style={styles.divider} />
-
-            <View style={styles.row}>
-              <Text style={styles.label}>End Date</Text>
-              <Text style={[styles.value, styles.dateHighlight]}>
-                {booking.endDate}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Status Section */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Current Status</Text>
-          <View style={[styles.statusBanner, getStatusStyle(booking.status)]}>
+      <View style={styles.container}>
+        {/* Seamless Fixed Top Bar */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            activeOpacity={0.8}
+            onPress={() => navigation.goBack()}>
             <Icon
-              name={getStatusIcon(booking.status)}
-              size={24}
-              color="#fff"
-              style={styles.statusIcon}
+              name="arrow-back-ios"
+              size={18}
+              color={COLORS.text}
+              style={styles.backIcon}
             />
-            <View style={styles.statusTextContainer}>
-              <Text style={styles.statusBannerTitle}>
-                {booking.status.charAt(0) +
-                  booking.status.slice(1).toLowerCase()}
-              </Text>
-              <Text style={styles.statusBannerSubtitle}>
-                {booking.status === 'APPROVED'
-                  ? 'The owner has approved your request.'
-                  : booking.status === 'REJECTED'
-                    ? 'The owner declined this booking.'
-                    : booking.status === 'CANCELLED'
-                      ? 'You cancelled this booking.'
-                      : 'Waiting for the owner to review.'}
-              </Text>
-            </View>
-          </View>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Booking Summary</Text>
+          <View style={styles.headerSpacer} />
         </View>
 
-        {/* Action Buttons */}
-        <View style={styles.actionContainer}>
-          {isPaid ? (
-            <View style={styles.successBox}>
-              <Icon
-                name="verified"
-                size={24}
-                color={COLORS.success || '#28A745'}
-              />
-              <Text style={styles.successText}>
-                Payment Completed Successfully
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}>
+          {/* Property Overview Card */}
+          <View style={styles.propertyCard}>
+            <Image
+              source={
+                propertyImage
+                  ? { uri: `${SERVER_URL}/${propertyImage}` }
+                  : require('../../../assets/property_placeholder.png')
+              }
+              style={styles.propertyImage}
+            />
+            <View style={styles.propertyInfo}>
+              <Text style={styles.propertyName} numberOfLines={2}>
+                {property?.title ||
+                  property?.propertyName ||
+                  'Loading Property...'}
               </Text>
-            </View>
-          ) : booking.status === 'APPROVED' ? (
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.payButton}
-              onPress={onPayNow}>
-              <Icon
-                name="payment"
-                size={20}
-                color="#fff"
-                style={{ marginRight: 8 }}
-              />
-              <Text style={styles.buttonText}>Proceed to Payment</Text>
-            </TouchableOpacity>
-          ) : null}
 
-          {booking.status !== 'REJECTED' &&
-            booking.status !== 'CANCELLED' &&
-            !isPaid && (
-              <TouchableOpacity
-                activeOpacity={0.6}
-                style={styles.cancelButton}
-                onPress={onCancelBooking}>
-                <Text style={styles.cancelButtonText}>Cancel Booking</Text>
-              </TouchableOpacity>
-            )}
-        </View>
-      </ScrollView>
-
-      {/* Custom Alert Modal */}
-      <Modal transparent visible={alertConfig.visible} animationType="fade">
-        <View style={styles.alertOverlay}>
-          <View style={styles.alertBox}>
-            <View
-              style={[
-                styles.alertIconContainer,
-                {
-                  backgroundColor: getAlertStyle(alertConfig.type).color + '15',
-                },
-              ]}>
-              <Icon
-                name={getAlertStyle(alertConfig.type).icon}
-                size={38}
-                color={getAlertStyle(alertConfig.type).color}
-              />
-            </View>
-            <Text style={styles.alertTitle}>{alertConfig.title}</Text>
-            <Text style={styles.alertMessage}>{alertConfig.message}</Text>
-
-            {alertConfig.type === 'confirm' ? (
-              <View style={styles.alertButtonRow}>
-                <TouchableOpacity
-                  style={styles.alertCancelBtn}
-                  activeOpacity={0.7}
-                  onPress={closeAlert}>
-                  <Text style={styles.alertCancelBtnText}>Keep it</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.alertConfirmBtn}
-                  activeOpacity={0.7}
-                  onPress={handleConfirmAction}>
-                  <Text style={styles.alertConfirmBtnText}>Cancel</Text>
-                </TouchableOpacity>
+              <View style={styles.locationRow}>
+                <Icon name="location-on" size={16} color={COLORS.subText} />
+                <Text style={styles.locationText} numberOfLines={1}>
+                  {property?.city || property?.location || 'Location details'}
+                </Text>
               </View>
-            ) : (
-              <TouchableOpacity
-                style={[
-                  styles.alertButton,
-                  { backgroundColor: getAlertStyle(alertConfig.type).color },
-                ]}
-                activeOpacity={0.8}
-                onPress={closeAlert}>
-                <Text style={styles.alertButtonText}>OK</Text>
-              </TouchableOpacity>
-            )}
+
+              <View style={styles.pricePill}>
+                <Text style={styles.priceLabel}>
+                  ₹{property?.price ?? property?.rent ?? '0'}{' '}
+                  <Text style={styles.priceMonth}>/mo</Text>
+                </Text>
+              </View>
+            </View>
           </View>
-        </View>
-      </Modal>
+
+          {/* Ticket Style Booking Details */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Details</Text>
+            <View style={styles.ticketCard}>
+              <View style={styles.ticketRow}>
+                <View>
+                  <Text style={styles.label}>Booking ID</Text>
+                  <Text style={styles.value}>#{booking.bookingId}</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={styles.label}>Date Applied</Text>
+                  <Text style={styles.value}>{booking.createdAt}</Text>
+                </View>
+              </View>
+
+              {/* Dashed Line Separator */}
+              <View style={styles.dashedDivider} />
+
+              <View style={styles.ticketRow}>
+                <View style={styles.dateBox}>
+                  <Icon
+                    name="event-available"
+                    size={20}
+                    color={COLORS.primary}
+                    style={{ marginBottom: 4 }}
+                  />
+                  <Text style={styles.label}>Check In</Text>
+                  <Text style={styles.dateHighlight}>{booking.startDate}</Text>
+                </View>
+
+                <Icon name="arrow-forward" size={20} color={COLORS.border} />
+
+                <View style={styles.dateBox}>
+                  <Icon
+                    name="event-busy"
+                    size={20}
+                    color={COLORS.primary}
+                    style={{ marginBottom: 4 }}
+                  />
+                  <Text style={styles.label}>Check Out</Text>
+                  <Text style={styles.dateHighlight}>{booking.endDate}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Status Section */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Status</Text>
+            <View style={[styles.statusBanner, getStatusStyle(booking.status)]}>
+              <View style={styles.statusIconWrapper}>
+                <Icon
+                  name={getStatusIcon(booking.status)}
+                  size={28}
+                  color={COLORS.white}
+                />
+              </View>
+              <View style={styles.statusTextContainer}>
+                <Text style={styles.statusBannerTitle}>
+                  {booking.status.charAt(0) +
+                    booking.status.slice(1).toLowerCase()}
+                </Text>
+                <Text style={styles.statusBannerSubtitle}>
+                  {booking.status === 'APPROVED'
+                    ? 'The owner has approved your request.'
+                    : booking.status === 'REJECTED'
+                      ? 'The owner declined this booking.'
+                      : booking.status === 'CANCELLED'
+                        ? 'You cancelled this booking.'
+                        : 'Waiting for the owner to review.'}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Bottom Action Buttons */}
+          <View style={styles.actionContainer}>
+            {isPaid ? (
+              <View style={styles.successBox}>
+                <Icon name="verified" size={24} color={COLORS.success} />
+                <Text style={styles.successText}>
+                  Payment Completed Successfully
+                </Text>
+              </View>
+            ) : booking.status === 'APPROVED' ? (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.payButton}
+                onPress={onPayNow}>
+                <Text style={styles.payButtonText}>Proceed to Payment</Text>
+                <Icon name="arrow-forward" size={20} color={COLORS.white} />
+              </TouchableOpacity>
+            ) : null}
+
+            {booking.status !== 'REJECTED' &&
+              booking.status !== 'CANCELLED' &&
+              !isPaid && (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={styles.cancelButtonSoft}
+                  onPress={onCancelBooking}>
+                  <Text style={styles.cancelButtonSoftText}>
+                    Cancel Booking
+                  </Text>
+                </TouchableOpacity>
+              )}
+          </View>
+        </ScrollView>
+
+        {/* Custom Alert Modal */}
+        <Modal transparent visible={alertConfig.visible} animationType="fade">
+          <View style={styles.alertOverlay}>
+            <View style={styles.alertBox}>
+              <View
+                style={[
+                  styles.alertIconContainer,
+                  {
+                    backgroundColor:
+                      getAlertStyle(alertConfig.type).color + '15',
+                  },
+                ]}>
+                <Icon
+                  name={getAlertStyle(alertConfig.type).icon}
+                  size={38}
+                  color={getAlertStyle(alertConfig.type).color}
+                />
+              </View>
+              <Text style={styles.alertTitle}>{alertConfig.title}</Text>
+              <Text style={styles.alertMessage}>{alertConfig.message}</Text>
+
+              {alertConfig.type === 'confirm' ? (
+                <View style={styles.alertButtonRow}>
+                  <TouchableOpacity
+                    style={styles.alertCancelBtn}
+                    activeOpacity={0.7}
+                    onPress={closeAlert}>
+                    <Text style={styles.alertCancelBtnText}>Keep it</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.alertConfirmBtn}
+                    activeOpacity={0.7}
+                    onPress={handleConfirmAction}>
+                    <Text style={styles.alertConfirmBtnText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={[
+                    styles.alertButton,
+                    { backgroundColor: getAlertStyle(alertConfig.type).color },
+                  ]}
+                  activeOpacity={0.8}
+                  onPress={closeAlert}>
+                  <Text style={styles.alertButtonText}>OK</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </Modal>
+      </View>
     </SafeAreaView>
   )
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.background || '#F8F9FA',
-  },
+const getStyles = COLORS =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: COLORS.background, // Fixed Hardcode
+    },
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background, // Fixed Hardcode
+    },
+    scrollView: {
+      flex: 1,
+    },
+    contentContainer: {
+      paddingTop: 5,
+      paddingBottom: 40,
+    },
 
-  /* Top Bar Header */
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-    // Added padding top dynamically so the header safely clears the notification bar on Android
-    paddingTop:
-      Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
-    backgroundColor: COLORS.background || '#F8F9FA',
-  },
-  backButton: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    borderWidth: 1,
-    borderColor: '#E9ECEF', // Soft border matching the image
-  },
-  backIcon: {
-    marginLeft: 6, // centers the iOS arrow visually
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text || '#111827', // Darker text color matching the image
-  },
-  headerSpacer: {
-    width: 45, // balances the back button width to perfectly center the title
-  },
+    /* Seamless Header */
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingBottom: 15,
+      paddingTop:
+        Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
+      backgroundColor: COLORS.background, // Fixed Hardcode
+    },
+    backButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: COLORS.card,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 2,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+    },
+    backIcon: {
+      marginLeft: 6,
+    },
+    headerTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: COLORS.text,
+      letterSpacing: 0.3,
+    },
+    headerSpacer: {
+      width: 44,
+    },
 
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
-    paddingTop: 10,
-    paddingBottom: 40,
-  },
+    /* Premium Property Card */
+    propertyCard: {
+      backgroundColor: COLORS.card,
+      marginHorizontal: 16,
+      marginBottom: 24,
+      borderRadius: 20,
+      padding: 14,
+      flexDirection: 'row',
+      alignItems: 'center',
+      elevation: 4,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 10,
+    },
+    propertyImage: {
+      width: 100,
+      height: 100,
+      borderRadius: 14,
+      backgroundColor: COLORS.disabled || COLORS.border,
+      marginRight: 16,
+    },
+    propertyInfo: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    propertyName: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: 6,
+      lineHeight: 22,
+    },
+    locationRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    locationText: {
+      fontSize: 13,
+      color: COLORS.subText,
+      marginLeft: 4,
+      flex: 1,
+      fontWeight: '500',
+    },
+    pricePill: {
+      alignSelf: 'flex-start',
+      backgroundColor: COLORS.primary + '15',
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 8,
+    },
+    priceLabel: {
+      fontSize: 14,
+      fontWeight: '800',
+      color: COLORS.primary,
+    },
+    priceMonth: {
+      fontSize: 12,
+      fontWeight: '600',
+    },
 
-  /* Property Card */
-  propertyCard: {
-    backgroundColor: COLORS.card || '#FFFFFF',
-    marginHorizontal: 20,
-    marginBottom: 25,
-    borderRadius: 16,
-    padding: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-  },
-  propertyImage: {
-    width: 90,
-    height: 90,
-    borderRadius: 12,
-    backgroundColor: COLORS.placeholder || '#E9ECEF',
-    marginRight: 15,
-  },
-  propertyInfo: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  propertyName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text || '#212529',
-    marginBottom: 4,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  locationText: {
-    fontSize: 13,
-    color: COLORS.subText || '#6C757D',
-    marginLeft: 4,
-    flex: 1,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  priceLabel: {
-    fontSize: 14,
-    color: COLORS.subText || '#6C757D',
-  },
-  totalAmount: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.primary || '#007BFF',
-  },
+    /* Section Styles */
+    sectionContainer: {
+      marginBottom: 24,
+    },
+    sectionTitle: {
+      fontSize: 17,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginHorizontal: 20,
+      marginBottom: 12,
+    },
 
-  /* Details Section */
-  sectionContainer: {
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text || '#212529',
-    marginHorizontal: 20,
-    marginBottom: 10,
-  },
-  detailsCard: {
-    backgroundColor: COLORS.card || '#FFFFFF',
-    marginHorizontal: 20,
-    borderRadius: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 14,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: COLORS.border || '#F1F3F5',
-  },
-  label: {
-    fontSize: 14,
-    color: COLORS.subText || '#868E96',
-    fontWeight: '500',
-  },
-  value: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.text || '#343A40',
-  },
-  dateHighlight: {
-    color: COLORS.primary || '#007BFF',
-    fontWeight: '500',
-  },
+    /* Ticket Style Details Card */
+    ticketCard: {
+      backgroundColor: COLORS.card,
+      marginHorizontal: 16,
+      borderRadius: 20,
+      padding: 20,
+      elevation: 3,
+      shadowColor: COLORS.shadow,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+    },
+    ticketRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    dateBox: {
+      alignItems: 'center',
+      flex: 1,
+    },
+    dashedDivider: {
+      height: 1,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderStyle: 'dashed',
+      marginVertical: 18,
+    },
+    label: {
+      fontSize: 12,
+      color: COLORS.subText,
+      fontWeight: '600',
+      marginBottom: 4,
+      textTransform: 'uppercase',
+    },
+    value: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: COLORS.text,
+    },
+    dateHighlight: {
+      fontSize: 15,
+      color: COLORS.text,
+      fontWeight: '800',
+      marginTop: 2,
+    },
 
-  /* Status Banner */
-  statusBanner: {
-    marginHorizontal: 20,
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  statusIcon: {
-    marginRight: 15,
-  },
-  statusTextContainer: {
-    flex: 1,
-  },
-  statusBannerTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  statusBannerSubtitle: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 12,
-  },
-  approvedBadge: {
-    backgroundColor: COLORS.success || '#28A745',
-  },
-  pendingBadge: {
-    backgroundColor: '#F59E0B', // Matched to the exact orange in the image
-  },
-  rejectedBadge: {
-    backgroundColor: COLORS.error || '#DC3545',
-  },
-  cancelledBadge: {
-    backgroundColor: COLORS.cancelled || '#6C757D',
-  },
+    /* Glowing Status Banner */
+    statusBanner: {
+      marginHorizontal: 16,
+      borderRadius: 20,
+      padding: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+      elevation: 5,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+    },
+    statusIconWrapper: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 16,
+    },
+    statusTextContainer: {
+      flex: 1,
+    },
+    statusBannerTitle: {
+      color: COLORS.white,
+      fontSize: 18,
+      fontWeight: '800',
+      marginBottom: 4,
+      letterSpacing: 0.5,
+    },
+    statusBannerSubtitle: {
+      color: 'rgba(255,255,255,0.9)',
+      fontSize: 13,
+      fontWeight: '500',
+      lineHeight: 18,
+    },
+    approvedBadge: {
+      backgroundColor: COLORS.success,
+      shadowColor: COLORS.success,
+    },
+    pendingBadge: {
+      backgroundColor: COLORS.warning,
+      shadowColor: COLORS.warning,
+    },
+    rejectedBadge: {
+      backgroundColor: COLORS.error,
+      shadowColor: COLORS.error,
+    },
+    cancelledBadge: {
+      backgroundColor: COLORS.cancelled,
+      shadowColor: COLORS.cancelled,
+    },
 
-  /* Action Buttons */
-  actionContainer: {
-    paddingHorizontal: 20,
-    marginTop: 5,
-  },
-  payButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    backgroundColor: COLORS.primary || '#007BFF',
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginBottom: 15,
-    elevation: 4,
-    shadowColor: COLORS.primary || '#007BFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
-  cancelButton: {
-    borderWidth: 1.5,
-    borderColor: '#EF4444', // Matched to the red in the image
-    backgroundColor: '#FFFFFF', // Ensured background is white like in image
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  cancelButtonText: {
-    color: '#EF4444', // Matched to the red in the image
-    fontSize: 15,
-    fontWeight: '600',
-  },
+    /* Modern Action Buttons */
+    actionContainer: {
+      paddingHorizontal: 16,
+      marginTop: 8,
+    },
+    payButton: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      backgroundColor: COLORS.primary,
+      borderRadius: 16,
+      paddingHorizontal: 24,
+      paddingVertical: 18,
+      alignItems: 'center',
+      marginBottom: 16,
+      elevation: 6,
+      shadowColor: COLORS.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+    },
+    payButtonText: {
+      color: COLORS.white,
+      fontSize: 16,
+      fontWeight: '800',
+      letterSpacing: 0.5,
+    },
+    cancelButtonSoft: {
+      backgroundColor: COLORS.error + '15', // Fixed Hardcode (tinted background)
+      borderRadius: 16,
+      paddingVertical: 16,
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    cancelButtonSoftText: {
+      color: COLORS.error,
+      fontSize: 15,
+      fontWeight: '700',
+    },
 
-  /* Status Message Boxes */
-  successBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E8F5E9',
-    borderWidth: 1,
-    borderColor: '#C8E6C9',
-    padding: 16,
-    borderRadius: 14,
-    marginBottom: 15,
-  },
-  successText: {
-    color: COLORS.success || '#28A745',
-    fontSize: 15,
-    fontWeight: '700',
-    marginLeft: 8,
-  },
+    /* Success Box */
+    successBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: COLORS.success + '15', // Fixed Hardcode
+      borderWidth: 1,
+      borderColor: COLORS.success + '40', // Fixed Hardcode
+      padding: 18,
+      borderRadius: 16,
+      marginBottom: 16,
+    },
+    successText: {
+      color: COLORS.success,
+      fontSize: 15,
+      fontWeight: '700',
+      marginLeft: 10,
+    },
 
-  /* Custom Alert Modal Styling */
-  alertOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  alertBox: {
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 25,
-    alignItems: 'center',
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-  },
-  alertIconContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  alertTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.text || '#212529',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  alertMessage: {
-    fontSize: 15,
-    color: COLORS.subText || '#6C757D',
-    textAlign: 'center',
-    marginBottom: 25,
-    lineHeight: 22,
-  },
-  alertButton: {
-    width: '100%',
-    paddingVertical: 15,
-    borderRadius: 14,
-    alignItems: 'center',
-  },
-  alertButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  alertButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    gap: 15,
-  },
-  alertCancelBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 14,
-    backgroundColor: '#F8F9FA',
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    alignItems: 'center',
-  },
-  alertCancelBtnText: {
-    color: COLORS.text || '#212529',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  alertConfirmBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 14,
-    backgroundColor: COLORS.error || '#DC3545',
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: COLORS.error || '#DC3545',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  alertConfirmBtnText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-})
+    /* Custom Alert Modal Styling */
+    alertOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    alertBox: {
+      width: '100%',
+      backgroundColor: COLORS.card,
+      borderRadius: 28,
+      padding: 24,
+      alignItems: 'center',
+      elevation: 10,
+      shadowColor: COLORS.shadow || '#000',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.1,
+      shadowRadius: 20,
+    },
+    alertIconContainer: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    alertTitle: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    alertMessage: {
+      fontSize: 15,
+      color: COLORS.subText,
+      textAlign: 'center',
+      marginBottom: 28,
+      lineHeight: 22,
+    },
+    alertButton: {
+      width: '100%',
+      paddingVertical: 16,
+      borderRadius: 16,
+      alignItems: 'center',
+    },
+    alertButtonText: {
+      color: COLORS.white,
+      fontSize: 16,
+      fontWeight: '800',
+    },
+    alertButtonRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%',
+      gap: 12,
+    },
+    alertCancelBtn: {
+      flex: 1,
+      paddingVertical: 16,
+      borderRadius: 16,
+      backgroundColor: COLORS.background,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      alignItems: 'center',
+    },
+    alertCancelBtnText: {
+      color: COLORS.text,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    alertConfirmBtn: {
+      flex: 1,
+      paddingVertical: 16,
+      borderRadius: 16,
+      backgroundColor: COLORS.error,
+      alignItems: 'center',
+      elevation: 3,
+      shadowColor: COLORS.error,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.3,
+      shadowRadius: 5,
+    },
+    alertConfirmBtnText: {
+      color: COLORS.white,
+      fontSize: 15,
+      fontWeight: '800',
+    },
+  })
