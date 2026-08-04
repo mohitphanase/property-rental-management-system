@@ -9,10 +9,12 @@ import {
   Platform,
   SafeAreaView,
   StatusBar,
+  Linking,
 } from 'react-native'
+import * as FileSystem from 'expo-file-system'
+import * as Sharing from 'expo-sharing'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
-import { addPayment } from '../../services/paymentService'
 import { ThemeContext } from '../../provider/ThemeProvider'
 
 export default function PaymentScreen({ route, navigation }) {
@@ -27,7 +29,7 @@ export default function PaymentScreen({ route, navigation }) {
     visible: false,
     title: '',
     message: '',
-    type: 'warning', // 'success' | 'error' | 'warning'
+    type: 'info',
     onClose: null,
   })
 
@@ -44,35 +46,60 @@ export default function PaymentScreen({ route, navigation }) {
     }
   }
 
-  const onCashPayment = async () => {
+  const onDownloadAgreement = async () => {
+    // 1. Show a loading alert
+    showAlert(
+      'Downloading...',
+      'Please wait while we fetch your draft agreement.',
+      'info'
+    )
+
+    // Replace with your actual backend PDF URL later
+    const pdfUrl =
+      'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
+
+    // Create a local file path on the device
+    const fileUri = FileSystem.documentDirectory + 'Draft_Rental_Agreement.pdf'
+
     try {
-      const response = await addPayment(booking.bookingId, amount)
-      console.log('Payment Response:', response.data)
+      // 2. Actually download the file to the phone's hidden storage
+      const downloadResult = await FileSystem.downloadAsync(pdfUrl, fileUri)
 
-      showAlert(
-        'Payment Successful',
-        'Your payment has been completed successfully.',
-        'success',
-        () => navigation.pop(2)
-      )
+      closeAlert() // Close the "Downloading..." popup
+
+      // 3. Open the native phone menu so the user can Save to Files or Share it
+      const canShare = await Sharing.isAvailableAsync()
+      if (canShare) {
+        await Sharing.shareAsync(downloadResult.uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Save or Share your Agreement',
+          UTI: 'com.adobe.pdf', // iOS specific for PDFs
+        })
+      } else {
+        showAlert('Success', 'File downloaded successfully!', 'success')
+      }
     } catch (error) {
-      console.log('Error:', error.response?.data)
-      console.log('Status:', error.response?.status)
-      console.log('Message:', error.message)
-
+      console.log('Download Error:', error)
       showAlert(
-        'Payment Failed',
-        error.response?.data?.message ||
-          'Unable to process payment at this time.',
+        'Download Failed',
+        'Could not save the document. Please check your internet connection.',
         'error'
       )
     }
   }
 
-  const onOnlinePayment = () => {
+  const onViewTerms = () => {
     showAlert(
-      'Under Maintenance',
-      'Online Payment is currently unavailable. Please use Cash Payment.',
+      'Tenancy Terms',
+      'Lock-in Period: 6 Months\nNotice Period: 1 Month\nMaintenance: Included in Base Rent',
+      'info'
+    )
+  }
+
+  const onContactOwner = () => {
+    showAlert(
+      'Contact Required',
+      'Please contact the owner directly to finalize the lease and arrange the security deposit.',
       'warning'
     )
   }
@@ -84,10 +111,16 @@ export default function PaymentScreen({ route, navigation }) {
         return { icon: 'check-circle', color: COLORS.success }
       case 'error':
         return { icon: 'error', color: COLORS.error }
-      default:
+      case 'warning':
         return { icon: 'warning', color: COLORS.warning }
+      default:
+        return { icon: 'info', color: COLORS.primary }
     }
   }
+
+  // Calculate Mock Deposit
+  const baseRent = parseInt(property?.price || amount || '0', 10)
+  const securityDeposit = baseRent * 2 // Standard 2 months deposit
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -104,43 +137,47 @@ export default function PaymentScreen({ route, navigation }) {
             style={styles.backIcon}
           />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Checkout</Text>
+        <Text style={styles.headerTitle}>Rent & Lease Details</Text>
         <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}>
-        {/* Invoice-Style Details Card */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={styles.iconCircle}>
-              <Icon name="receipt-long" size={22} color={COLORS.primary} />
-            </View>
-            <Text style={styles.cardTitle}>Payment Summary</Text>
+        {/* Top Property Info Card */}
+        <View style={styles.propertyHeaderCard}>
+          <View style={styles.iconCircle}>
+            <Icon name="home-work" size={22} color={COLORS.primary} />
           </View>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Property</Text>
-            <Text style={styles.value} numberOfLines={1}>
-              {property?.title || 'N/A'}
+          <View style={styles.propertyHeaderText}>
+            <Text style={styles.propertyTitle} numberOfLines={1}>
+              {property?.title || 'Property Details'}
+            </Text>
+            <Text style={styles.propertySubtitle}>
+              {property?.city || 'Location'} •{' '}
+              {property?.propertyType || 'Type'}
             </Text>
           </View>
+        </View>
+
+        {/* Financial Breakdown Card */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Financial Breakdown</Text>
 
           <View style={styles.row}>
-            <Text style={styles.label}>Type</Text>
-            <Text style={styles.value}>{property?.propertyType || 'N/A'}</Text>
+            <Text style={styles.label}>Monthly Rent</Text>
+            <Text style={styles.value}>₹{baseRent}</Text>
           </View>
 
           <View style={styles.row}>
-            <Text style={styles.label}>City</Text>
-            <Text style={styles.value}>{property?.city || 'N/A'}</Text>
+            <Text style={styles.label}>Security Deposit</Text>
+            <Text style={styles.value}>₹{securityDeposit}</Text>
           </View>
 
           <View style={styles.row}>
-            <Text style={styles.label}>Description</Text>
-            <Text style={styles.value} numberOfLines={2}>
-              {property?.description || 'N/A'}
+            <Text style={styles.label}>Maintenance</Text>
+            <Text style={[styles.value, { color: COLORS.success }]}>
+              Included
             </Text>
           </View>
 
@@ -149,48 +186,37 @@ export default function PaymentScreen({ route, navigation }) {
 
           {/* Highlighted Total Box */}
           <View style={styles.totalBox}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.amount}>
-              ₹{property?.price || amount || '0'}
-            </Text>
+            <View>
+              <Text style={styles.totalLabel}>Total Due at Move-in</Text>
+              <Text style={styles.totalSubLabel}>(1st Month + Deposit)</Text>
+            </View>
+            <Text style={styles.amount}>₹{baseRent + securityDeposit}</Text>
           </View>
         </View>
 
-        {/* Payment Methods Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Select Payment Method</Text>
-        </View>
+        {/* Documents & Actions Section */}
+        <Text
+          style={[styles.sectionTitle, { marginLeft: 4, marginBottom: 12 }]}>
+          Terms & Conditions
+        </Text>
 
-        {/* Active Cash Payment Option */}
+        {/* Action 1: Tenancy Terms */}
         <TouchableOpacity
-          style={styles.paymentOptionActive}
+          style={styles.actionCard}
           activeOpacity={0.8}
-          onPress={onCashPayment}>
-          <View style={styles.paymentIconBoxActive}>
-            <Icon name="payments" size={24} color={COLORS.white} />
+          onPress={onViewTerms}>
+          <View
+            style={[
+              styles.actionIconBox,
+              { backgroundColor: COLORS.warning + '15' },
+            ]}>
+            <Icon name="gavel" size={24} color={COLORS.warning} />
           </View>
-          <View style={styles.paymentTextContainer}>
-            <Text style={styles.paymentTextActive}>Cash Payment</Text>
-            <Text style={styles.paymentSubText}>Pay directly to owner</Text>
+          <View style={styles.actionTextContainer}>
+            <Text style={styles.actionTitle}>Tenancy Terms</Text>
+            <Text style={styles.actionSubTitle}>Lock-in & Notice period</Text>
           </View>
-          <Icon name="chevron-right" size={24} color={COLORS.primary} />
-        </TouchableOpacity>
-
-        {/* Disabled Online Payment Option */}
-        <TouchableOpacity
-          style={styles.paymentOptionDisabled}
-          activeOpacity={0.9}
-          onPress={onOnlinePayment}>
-          <View style={styles.paymentIconBoxDisabled}>
-            <Icon name="credit-card" size={22} color={COLORS.white} />
-          </View>
-          <View style={styles.paymentTextContainer}>
-            <Text style={styles.disabledText}>Online Payment</Text>
-            <Text style={styles.maintenanceText}>
-              Currently under maintenance
-            </Text>
-          </View>
-          <Icon name="lock-outline" size={20} color={COLORS.placeholder} />
+          <Icon name="chevron-right" size={24} color={COLORS.text} />
         </TouchableOpacity>
       </ScrollView>
 
@@ -282,12 +308,47 @@ const getStyles = COLORS =>
       paddingBottom: 40,
     },
 
-    /* Invoice-Style Card */
+    /* Property Header Card */
+    propertyHeaderCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.card,
+      padding: 16,
+      borderRadius: 16,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+    },
+    iconCircle: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: COLORS.primary + '15',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 16,
+    },
+    propertyHeaderText: {
+      flex: 1,
+    },
+    propertyTitle: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: COLORS.text,
+      marginBottom: 4,
+    },
+    propertySubtitle: {
+      fontSize: 13,
+      color: COLORS.subText,
+      fontWeight: '500',
+    },
+
+    /* Financial Card */
     card: {
       backgroundColor: COLORS.card,
       borderRadius: 20,
       padding: 20,
-      marginBottom: 30,
+      marginBottom: 24,
       elevation: 4,
       shadowColor: COLORS.shadow || '#000',
       shadowOffset: { width: 0, height: 4 },
@@ -296,50 +357,34 @@ const getStyles = COLORS =>
       borderWidth: 1,
       borderColor: COLORS.border,
     },
-    cardHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 20,
-    },
-    iconCircle: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: COLORS.primary + '15',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    cardTitle: {
+    sectionTitle: {
       fontSize: 18,
       fontWeight: '800',
       color: COLORS.text,
-      marginLeft: 12,
+      marginBottom: 16,
     },
     row: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      paddingVertical: 12,
+      alignItems: 'center',
+      paddingVertical: 10,
     },
     label: {
       fontSize: 14,
       color: COLORS.subText,
       fontWeight: '600',
-      flex: 1,
     },
     value: {
-      fontSize: 14,
-      fontWeight: '700',
+      fontSize: 15,
+      fontWeight: '800',
       color: COLORS.text,
-      flex: 2,
-      textAlign: 'right',
     },
     dashedDivider: {
       height: 1,
       borderWidth: 1,
       borderColor: COLORS.border,
       borderStyle: 'dashed',
-      marginVertical: 15,
+      marginVertical: 16,
     },
     totalBox: {
       flexDirection: 'row',
@@ -349,101 +394,89 @@ const getStyles = COLORS =>
       paddingHorizontal: 16,
       paddingVertical: 18,
       borderRadius: 16,
-      marginTop: 5,
     },
     totalLabel: {
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '800',
       color: COLORS.primary,
+      marginBottom: 2,
+    },
+    totalSubLabel: {
+      fontSize: 11,
+      color: COLORS.primary,
+      fontWeight: '600',
+      opacity: 0.8,
     },
     amount: {
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: '800',
       color: COLORS.primary,
     },
 
-    /* Payment Methods Section */
-    sectionHeader: {
-      marginBottom: 16,
-      paddingHorizontal: 4,
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: '800',
-      color: COLORS.text,
-    },
-
-    /* Active Payment Option */
-    paymentOptionActive: {
+    /* Action Cards */
+    actionCard: {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: COLORS.card,
       padding: 16,
       borderRadius: 16,
-      marginBottom: 16,
-      borderWidth: 1.5,
-      borderColor: COLORS.primary,
-      elevation: 3,
-      shadowColor: COLORS.primary,
+      marginBottom: 12,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      elevation: 2,
+      shadowColor: COLORS.shadow || '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.15,
-      shadowRadius: 5,
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
     },
-    paymentIconBoxActive: {
+    actionIconBox: {
       width: 48,
       height: 48,
       borderRadius: 14,
-      backgroundColor: COLORS.primary,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 16,
     },
-    paymentTextContainer: {
+    actionTextContainer: {
       flex: 1,
-      justifyContent: 'center',
     },
-    paymentTextActive: {
+    actionTitle: {
       color: COLORS.text,
       fontSize: 16,
       fontWeight: '800',
-      marginBottom: 2,
+      marginBottom: 4,
     },
-    paymentSubText: {
+    actionSubTitle: {
       fontSize: 12,
       color: COLORS.subText,
       fontWeight: '500',
     },
 
-    /* Disabled Payment Option */
-    paymentOptionDisabled: {
+    /* Contact Banner */
+    contactBanner: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: COLORS.background, // Fixed Hardcode!
-      padding: 16,
+      backgroundColor: COLORS.text, // Dark pop background
+      padding: 20,
       borderRadius: 16,
-      marginBottom: 15,
-      borderWidth: 1,
-      borderColor: COLORS.border,
+      marginTop: 8,
+      elevation: 5,
+      shadowColor: COLORS.text,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
     },
-    paymentIconBoxDisabled: {
-      width: 48,
-      height: 48,
-      borderRadius: 14,
-      backgroundColor: COLORS.placeholder,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: 16,
-    },
-    disabledText: {
-      color: COLORS.placeholder,
+    contactBannerTitle: {
+      color: COLORS.background, // Reverse text color
       fontSize: 16,
       fontWeight: '800',
-      marginBottom: 2,
+      marginBottom: 4,
     },
-    maintenanceText: {
+    contactBannerSub: {
       fontSize: 12,
-      color: COLORS.warning,
-      fontWeight: '600',
+      color: COLORS.background,
+      opacity: 0.8,
+      fontWeight: '500',
     },
 
     /* Custom Alert Modal Styling */
@@ -495,7 +528,7 @@ const getStyles = COLORS =>
       alignItems: 'center',
     },
     alertButtonText: {
-      color: COLORS.white,
+      color: '#FFFFFF',
       fontSize: 16,
       fontWeight: '800',
       letterSpacing: 0.5,

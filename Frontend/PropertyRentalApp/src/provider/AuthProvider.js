@@ -13,8 +13,8 @@ export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
 
   // useEffect(() => {
-  //   loadUser();
-  // }, []);
+  //   loadUser()
+  // }, [])
 
   useEffect(() => {
     setLoading(false)

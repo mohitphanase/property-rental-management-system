@@ -10,13 +10,13 @@ import {
   Modal,
   Platform,
   StatusBar,
+  Linking,
 } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
 import { getPropertyImages } from '../../services/propertyImageService'
 import { SERVER_URL } from '../../utils/config'
 import { getPropertyById } from '../../services/propertyServicet'
-import { getPaymentByBooking } from '../../services/paymentService'
 import { deleteBooking } from '../../services/bookingService'
 import { ThemeContext } from '../../provider/ThemeProvider'
 
@@ -25,7 +25,6 @@ export default function BookingDetailsScreen({ route, navigation }) {
 
   const [property, setProperty] = useState(null)
   const [propertyImage, setPropertyImage] = useState(null)
-  const [isPaid, setIsPaid] = useState(false)
 
   // Pulling dynamic COLORS from global theme
   const { COLORS } = useContext(ThemeContext)
@@ -44,7 +43,6 @@ export default function BookingDetailsScreen({ route, navigation }) {
   useEffect(() => {
     loadProperty()
     loadPropertyImage()
-    checkPayment()
   }, [])
 
   const loadProperty = async () => {
@@ -67,25 +65,6 @@ export default function BookingDetailsScreen({ route, navigation }) {
     }
   }
 
-  const checkPayment = async () => {
-    try {
-      const response = await getPaymentByBooking(booking.bookingId)
-      if (response.data.status === 'success' && response.data.data) {
-        setIsPaid(true)
-      }
-    } catch (error) {
-      console.log('=== checkPayment Error ===', error)
-    }
-  }
-
-  const onPayNow = () => {
-    navigation.navigate('PaymentScreen', {
-      booking,
-      property,
-      amount: property?.price,
-    })
-  }
-
   const closeAlert = () => {
     const { onClose } = alertConfig
     setAlertConfig({ ...alertConfig, visible: false })
@@ -98,12 +77,44 @@ export default function BookingDetailsScreen({ route, navigation }) {
     if (onConfirm) onConfirm()
   }
 
+  // --- Actions ---
+  const onContactOwner = () => {
+    if (!property?.ownerPhone) {
+      setAlertConfig({
+        visible: true,
+        title: 'Not Available',
+        message: 'The owner has not provided a contact number.',
+        type: 'warning',
+      })
+      return
+    }
+
+    setAlertConfig({
+      visible: true,
+      title: 'Contact Owner',
+      message: `Would you like to call ${property.ownerName || 'the property owner'}?\n\n📞 +91 ${property.ownerPhone}`,
+      type: 'confirm-call',
+      onConfirm: () => {
+        Linking.openURL(`tel:${property.ownerPhone}`)
+      },
+    })
+  }
+
+  // Navigate to PaymentScreen
+  const onRentDetails = () => {
+    navigation.navigate('PaymentScreen', {
+      booking,
+      property,
+      amount: property?.price,
+    })
+  }
+
   const onCancelBooking = () => {
     setAlertConfig({
       visible: true,
       title: 'Cancel Booking',
       message: 'Are you sure you want to cancel this booking?',
-      type: 'confirm',
+      type: 'confirm-cancel',
       onConfirm: async () => {
         try {
           await deleteBooking(booking.bookingId)
@@ -130,14 +141,17 @@ export default function BookingDetailsScreen({ route, navigation }) {
     })
   }
 
+  // Dynamic alert styling
   const getAlertStyle = type => {
     switch (type) {
       case 'success':
         return { icon: 'check-circle', color: COLORS.success }
       case 'error':
         return { icon: 'error', color: COLORS.error }
-      case 'confirm':
+      case 'confirm-cancel':
         return { icon: 'help-outline', color: COLORS.warning }
+      case 'confirm-call':
+        return { icon: 'phone-in-talk', color: COLORS.primary }
       default:
         return { icon: 'info', color: COLORS.primary }
     }
@@ -301,37 +315,58 @@ export default function BookingDetailsScreen({ route, navigation }) {
             </View>
           </View>
 
-          {/* Bottom Action Buttons */}
+          {/* Dynamic Action Center */}
           <View style={styles.actionContainer}>
-            {isPaid ? (
-              <View style={styles.successBox}>
-                <Icon name="verified" size={24} color={COLORS.success} />
-                <Text style={styles.successText}>
-                  Payment Completed Successfully
-                </Text>
+            {/* If Approved: Show Contact & Rent Details */}
+            {booking.status === 'APPROVED' && (
+              <View style={styles.approvedActionRow}>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.primaryActionBtn}
+                  onPress={onContactOwner}>
+                  <Icon name="phone" size={20} color={COLORS.white} />
+                  <Text style={styles.primaryActionText}>Contact Owner</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.secondaryActionBtn}
+                  onPress={onRentDetails}>
+                  <Icon name="receipt-long" size={20} color={COLORS.primary} />
+                  <Text style={styles.secondaryActionText}>Rent Details</Text>
+                </TouchableOpacity>
               </View>
-            ) : booking.status === 'APPROVED' ? (
+            )}
+
+            {/* If Rejected or Cancelled: Show Explore Button */}
+            {(booking.status === 'REJECTED' ||
+              booking.status === 'CANCELLED') && (
               <TouchableOpacity
                 activeOpacity={0.8}
-                style={styles.payButton}
-                onPress={onPayNow}>
-                <Text style={styles.payButtonText}>Proceed to Payment</Text>
-                <Icon name="arrow-forward" size={20} color={COLORS.white} />
+                style={styles.exploreBtn}
+                // Safely navigate into the nested Tab Navigator
+                onPress={() =>
+                  navigation.navigate('TenantTabs', {
+                    screen: 'Home',
+                  })
+                }>
+                <Icon name="search" size={22} color={COLORS.white} />
+                <Text style={styles.exploreBtnText}>
+                  Find Similar Properties
+                </Text>
               </TouchableOpacity>
-            ) : null}
+            )}
 
-            {booking.status !== 'REJECTED' &&
-              booking.status !== 'CANCELLED' &&
-              !isPaid && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  style={styles.cancelButtonSoft}
-                  onPress={onCancelBooking}>
-                  <Text style={styles.cancelButtonSoftText}>
-                    Cancel Booking
-                  </Text>
-                </TouchableOpacity>
-              )}
+            {/* If Pending or Approved: Allow Cancellation */}
+            {(booking.status === 'PENDING' ||
+              booking.status === 'APPROVED') && (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.cancelButtonSoft}
+                onPress={onCancelBooking}>
+                <Text style={styles.cancelButtonSoftText}>Cancel Booking</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
 
@@ -356,20 +391,37 @@ export default function BookingDetailsScreen({ route, navigation }) {
               <Text style={styles.alertTitle}>{alertConfig.title}</Text>
               <Text style={styles.alertMessage}>{alertConfig.message}</Text>
 
-              {alertConfig.type === 'confirm' ? (
+              {/* DYNAMIC CONFIRMATION BUTTONS */}
+              {alertConfig.type.startsWith('confirm') ? (
                 <View style={styles.alertButtonRow}>
                   <TouchableOpacity
                     style={styles.alertCancelBtn}
                     activeOpacity={0.7}
                     onPress={closeAlert}>
-                    <Text style={styles.alertCancelBtnText}>Keep it</Text>
+                    <Text style={styles.alertCancelBtnText}>
+                      {alertConfig.type === 'confirm-call'
+                        ? 'Cancel'
+                        : 'Keep it'}
+                    </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.alertConfirmBtn}
+                    style={[
+                      styles.alertConfirmBtn,
+                      {
+                        backgroundColor:
+                          alertConfig.type === 'confirm-call'
+                            ? COLORS.primary
+                            : COLORS.error,
+                      },
+                    ]}
                     activeOpacity={0.7}
                     onPress={handleConfirmAction}>
-                    <Text style={styles.alertConfirmBtnText}>Cancel</Text>
+                    <Text style={styles.alertConfirmBtnText}>
+                      {alertConfig.type === 'confirm-call'
+                        ? 'Call Now'
+                        : 'Cancel Booking'}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -395,11 +447,11 @@ const getStyles = COLORS =>
   StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: COLORS.background, // Fixed Hardcode
+      backgroundColor: COLORS.background,
     },
     container: {
       flex: 1,
-      backgroundColor: COLORS.background, // Fixed Hardcode
+      backgroundColor: COLORS.background,
     },
     scrollView: {
       flex: 1,
@@ -418,7 +470,7 @@ const getStyles = COLORS =>
       paddingBottom: 15,
       paddingTop:
         Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
-      backgroundColor: COLORS.background, // Fixed Hardcode
+      backgroundColor: COLORS.background,
     },
     backButton: {
       width: 44,
@@ -428,10 +480,12 @@ const getStyles = COLORS =>
       justifyContent: 'center',
       alignItems: 'center',
       elevation: 2,
-      shadowColor: COLORS.shadow,
+      shadowColor: COLORS.shadow || '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
+      borderWidth: 1,
+      borderColor: COLORS.border,
     },
     backIcon: {
       marginLeft: 6,
@@ -456,10 +510,12 @@ const getStyles = COLORS =>
       flexDirection: 'row',
       alignItems: 'center',
       elevation: 4,
-      shadowColor: COLORS.shadow,
+      shadowColor: COLORS.shadow || '#000',
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.08,
       shadowRadius: 10,
+      borderWidth: 1,
+      borderColor: COLORS.border,
     },
     propertyImage: {
       width: 100,
@@ -527,10 +583,12 @@ const getStyles = COLORS =>
       borderRadius: 20,
       padding: 20,
       elevation: 3,
-      shadowColor: COLORS.shadow,
+      shadowColor: COLORS.shadow || '#000',
       shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.06,
       shadowRadius: 8,
+      borderWidth: 1,
+      borderColor: COLORS.border,
     },
     ticketRow: {
       flexDirection: 'row',
@@ -592,7 +650,7 @@ const getStyles = COLORS =>
       flex: 1,
     },
     statusBannerTitle: {
-      color: COLORS.white,
+      color: '#FFFFFF',
       fontSize: 18,
       fontWeight: '800',
       marginBottom: 4,
@@ -617,66 +675,90 @@ const getStyles = COLORS =>
       shadowColor: COLORS.error,
     },
     cancelledBadge: {
-      backgroundColor: COLORS.cancelled,
-      shadowColor: COLORS.cancelled,
+      backgroundColor: COLORS.cancelled || COLORS.subText,
+      shadowColor: COLORS.cancelled || COLORS.subText,
     },
 
-    /* Modern Action Buttons */
+    /* --- Action Center Styles --- */
     actionContainer: {
       paddingHorizontal: 16,
       marginTop: 8,
     },
-    payButton: {
+    approvedActionRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      gap: 12,
+      marginBottom: 16,
+    },
+    primaryActionBtn: {
+      flex: 1,
+      flexDirection: 'row',
       backgroundColor: COLORS.primary,
       borderRadius: 16,
-      paddingHorizontal: 24,
-      paddingVertical: 18,
+      paddingVertical: 16,
       alignItems: 'center',
-      marginBottom: 16,
-      elevation: 6,
+      justifyContent: 'center',
+      elevation: 4,
       shadowColor: COLORS.primary,
-      shadowOffset: { width: 0, height: 4 },
+      shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.3,
-      shadowRadius: 8,
+      shadowRadius: 6,
+      gap: 8,
     },
-    payButtonText: {
-      color: COLORS.white,
+    primaryActionText: {
+      color: '#FFFFFF',
+      fontSize: 15,
+      fontWeight: '800',
+    },
+    secondaryActionBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      backgroundColor: COLORS.primary + '15',
+      borderRadius: 16,
+      paddingVertical: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: COLORS.primary + '30',
+      gap: 8,
+    },
+    secondaryActionText: {
+      color: COLORS.primary,
+      fontSize: 15,
+      fontWeight: '800',
+    },
+    exploreBtn: {
+      flexDirection: 'row',
+      backgroundColor: COLORS.primary,
+      borderRadius: 16,
+      paddingVertical: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 16,
+      elevation: 4,
+      shadowColor: COLORS.primary,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.3,
+      shadowRadius: 6,
+      gap: 8,
+    },
+    exploreBtnText: {
+      color: '#FFFFFF',
       fontSize: 16,
       fontWeight: '800',
-      letterSpacing: 0.5,
     },
     cancelButtonSoft: {
-      backgroundColor: COLORS.error + '15', // Fixed Hardcode (tinted background)
+      backgroundColor: COLORS.error + '10',
       borderRadius: 16,
       paddingVertical: 16,
       alignItems: 'center',
       marginBottom: 16,
+      borderWidth: 1,
+      borderColor: COLORS.error + '20',
     },
     cancelButtonSoftText: {
       color: COLORS.error,
       fontSize: 15,
-      fontWeight: '700',
-    },
-
-    /* Success Box */
-    successBox: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: COLORS.success + '15', // Fixed Hardcode
-      borderWidth: 1,
-      borderColor: COLORS.success + '40', // Fixed Hardcode
-      padding: 18,
-      borderRadius: 16,
-      marginBottom: 16,
-    },
-    successText: {
-      color: COLORS.success,
-      fontSize: 15,
-      fontWeight: '700',
-      marginLeft: 10,
+      fontWeight: '800',
     },
 
     /* Custom Alert Modal Styling */
@@ -728,9 +810,10 @@ const getStyles = COLORS =>
       alignItems: 'center',
     },
     alertButtonText: {
-      color: COLORS.white,
+      color: '#FFFFFF',
       fontSize: 16,
       fontWeight: '800',
+      letterSpacing: 0.5,
     },
     alertButtonRow: {
       flexDirection: 'row',
@@ -756,16 +839,14 @@ const getStyles = COLORS =>
       flex: 1,
       paddingVertical: 16,
       borderRadius: 16,
-      backgroundColor: COLORS.error,
       alignItems: 'center',
       elevation: 3,
-      shadowColor: COLORS.error,
       shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.3,
       shadowRadius: 5,
     },
     alertConfirmBtnText: {
-      color: COLORS.white,
+      color: '#FFFFFF',
       fontSize: 15,
       fontWeight: '800',
     },
