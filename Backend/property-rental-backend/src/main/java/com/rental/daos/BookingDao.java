@@ -41,4 +41,12 @@ public interface BookingDao extends JpaRepository<Booking, Long> {
     long countByPropertyOwner(User owner);
 
     long countByPropertyOwnerAndStatus(User owner, BookingStatus status);
+    
+    @Query("""
+    		SELECT COALESCE(SUM(b.property.price), 0)
+    		FROM Booking b
+    		WHERE b.property.owner = :owner
+    		AND b.status = com.rental.entity.BookingStatus.APPROVED
+    		""")
+    		Double getTotalEarnings(User owner);
 }

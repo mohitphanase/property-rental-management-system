@@ -3,6 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
+  TouchableOpacity,
 } from "react-native";
 
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -13,17 +14,18 @@ export default function RecentBookingCard({
   property,
   date,
   status,
+  onPress,
 }) {
 
   const getStatusColor = () => {
     switch (status) {
-      case "Approved":
+      case "APPROVED":
         return COLORS.success;
 
-      case "Pending":
+      case "PENDING":
         return COLORS.warning;
 
-      case "Rejected":
+      case "REJECTED":
         return COLORS.danger;
 
       default:
@@ -32,7 +34,11 @@ export default function RecentBookingCard({
   };
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.8}
+      onPress={onPress}
+    >
 
       <View style={styles.topRow}>
 
@@ -77,7 +83,7 @@ export default function RecentBookingCard({
 
       </View>
 
-    </View>
+    </TouchableOpacity>
   );
 }
 

@@ -136,7 +136,18 @@ public class BookingService {
         }).toList();
     }
     
-    public List<Booking> getOwnerBookings() {
+//    public List<Booking> getOwnerBookings() {
+//
+//        String email = SecurityContextHolder
+//                .getContext()
+//                .getAuthentication()
+//                .getName();
+//
+//        User owner = userDao.findByEmail(email);
+//
+//        return bookingDao.findByPropertyOwner(owner);
+//    }
+    public List<BookingResponseDto> getOwnerBookings() {
 
         String email = SecurityContextHolder
                 .getContext()
@@ -145,7 +156,28 @@ public class BookingService {
 
         User owner = userDao.findByEmail(email);
 
-        return bookingDao.findByPropertyOwner(owner);
+        List<Booking> bookings = bookingDao.findByPropertyOwner(owner);
+
+        return bookings.stream().map(booking -> {
+
+            BookingResponseDto dto = new BookingResponseDto();
+
+            dto.setBookingId(booking.getBookingid());
+
+            dto.setPropertyId(booking.getProperty().getPropertyId());
+            dto.setPropertyTitle(booking.getProperty().getTitle());
+
+            dto.setTenantId(booking.getTenant().getUserId());
+            dto.setTenantName(booking.getTenant().getName());
+
+            dto.setStartDate(booking.getStartDate());
+            dto.setEndDate(booking.getEndDate());
+            dto.setStatus(booking.getStatus());
+            dto.setCreatedAt(booking.getCreatedAt());
+
+            return dto;
+
+        }).toList();
     }
     
     public void deleteBooking(Long bookingId) {
