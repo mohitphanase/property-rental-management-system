@@ -150,3 +150,13 @@ CREATE TABLE reviews (
     UNIQUE(property_id, tenant_id)
 );
 
+-- Step 1: Drop the Foreign Key referencing property_id
+ALTER TABLE reviews DROP FOREIGN KEY reviews_ibfk_1;
+
+-- Step 2: Drop the Unique Key index (property_id, tenant_id)
+ALTER TABLE reviews DROP INDEX property_id;
+
+-- Step 3: Re-add the Foreign Key constraint for property_id
+ALTER TABLE reviews 
+ADD CONSTRAINT reviews_ibfk_1 
+FOREIGN KEY (property_id) REFERENCES properties (property_id) ON DELETE CASCADE;

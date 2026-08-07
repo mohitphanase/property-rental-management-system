@@ -1,9 +1,9 @@
-import React, { createContext, useEffect, useState } from 'react'
+import React, { createContext, useEffect, useState } from "react"
 
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
-import { login as loginApi, getProfile } from '../services/authService'
-import { TOKEN_KEY, USER_KEY } from '../utils/config'
+import { login as loginApi, getProfile } from "../services/authService"
+import { TOKEN_KEY, USER_KEY } from "../utils/config"
 
 export const AuthContext = createContext()
 
@@ -12,13 +12,13 @@ export default function AuthProvider({ children }) {
   const [token, setToken] = useState(null)
   const [user, setUser] = useState(null)
 
-  useEffect(() => {
-    loadUser();
-  }, []);
-
   // useEffect(() => {
-  //   setLoading(false)
-  // }, [])
+  //   loadUser();
+  // }, []);
+
+  useEffect(() => {
+    setLoading(false)
+  }, [])
 
   const loadUser = async () => {
     try {
@@ -32,9 +32,9 @@ export default function AuthProvider({ children }) {
       if (savedUser) {
         setUser(JSON.parse(savedUser))
       }
-      await new Promise(resolve => setTimeout(resolve, 5000))
+      await new Promise((resolve) => setTimeout(resolve, 5000))
     } catch (error) {
-      console.log('Load User Error:', error)
+      console.log("Load User Error:", error)
     } finally {
       setLoading(false)
     }
@@ -47,7 +47,7 @@ export default function AuthProvider({ children }) {
         password,
       })
 
-      if (response.status !== 'success') {
+      if (response.status !== "success") {
         throw new Error(response.message)
       }
 
@@ -59,7 +59,7 @@ export default function AuthProvider({ children }) {
 
       const profileResponse = await getProfile()
 
-      if (profileResponse.status !== 'success') {
+      if (profileResponse.status !== "success") {
         throw new Error(profileResponse.message)
       }
 
@@ -91,7 +91,8 @@ export default function AuthProvider({ children }) {
         user,
         login,
         logout,
-      }}>
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )
