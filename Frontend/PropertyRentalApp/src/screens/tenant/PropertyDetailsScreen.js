@@ -9,38 +9,39 @@ import {
   Linking,
   Modal,
   Platform,
-  SafeAreaView,
   Share,
   StatusBar,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import { ThemeContext } from '../../provider/ThemeProvider'
 import { SERVER_URL } from '../../utils/config'
 import { addWishlist, getWishlist } from '../../services/wishlistService'
 
 export default function PropertyDetailsScreen({ route, navigation }) {
-  const { property } = route.params
+  // Safe extraction of property to prevent undefined property errors
+  const property = route?.params?.property || {}
   const [isWishlisted, setIsWishlisted] = useState(false)
   const { COLORS } = useContext(ThemeContext)
   const styles = getStyles(COLORS)
 
   useEffect(() => {
-    loadWishlistStatus()
-  }, [])
+    if (property?.propertyId) {
+      loadWishlistStatus()
+    }
+  }, [property?.propertyId])
 
   const loadWishlistStatus = async () => {
     try {
       const response = await getWishlist()
 
-      // Fixed: Safely handling the array (matches your Home Screen logic)
       const wishlist = Array.isArray(response.data)
         ? response.data
         : response.data?.data || []
 
-      // Fixed: Converted to Strings to ensure safe comparison
       const exists = wishlist.some(
         item =>
-          String(item.property?.propertyId) === String(property.propertyId)
+          String(item.property?.propertyId) === String(property?.propertyId)
       )
 
       setIsWishlisted(exists)
@@ -49,8 +50,9 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     }
   }
 
+  // Safe evaluation using optional chaining
   const imageUrl =
-    property.images?.length > 0
+    property?.images && property.images.length > 0
       ? `${SERVER_URL}/${property.images[0].imageUrl}`
       : null
 
@@ -71,7 +73,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
   }
 
   const contactOwner = () => {
-    if (!property.ownerPhone) {
+    if (!property?.ownerPhone) {
       showAlert(
         'Not Available',
         'The owner has not provided a contact number for this property.',
@@ -85,7 +87,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Check out this property: ${property.title} in ${property.city} for ₹${property.price}/mo`,
+        message: `Check out this property: ${property?.title || 'Property'} in ${property?.city || 'City'} for ₹${property?.price || 0}/mo`,
       })
     } catch (error) {
       console.log('Error sharing:', error.message)
@@ -93,6 +95,8 @@ export default function PropertyDetailsScreen({ route, navigation }) {
   }
 
   const handleWishlist = async () => {
+    if (!property?.propertyId) return
+
     if (isWishlisted) {
       showAlert('Notice', 'This property is already in your wishlist.', 'info')
       return
@@ -123,6 +127,23 @@ export default function PropertyDetailsScreen({ route, navigation }) {
       default:
         return { icon: 'warning', color: COLORS.warning }
     }
+  }
+
+  // Fallback screen if property payload is unselected
+  if (!property?.propertyId) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.fallbackContainer}>
+          <TouchableOpacity
+            style={styles.backButtonFallback}
+            onPress={() => navigation.goBack()}>
+            <Icon name="arrow-back" size={22} color={COLORS.text} />
+          </TouchableOpacity>
+          <Icon name="info-outline" size={48} color={COLORS.subText} />
+          <Text style={styles.fallbackText}>Property details not found.</Text>
+        </View>
+      </SafeAreaView>
+    )
   }
 
   return (
@@ -159,7 +180,6 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                   style={[styles.circleIconButton, { marginLeft: 10 }]}
                   onPress={handleWishlist}>
                   <Icon
-                    // Key forces React to remount icon, instantly changing outline to filled
                     key={isWishlisted ? 'filled' : 'outline'}
                     name={isWishlisted ? 'favorite' : 'favorite-border'}
                     size={22}
@@ -234,15 +254,79 @@ export default function PropertyDetailsScreen({ route, navigation }) {
             </View>
           </View>
 
-          {/* Property Notes / Description */}
+          {/* Property Description */}
           <View style={styles.sectionCard}>
             <Text style={styles.sectionHeaderTitle}>Property Description</Text>
-
             <Text style={styles.descriptionText}>
               {property.description?.trim()
                 ? property.description
                 : 'No description has been provided for this property.'}
             </Text>
+          </View>
+
+          {/* Reviews Navigation Card */}
+          <View style={styles.sectionCard}>
+            <View style={styles.reviewHeaderRow}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.sectionHeaderTitle}>Reviews & Ratings</Text>
+                <View style={styles.ratingBadge}>
+                  <Icon name="star" size={14} color="#FFB800" />
+                  <Text style={styles.ratingText}>4.5</Text>
+                </View>
+              </View>
+
+              {/* Action Buttons Row */}
+              <View style={styles.headerButtonsRow}>
+                {/* 1. Navigate to My Reviews passing propertyId and propertyTitle */}
+                <TouchableOpacity
+                  style={styles.myReviewsHeaderBtn}
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    navigation.navigate('MyReviews', {
+                      propertyId: property.propertyId,
+                      propertyTitle: property.title,
+                    })
+                  }>
+                  <Icon name="person" size={16} color={COLORS.primary} />
+                  <Text style={styles.myReviewsHeaderText}>My Reviews</Text>
+                </TouchableOpacity>
+
+                {/* 2. Navigate to ReviewScreen passing propertyId and propertyTitle */}
+                <TouchableOpacity
+                  style={styles.writeReviewHeaderBtn}
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    navigation.navigate('ReviewScreen', {
+                      propertyId: property.propertyId,
+                      propertyTitle: property.title,
+                    })
+                  }>
+                  <Icon name="rate-review" size={16} color={COLORS.primary} />
+                  <Text style={styles.writeReviewHeaderText}>Reviews</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.viewReviewsCard}
+              activeOpacity={0.8}
+              onPress={() =>
+                navigation.navigate('ReviewScreen', {
+                  propertyId: property.propertyId,
+                  propertyTitle: property.title,
+                })
+              }>
+              <View style={styles.viewReviewsContent}>
+                <Icon name="reviews" size={24} color={COLORS.primary} />
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <Text style={styles.viewReviewsTitle}>Property Reviews</Text>
+                  <Text style={styles.viewReviewsSub}>
+                    Tap to view all tenant feedback for this property
+                  </Text>
+                </View>
+                <Icon name="chevron-right" size={24} color={COLORS.subText} />
+              </View>
+            </TouchableOpacity>
           </View>
         </ScrollView>
 
@@ -310,6 +394,24 @@ const getStyles = COLORS =>
     mainContainer: {
       flex: 1,
       backgroundColor: COLORS.background,
+    },
+    fallbackContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    backButtonFallback: {
+      position: 'absolute',
+      top: 20,
+      left: 20,
+      padding: 8,
+    },
+    fallbackText: {
+      fontSize: 16,
+      color: COLORS.subText,
+      marginTop: 10,
+      fontWeight: '600',
     },
     scrollView: {
       flex: 1,
@@ -448,6 +550,88 @@ const getStyles = COLORS =>
       fontSize: 14,
       color: COLORS.subText,
       lineHeight: 22,
+    },
+
+    /* Reviews Section Styling */
+    reviewHeaderRow: {
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      marginBottom: 12,
+      gap: 8,
+    },
+    headerButtonsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '100%',
+      justifyContent: 'flex-end',
+      gap: 8,
+    },
+    ratingBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#FFF8E7',
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+      marginLeft: 8,
+      marginBottom: 14,
+    },
+    ratingText: {
+      fontSize: 12,
+      fontWeight: '800',
+      color: '#B88600',
+      marginLeft: 4,
+    },
+    myReviewsHeaderBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: 8,
+      backgroundColor: COLORS.primary + '10',
+      borderWidth: 1,
+      borderColor: COLORS.primary + '30',
+    },
+    myReviewsHeaderText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: COLORS.primary,
+      marginLeft: 4,
+    },
+    writeReviewHeaderBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: 8,
+      backgroundColor: COLORS.primary + '20',
+    },
+    writeReviewHeaderText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: COLORS.primary,
+      marginLeft: 4,
+    },
+    viewReviewsCard: {
+      backgroundColor: COLORS.background,
+      borderRadius: 14,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+    },
+    viewReviewsContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    viewReviewsTitle: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: COLORS.text,
+    },
+    viewReviewsSub: {
+      fontSize: 12,
+      color: COLORS.subText,
+      marginTop: 2,
     },
 
     /* Fixed Bottom Action Bar */
