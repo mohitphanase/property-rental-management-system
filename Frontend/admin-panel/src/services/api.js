@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { analyzeSentiment } from './aiReviewService';
 
 // Base API URL utilizing Vite proxy to target http://localhost:8080 automatically
 const API_BASE_URL = '/api';
@@ -157,6 +158,10 @@ export const normalizeReview = (r) => {
   const pTitle = r.propertyTitle || r.property_title || r.property?.title || r.property?.name || 'Property Listing';
   const tId = r.tenantId || r.tenant_id || r.tenant?.userId || r.tenant?.id || r.user?.userId || r.user?.id || 0;
   const tName = r.tenantName || r.tenant_name || r.tenant?.name || r.tenant?.fullName || r.user?.name || 'Tenant User';
+  const rating = Number(r.rating) || 5;
+  const comment = r.comment || '';
+
+  const aiAnalysis = analyzeSentiment(comment, rating);
 
   return {
     ...r,
@@ -170,8 +175,9 @@ export const normalizeReview = (r) => {
     tenant_id: tId,
     tenantName: tName,
     tenant_name: tName,
-    rating: Number(r.rating) || 5,
-    comment: r.comment || '',
+    rating,
+    comment,
+    aiAnalysis,
     createdAt: r.createdAt || r.created_at || r.createAt || 'N/A',
     created_at: r.created_at || r.createdAt || r.createAt || 'N/A'
   };
