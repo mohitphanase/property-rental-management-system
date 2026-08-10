@@ -1,4 +1,5 @@
 import React from 'react'
+import { View, StyleSheet } from 'react-native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import TenantTabNavigator from './TenantTabNavigator'
@@ -10,15 +11,18 @@ import PropertyDetailsScreen from '../screens/tenant/PropertyDetailsScreen'
 import ReviewScreen from '../screens/tenant/ReviewScreen'
 import MyReviewsScreen from '../screens/tenant/MyReviewsScreen'
 
+// Import FloatingChatButton Component
+import FloatingChatButton from '../components/FloatingChatButton'
+
 const Stack = createNativeStackNavigator()
 
-export default function TenantStackNavigator() {
+function StackFlow() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerShown: false, // Hides native headers in favor of custom screen header bars
-        animation: 'slide_from_right', // Smooth right-to-left transition
-        contentStyle: { backgroundColor: '#F8F9FA' }, // Default background color matching the theme
+        headerShown: false,
+        animation: 'slide_from_right',
+        contentStyle: { backgroundColor: '#F8F9FA' },
       }}>
       {/* Bottom Tab Bar Stack */}
       <Stack.Screen name="TenantTabs" component={TenantTabNavigator} />
@@ -42,3 +46,19 @@ export default function TenantStackNavigator() {
     </Stack.Navigator>
   )
 }
+
+export default function TenantStackNavigator() {
+  return (
+    <View style={styles.container}>
+      <StackFlow />
+      {/* Absolute floating button stays on top in bottom-left corner */}
+      <FloatingChatButton />
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+})

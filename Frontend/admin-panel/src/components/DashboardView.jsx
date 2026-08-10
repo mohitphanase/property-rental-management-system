@@ -119,7 +119,7 @@ export default function DashboardView({ onNavigate }) {
       <div className="stats-grid">
         <div className="glass-card stat-card">
           <div className="stat-header">
-            <span className="stat-title">Gross Booking Value</span>
+            <span className="stat-title">Total Revenue</span>
             <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: 'var(--accent-emerald)' }}>
               <DollarSign size={22} />
             </div>
@@ -163,7 +163,7 @@ export default function DashboardView({ onNavigate }) {
         {/* Monthly Revenue Bar Chart */}
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', height: '340px' }}>
           <div className="section-header" style={{ marginBottom: '1rem' }}>
-            <h3 className="section-title">Monthly GBU</h3>
+            <h3 className="section-title">Monthly Revenue</h3>
           </div>
           <div style={{ flex: 1, width: '100%', minHeight: 0 }}>
             {monthlyRevenue.length === 0 ? (
