@@ -25,6 +25,7 @@ export default function WishlistScreen({ navigation }) {
 
   const { COLORS } = useContext(ThemeContext)
   const styles = getStyles(COLORS)
+
   // Custom Alert State
   const [alertConfig, setAlertConfig] = useState({
     visible: false,
@@ -42,8 +43,6 @@ export default function WishlistScreen({ navigation }) {
   const loadWishlist = async () => {
     try {
       const response = await getWishlist()
-      console.log(JSON.stringify(response.data, null, 2))
-      // Handle the data array properly depending on your API structure
       const data = Array.isArray(response.data)
         ? response.data
         : response.data?.data || []
@@ -80,11 +79,14 @@ export default function WishlistScreen({ navigation }) {
   const getAlertStyle = type => {
     switch (type) {
       case 'success':
-        return { icon: 'check-circle', color: COLORS.success }
+        return { icon: 'check-circle', color: COLORS.success || '#10B981' }
       case 'error':
-        return { icon: 'error', color: COLORS.error }
+        return { icon: 'error', color: COLORS.error || '#EF4444' }
       default:
-        return { icon: 'info', color: COLORS.info || COLORS.primary }
+        return {
+          icon: 'info',
+          color: COLORS.info || COLORS.primary || '#3B82F6',
+        }
     }
   }
 
@@ -100,7 +102,7 @@ export default function WishlistScreen({ navigation }) {
     return (
       <View style={styles.card}>
         <TouchableOpacity
-          activeOpacity={0.9}
+          activeOpacity={0.95}
           onPress={() =>
             navigation.navigate('PropertyDetails', { property: property })
           }>
@@ -114,33 +116,56 @@ export default function WishlistScreen({ navigation }) {
               style={styles.image}
               onError={e => console.log('Image Error:', e.nativeEvent)}
             />
+            {/* Dark gradient overlay for text readability */}
+            <View style={styles.imageScrim} pointerEvents="none" />
+
+            {/* Remove from wishlist button */}
             <TouchableOpacity
               style={styles.favoriteButton}
               activeOpacity={0.8}
               onPress={() => handleRemoveWishlist(item.wishlistId)}>
-              <Icon name="favorite" size={22} color={COLORS.error} />
+              <Icon
+                name="favorite"
+                size={20}
+                color={COLORS.error || '#EF4444'}
+              />
             </TouchableOpacity>
 
+            {/* Floating Price Tag */}
             <View style={styles.priceTag}>
               <Text style={styles.priceTagText}>
-                ₹{property?.price || property?.rent}
-                <Text style={styles.priceTagSub}>/mo</Text>
+                ₹
+                {Number(property?.price || property?.rent || 0).toLocaleString(
+                  'en-IN'
+                )}
+                <Text style={styles.priceTagSub}> / month</Text>
               </Text>
             </View>
           </View>
         </TouchableOpacity>
 
         <View style={styles.details}>
-          <Text style={styles.propertySubMeta}>
-            {property?.propertyType || 'Apartment'} •{' '}
-            {property?.furnishing || 'Furnished'}
-          </Text>
+          <View style={styles.metaRow}>
+            <View style={styles.typeBadge}>
+              <Text style={styles.typeBadgeText}>
+                {property?.propertyType || 'Apartment'}
+              </Text>
+            </View>
+            <Text style={styles.propertySubMeta}>
+              • {property?.furnishing || 'Furnished'}
+            </Text>
+          </View>
+
           <Text style={styles.name} numberOfLines={1}>
             {property?.title || property?.propertyName || 'Property Name'}
           </Text>
 
           <View style={styles.locationRow}>
-            <Icon name="location-on" size={16} color={COLORS.subText} />
+            <Icon
+              name="location-pin"
+              size={16}
+              color={COLORS.primary || '#2563EB'}
+            />
             <Text style={styles.location} numberOfLines={1}>
               {property?.city || property?.location || 'Unknown Location'}
             </Text>
@@ -148,11 +173,16 @@ export default function WishlistScreen({ navigation }) {
 
           <TouchableOpacity
             style={styles.button}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
             onPress={() =>
               navigation.navigate('PropertyDetails', { property: property })
             }>
             <Text style={styles.buttonText}>View Details</Text>
+            <Icon
+              name="arrow-forward"
+              size={16}
+              color={COLORS.primary || '#2563EB'}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -161,27 +191,36 @@ export default function WishlistScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading wishlist...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={COLORS.background}
+        />
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" color={COLORS.primary || '#2563EB'} />
+          <Text style={styles.loadingText}>Loading your favorites...</Text>
+        </View>
+      </SafeAreaView>
     )
   }
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={COLORS.card || '#FFFFFF'}
+      />
       <View style={styles.container}>
-        {/* Fixed Top Bar Header */}
+        {/* Modern Top Header */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
             activeOpacity={0.8}
             onPress={() => navigation.goBack()}>
             <Icon
-              name="arrow-back-ios"
-              size={20}
-              color={COLORS.text}
-              style={styles.backIcon}
+              name="arrow-back"
+              size={22}
+              color={COLORS.text || '#111827'}
             />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>My Wishlist</Text>
@@ -197,7 +236,11 @@ export default function WishlistScreen({ navigation }) {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <View style={styles.emptyIconBox}>
-                <Icon name="favorite-border" size={60} color={COLORS.primary} />
+                <Icon
+                  name="favorite-border"
+                  size={48}
+                  color={COLORS.primary || '#2563EB'}
+                />
               </View>
               <Text style={styles.emptyTitle}>Your wishlist is empty</Text>
               <Text style={styles.emptyText}>
@@ -206,6 +249,7 @@ export default function WishlistScreen({ navigation }) {
               </Text>
               <TouchableOpacity
                 style={styles.exploreButton}
+                activeOpacity={0.85}
                 onPress={() => navigation.navigate('Home')}>
                 <Text style={styles.exploreButtonText}>Explore Properties</Text>
               </TouchableOpacity>
@@ -222,12 +266,12 @@ export default function WishlistScreen({ navigation }) {
                   styles.alertIconContainer,
                   {
                     backgroundColor:
-                      getAlertStyle(alertConfig.type).color + '15',
+                      getAlertStyle(alertConfig.type).color + '1A',
                   },
                 ]}>
                 <Icon
                   name={getAlertStyle(alertConfig.type).icon}
-                  size={38}
+                  size={36}
                   color={getAlertStyle(alertConfig.type).color}
                 />
               </View>
@@ -239,9 +283,9 @@ export default function WishlistScreen({ navigation }) {
                   styles.alertButton,
                   { backgroundColor: getAlertStyle(alertConfig.type).color },
                 ]}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
                 onPress={closeAlert}>
-                <Text style={styles.alertButtonText}>OK</Text>
+                <Text style={styles.alertButtonText}>Got It</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -255,87 +299,79 @@ const getStyles = COLORS =>
   StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.card || '#FFFFFF',
     },
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
     loader: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
     loadingText: {
-      marginTop: 12,
-      fontSize: 16,
-      color: COLORS.subText,
+      marginTop: 14,
+      fontSize: 15,
+      color: COLORS.subText || '#6B7280',
       fontWeight: '500',
     },
 
-    /* Top Bar Header */
+    /* Modern Top Header */
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingHorizontal: 20,
-      paddingBottom: 15,
+      paddingHorizontal: 16,
+      paddingBottom: 14,
       paddingTop:
-        Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
-      backgroundColor: COLORS.background,
+        Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 12 : 12,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border || '#F3F4F6',
     },
     backButton: {
-      width: 45,
-      height: 45,
-      borderRadius: 22.5,
-      backgroundColor: COLORS.card,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: COLORS.background || '#F3F4F6',
       justifyContent: 'center',
       alignItems: 'center',
-      elevation: 3,
-      shadowColor: COLORS.shadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      borderWidth: 1,
-      borderColor: COLORS.border,
-    },
-    backIcon: {
-      marginLeft: 6, // centers the iOS arrow visually
     },
     headerTitle: {
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
     },
     headerSpacer: {
-      width: 45, // balances the back button width to perfectly center the title
+      width: 40,
     },
 
     listContainer: {
       paddingHorizontal: 16,
-      paddingTop: 10,
+      paddingTop: 16,
       paddingBottom: 40,
     },
 
-    /* Card Styles */
+    /* Refined Card Styles */
     card: {
-      backgroundColor: COLORS.card,
-      borderRadius: 16,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderRadius: 20,
       marginBottom: 20,
-      overflow: 'hidden',
       borderWidth: 1,
-      borderColor: COLORS.border,
-      elevation: 2,
-      shadowColor: COLORS.shadow,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 3,
+      borderColor: COLORS.border || 'rgba(229, 231, 235, 0.8)',
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.06,
+      shadowRadius: 10,
+      overflow: 'hidden',
     },
     imageContainer: {
       width: '100%',
-      height: 180,
-      backgroundColor: COLORS.disabled,
+      height: 220,
+      backgroundColor: '#E5E7EB',
       position: 'relative',
     },
     image: {
@@ -343,58 +379,80 @@ const getStyles = COLORS =>
       height: '100%',
       resizeMode: 'cover',
     },
+    imageScrim: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.15)',
+    },
     favoriteButton: {
       position: 'absolute',
-      top: 12,
-      right: 12,
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: 'rgba(255,255,255,0.9)',
+      top: 14,
+      right: 14,
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
       justifyContent: 'center',
       alignItems: 'center',
       elevation: 4,
-      shadowColor: COLORS.shadow,
+      shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
+      shadowOpacity: 0.15,
+      shadowRadius: 6,
     },
     priceTag: {
       position: 'absolute',
-      bottom: 12,
-      left: 12,
-      backgroundColor: COLORS.primary,
-      paddingHorizontal: 10,
+      bottom: 14,
+      left: 14,
+      backgroundColor: 'rgba(0, 0, 0, 0.75)',
+      paddingHorizontal: 12,
       paddingVertical: 6,
-      borderRadius: 8,
+      borderRadius: 12,
+      backdropFilter: 'blur(4px)',
     },
     priceTagText: {
-      color: COLORS.white,
+      color: '#FFFFFF',
       fontSize: 16,
       fontWeight: '800',
     },
     priceTagSub: {
       fontSize: 12,
-      fontWeight: '600',
-      opacity: 0.9,
+      fontWeight: '500',
+      color: 'rgba(255, 255, 255, 0.8)',
     },
 
-    /* Card Details */
+    /* Refined Details Section */
     details: {
       padding: 16,
     },
-    propertySubMeta: {
-      fontSize: 12,
-      color: COLORS.subText,
-      marginBottom: 4,
-      fontWeight: '600',
+    metaRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    typeBadge: {
+      backgroundColor: (COLORS.primary || '#2563EB') + '12',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 6,
+      marginRight: 6,
+    },
+    typeBadgeText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: COLORS.primary || '#2563EB',
       textTransform: 'uppercase',
     },
+    propertySubMeta: {
+      fontSize: 12,
+      color: COLORS.subText || '#6B7280',
+      fontWeight: '600',
+    },
     name: {
-      fontSize: 18,
+      fontSize: 19,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 6,
+      lineHeight: 24,
     },
     locationRow: {
       flexDirection: 'row',
@@ -403,119 +461,121 @@ const getStyles = COLORS =>
     },
     location: {
       fontSize: 14,
-      color: COLORS.subText,
+      color: COLORS.subText || '#4B5563',
       marginLeft: 4,
       fontWeight: '500',
       flex: 1,
     },
     button: {
-      borderWidth: 1.5,
-      borderColor: COLORS.primary,
+      flexDirection: 'row',
+      backgroundColor: (COLORS.primary || '#2563EB') + '10',
       paddingVertical: 12,
       borderRadius: 12,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: COLORS.card,
+      gap: 6,
     },
     buttonText: {
-      color: COLORS.primary,
+      color: COLORS.primary || '#2563EB',
       fontWeight: '700',
       fontSize: 15,
     },
 
-    /* Empty State Styles */
+    /* Modern Empty State */
     emptyContainer: {
       alignItems: 'center',
       justifyContent: 'center',
       paddingTop: 80,
-      paddingHorizontal: 20,
+      paddingHorizontal: 24,
     },
     emptyIconBox: {
-      width: 100,
-      height: 100,
-      borderRadius: 50,
-      backgroundColor: COLORS.primary + '15',
+      width: 90,
+      height: 90,
+      borderRadius: 45,
+      backgroundColor: (COLORS.primary || '#2563EB') + '10',
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: 20,
+      borderWidth: 1,
+      borderColor: (COLORS.primary || '#2563EB') + '20',
     },
     emptyTitle: {
       fontSize: 20,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 10,
     },
     emptyText: {
-      fontSize: 15,
-      color: COLORS.subText,
+      fontSize: 14,
+      color: COLORS.subText || '#6B7280',
       textAlign: 'center',
       lineHeight: 22,
-      marginBottom: 25,
+      marginBottom: 28,
     },
     exploreButton: {
-      backgroundColor: COLORS.primary,
-      paddingHorizontal: 25,
+      backgroundColor: COLORS.primary || '#2563EB',
+      paddingHorizontal: 28,
       paddingVertical: 14,
       borderRadius: 14,
-      elevation: 3,
-      shadowColor: COLORS.primary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
+      elevation: 2,
+      shadowColor: COLORS.primary || '#2563EB',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.2,
+      shadowRadius: 6,
     },
     exploreButtonText: {
-      color: COLORS.white,
+      color: '#FFFFFF',
       fontWeight: '700',
       fontSize: 15,
     },
 
-    /* Custom Alert Modal Styling */
+    /* Custom Alert Modal */
     alertOverlay: {
       flex: 1,
       backgroundColor: 'rgba(0,0,0,0.45)',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      padding: 24,
     },
     alertBox: {
       width: '100%',
-      backgroundColor: COLORS.card,
+      backgroundColor: COLORS.card || '#FFFFFF',
       borderRadius: 24,
-      padding: 25,
+      padding: 24,
       alignItems: 'center',
       elevation: 10,
     },
     alertIconContainer: {
-      width: 70,
-      height: 70,
-      borderRadius: 35,
+      width: 64,
+      height: 64,
+      borderRadius: 32,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 20,
+      marginBottom: 16,
     },
     alertTitle: {
-      fontSize: 20,
-      fontWeight: '800',
-      color: COLORS.text,
-      marginBottom: 10,
+      fontSize: 18,
+      fontWeight: '700',
+      color: COLORS.text || '#111827',
+      marginBottom: 8,
       textAlign: 'center',
     },
     alertMessage: {
       fontSize: 14,
-      color: COLORS.subText,
+      color: COLORS.subText || '#4B5563',
       textAlign: 'center',
-      marginBottom: 25,
+      marginBottom: 24,
       lineHeight: 20,
     },
     alertButton: {
       width: '100%',
       paddingVertical: 14,
-      borderRadius: 14,
+      borderRadius: 12,
       alignItems: 'center',
     },
     alertButtonText: {
-      color: COLORS.white,
-      fontSize: 16,
-      fontWeight: '700',
+      color: '#FFFFFF',
+      fontSize: 15,
+      fontWeight: '600',
     },
   })

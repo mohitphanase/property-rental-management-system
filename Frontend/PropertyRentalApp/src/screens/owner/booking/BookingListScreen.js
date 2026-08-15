@@ -18,6 +18,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons'
 import {
   updateBookingStatus,
   getOwnerBookings,
+  // deleteBooking // <-- Import your delete API here when ready
 } from '../../../services/bookingService1'
 import { ThemeContext } from '../../../provider/ThemeProvider'
 
@@ -101,6 +102,38 @@ export default function BookingListScreen() {
           error.response?.data?.message || 'Failed to update booking status.',
           'error'
         )
+      }, 500)
+    }
+  }
+
+  // NEW: Handler for Rejected Bookings (e.g., Delete action)
+  const handleDeleteRequest = bookingId => {
+    showAlert(
+      'Delete Booking',
+      'Are you sure you want to remove this rejected booking from your list?',
+      'confirm',
+      () => executeDelete(bookingId)
+    )
+  }
+
+  const executeDelete = async bookingId => {
+    try {
+      // TODO: Replace with your actual delete API call
+      // await deleteBooking(bookingId)
+
+      closeAlert()
+      setTimeout(() => {
+        showAlert(
+          'Deleted',
+          'The rejected booking was removed successfully.',
+          'success'
+        )
+        loadBookings() // Refresh the list
+      }, 500)
+    } catch (error) {
+      closeAlert()
+      setTimeout(() => {
+        showAlert('Error', 'Failed to delete the booking.', 'error')
       }, 500)
     }
   }
@@ -221,6 +254,19 @@ export default function BookingListScreen() {
               activeOpacity={0.8}>
               <Icon name="check" size={18} color={COLORS.white} />
               <Text style={styles.acceptButtonText}>Accept</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* NEW: Action Button for REJECTED Bookings */}
+        {item.status === 'REJECTED' && (
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeleteRequest(item.bookingId)}
+              activeOpacity={0.7}>
+              <Icon name="delete-outline" size={18} color={COLORS.error} />
+              <Text style={styles.deleteButtonText}>Delete Request</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -546,6 +592,25 @@ const getStyles = COLORS =>
       gap: 6,
     },
     rejectButtonText: {
+      color: COLORS.error,
+      fontWeight: '800',
+      fontSize: 15,
+    },
+
+    /* NEW: Delete Button Styles */
+    deleteButton: {
+      flex: 1,
+      flexDirection: 'row',
+      backgroundColor: COLORS.error + '10', // Light red background
+      borderWidth: 1.5,
+      borderColor: COLORS.error + '40',
+      paddingVertical: 14,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+    },
+    deleteButtonText: {
       color: COLORS.error,
       fontWeight: '800',
       fontSize: 15,

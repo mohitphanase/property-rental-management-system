@@ -125,11 +125,11 @@ const BookingFormScreen = ({ route, navigation }) => {
   const getAlertStyle = type => {
     switch (type) {
       case 'success':
-        return { icon: 'check-circle', color: COLORS.success }
+        return { icon: 'check-circle', color: COLORS.success || '#10B981' }
       case 'error':
-        return { icon: 'error', color: COLORS.error }
+        return { icon: 'error', color: COLORS.error || '#EF4444' }
       default:
-        return { icon: 'warning', color: COLORS.warning }
+        return { icon: 'warning', color: COLORS.warning || '#F59E0B' }
     }
   }
 
@@ -154,20 +154,31 @@ const BookingFormScreen = ({ route, navigation }) => {
     }
   }
 
+  // Helper for Indian Currency Formatting
+  const formatCurrency = num => `₹${Number(num || 0).toLocaleString('en-IN')}`
+
+  const nights = Math.max(
+    1,
+    Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
+  )
+
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={COLORS.background || '#F5F6FA'}
+      />
       <View style={styles.container}>
-        {/* Seamless Top Bar Header */}
+        {/* Modern Floating Header */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
             onPress={() => navigation.goBack()}>
             <Icon
-              name="arrow-back-ios"
-              size={18}
-              color={COLORS.text}
-              style={styles.backIcon}
+              name="arrow-back"
+              size={22}
+              color={COLORS.text || '#111827'}
             />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Request to Book</Text>
@@ -178,7 +189,7 @@ const BookingFormScreen = ({ route, navigation }) => {
           style={styles.scrollView}
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}>
-          {/* Compact Property Summary Card */}
+          {/* Premium Property Summary Card */}
           <View style={styles.propertyCard}>
             <Image
               source={
@@ -188,15 +199,27 @@ const BookingFormScreen = ({ route, navigation }) => {
               }
               style={styles.propertyImage}
             />
+            <View style={styles.propertyImageOverlay} />
             <View style={styles.propertyDetails}>
-              <Text style={styles.propertySubText}>
-                {property?.propertyType || 'Property'}
-              </Text>
+              <View style={styles.propertyTypeBadge}>
+                <Icon
+                  name="villa"
+                  size={11}
+                  color={COLORS.primary || '#2563EB'}
+                />
+                <Text style={styles.propertySubText}>
+                  {property?.propertyType || 'Property'}
+                </Text>
+              </View>
               <Text style={styles.propertyTitle} numberOfLines={2}>
                 {property?.title || 'Property Name'}
               </Text>
               <View style={styles.locationRow}>
-                <Icon name="location-pin" size={14} color={COLORS.subText} />
+                <Icon
+                  name="location-pin"
+                  size={14}
+                  color={COLORS.subText || '#6B7280'}
+                />
                 <Text style={styles.propertyLocation} numberOfLines={1}>
                   {property?.city || 'Location'}
                 </Text>
@@ -204,73 +227,97 @@ const BookingFormScreen = ({ route, navigation }) => {
             </View>
           </View>
 
-          <View style={styles.divider} />
-
           {/* Trip Dates Selection */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Your Trip Dates</Text>
             <Text style={styles.sectionSubTitle}>
-              Select when you want to move in.
+              Select your check-in and check-out dates.
             </Text>
           </View>
 
           <View style={styles.calendarWidget}>
             {/* Check-in Selector */}
             <TouchableOpacity
-              style={styles.dateSelector}
-              activeOpacity={0.7}
+              style={[styles.dateSelector, styles.dateSelectorStart]}
+              activeOpacity={0.85}
               onPress={() => setShowStartPicker(true)}>
+              <View style={styles.dateSelectorTopStripe} />
               <View style={styles.dateSelectorHeader}>
+                <View style={styles.dateIconBubble}>
+                  <Icon name="flight-takeoff" size={13} color="#FFFFFF" />
+                </View>
                 <Text style={styles.dateLabel}>Check-in</Text>
-                <Icon name="edit-calendar" size={16} color={COLORS.primary} />
               </View>
               <Text style={styles.bigDateText}>{startFormatted.day}</Text>
               <Text style={styles.monthYearText}>
                 {startFormatted.month} {startFormatted.year}
               </Text>
-              <Text style={styles.weekdayText}>{startFormatted.weekday}</Text>
+              <View style={styles.weekdayPill}>
+                <Text style={styles.weekdayText}>{startFormatted.weekday}</Text>
+              </View>
             </TouchableOpacity>
 
-            {/* Separator */}
+            {/* Floating Connection Arrow */}
             <View style={styles.widgetSeparator}>
+              <View style={styles.nightsBadge}>
+                <Text style={styles.nightsBadgeText}>{nights}</Text>
+                <Text style={styles.nightsBadgeLabel}>
+                  {nights === 1 ? 'night' : 'nights'}
+                </Text>
+              </View>
               <View style={styles.arrowCircle}>
-                <Icon name="arrow-forward" size={16} color={COLORS.white} />
+                <Icon name="sync-alt" size={16} color="#FFFFFF" />
               </View>
             </View>
 
             {/* Check-out Selector */}
             <TouchableOpacity
-              style={styles.dateSelector}
-              activeOpacity={0.7}
+              style={[styles.dateSelector, styles.dateSelectorEnd]}
+              activeOpacity={0.85}
               onPress={() => setShowEndPicker(true)}>
+              <View
+                style={[
+                  styles.dateSelectorTopStripe,
+                  styles.dateSelectorTopStripeEnd,
+                ]}
+              />
               <View style={styles.dateSelectorHeader}>
+                <View style={[styles.dateIconBubble, styles.dateIconBubbleEnd]}>
+                  <Icon name="flight-land" size={13} color="#FFFFFF" />
+                </View>
                 <Text style={styles.dateLabel}>Check-out</Text>
-                <Icon name="edit-calendar" size={16} color={COLORS.primary} />
               </View>
               <Text style={styles.bigDateText}>{endFormatted.day}</Text>
               <Text style={styles.monthYearText}>
                 {endFormatted.month} {endFormatted.year}
               </Text>
-              <Text style={styles.weekdayText}>{endFormatted.weekday}</Text>
+              <View style={styles.weekdayPill}>
+                <Text style={styles.weekdayText}>{endFormatted.weekday}</Text>
+              </View>
             </TouchableOpacity>
           </View>
 
-          {/* Pricing Summary */}
+          {/* Pricing Summary (Receipt Style) */}
           <View style={styles.pricingCard}>
-            <Text style={styles.pricingTitle}>Price Details</Text>
+            <View style={styles.pricingTitleRow}>
+              <Icon
+                name="receipt-long"
+                size={18}
+                color={COLORS.primary || '#2563EB'}
+              />
+              <Text style={styles.pricingTitle}>Price Details</Text>
+            </View>
+            <View style={styles.pricingDivider} />
             <View style={styles.pricingRow}>
               <Text style={styles.pricingLabel}>Monthly Rent</Text>
-              <Text style={styles.pricingValue}>₹{property?.price || '0'}</Text>
+              <Text style={styles.pricingValue}>
+                {formatCurrency(property?.price)}
+              </Text>
             </View>
+
             <View style={styles.pricingRow}>
               <Text style={styles.pricingLabel}>Booking Duration</Text>
-              <Text style={styles.pricingValue}>
-                {Math.max(
-                  1,
-                  Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
-                )}{' '}
-                Days
-              </Text>
+              <Text style={styles.pricingValue}>{nights} Days</Text>
             </View>
           </View>
         </ScrollView>
@@ -280,15 +327,23 @@ const BookingFormScreen = ({ route, navigation }) => {
           <View style={styles.bottomPriceContainer}>
             <Text style={styles.bottomPriceLabel}>Total Amount</Text>
             <Text style={styles.bottomPriceValue}>
-              ₹{property?.price || '0'}
+              {formatCurrency(property?.price)}
+              <Text style={styles.bottomPriceMonth}> /mo</Text>
             </Text>
           </View>
           <TouchableOpacity
             style={styles.confirmButton}
-            activeOpacity={0.8}
+            activeOpacity={0.88}
             onPress={onConfirmBooking}>
+            <View style={styles.confirmButtonShine} />
             <Text style={styles.confirmButtonText}>Confirm</Text>
-            <Icon name="check-circle" size={20} color={COLORS.white} />
+            <View style={styles.confirmButtonIconWrap}>
+              <Icon
+                name="arrow-forward"
+                size={18}
+                color={COLORS.primary || '#2563EB'}
+              />
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -300,8 +355,20 @@ const BookingFormScreen = ({ route, navigation }) => {
             animationType="slide">
             <View style={styles.iosPickerOverlay}>
               <View style={styles.iosPickerContainer}>
+                <View style={styles.iosPickerHandle} />
                 <View style={styles.iosPickerHeader}>
+                  <View>
+                    <Text style={styles.iosPickerHeaderLabel}>
+                      {showStartPicker ? 'Select check-in' : 'Select check-out'}
+                    </Text>
+                    <Text style={styles.iosPickerHeaderSub}>
+                      {showStartPicker
+                        ? 'When does your stay begin?'
+                        : 'When does your stay end?'}
+                    </Text>
+                  </View>
                   <TouchableOpacity
+                    style={styles.iosPickerDoneWrap}
                     onPress={() => {
                       setShowStartPicker(false)
                       setShowEndPicker(false)
@@ -316,7 +383,7 @@ const BookingFormScreen = ({ route, navigation }) => {
                   minimumDate={showStartPicker ? new Date() : startDate}
                   onChange={(e, date) => onChangeDate(e, date, showStartPicker)}
                   style={styles.iosPicker}
-                  accentColor={COLORS.primary}
+                  accentColor={COLORS.primary || '#2563EB'}
                 />
               </View>
             </View>
@@ -353,12 +420,12 @@ const BookingFormScreen = ({ route, navigation }) => {
                   styles.alertIconContainer,
                   {
                     backgroundColor:
-                      getAlertStyle(alertConfig.type).color + '15',
+                      getAlertStyle(alertConfig.type).color + '1A',
                   },
                 ]}>
                 <Icon
                   name={getAlertStyle(alertConfig.type).icon}
-                  size={38}
+                  size={36}
                   color={getAlertStyle(alertConfig.type).color}
                 />
               </View>
@@ -370,9 +437,9 @@ const BookingFormScreen = ({ route, navigation }) => {
                   styles.alertButton,
                   { backgroundColor: getAlertStyle(alertConfig.type).color },
                 ]}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
                 onPress={closeAlert}>
-                <Text style={styles.alertButtonText}>OK</Text>
+                <Text style={styles.alertButtonText}>Got It</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -388,11 +455,11 @@ const getStyles = COLORS =>
   StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F5F6FA',
     },
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F5F6FA',
     },
     scrollView: {
       flex: 1,
@@ -403,83 +470,91 @@ const getStyles = COLORS =>
       paddingBottom: 40,
     },
 
-    /* Seamless Header */
+    /* Modern Floating Header */
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 16,
-      paddingBottom: 15,
+      paddingBottom: 16,
       paddingTop:
-        Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
-      backgroundColor: COLORS.background,
+        Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 16,
+      backgroundColor: COLORS.background || '#F5F6FA',
     },
     backButton: {
-      width: 42,
-      height: 42,
-      borderRadius: 21,
-      backgroundColor: COLORS.card,
+      width: 46,
+      height: 46,
+      borderRadius: 23,
+      backgroundColor: COLORS.card || '#FFFFFF',
       justifyContent: 'center',
       alignItems: 'center',
-      elevation: 2,
-      shadowColor: COLORS.shadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      borderWidth: 1,
-      borderColor: COLORS.border,
-    },
-    backIcon: {
-      marginLeft: 6,
+      elevation: 3,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
     },
     headerTitle: {
-      fontSize: 18,
+      fontSize: 19,
       fontWeight: '800',
-      color: COLORS.text,
-      letterSpacing: 0.3,
+      color: COLORS.text || '#111827',
+      letterSpacing: 0.2,
     },
     headerSpacer: {
-      width: 42,
+      width: 46,
     },
 
-    /* Compact Property Card */
+    /* Premium Property Card */
     propertyCard: {
       flexDirection: 'row',
-      backgroundColor: COLORS.card,
-      borderRadius: 16,
-      padding: 12,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderRadius: 24,
+      padding: 14,
       alignItems: 'center',
-      elevation: 2,
-      shadowColor: COLORS.shadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 5,
-      borderWidth: 1,
-      borderColor: COLORS.border,
-      marginBottom: 20,
+      elevation: 5,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.08,
+      shadowRadius: 14,
+      marginBottom: 28,
+      overflow: 'hidden',
     },
     propertyImage: {
-      width: 80,
-      height: 80,
-      borderRadius: 12,
-      backgroundColor: COLORS.disabled,
-      marginRight: 14,
+      width: 96,
+      height: 96,
+      borderRadius: 18,
+      backgroundColor: '#E5E7EB',
+      marginRight: 16,
+    },
+    propertyImageOverlay: {
+      display: 'none',
     },
     propertyDetails: {
       flex: 1,
       justifyContent: 'center',
     },
+    propertyTypeBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      alignSelf: 'flex-start',
+      backgroundColor: (COLORS.primary || '#2563EB') + '15',
+      paddingHorizontal: 9,
+      paddingVertical: 4,
+      borderRadius: 8,
+      marginBottom: 8,
+    },
     propertySubText: {
-      fontSize: 12,
-      color: COLORS.subText,
-      fontWeight: '600',
-      marginBottom: 4,
+      fontSize: 10,
+      color: COLORS.primary || '#2563EB',
+      fontWeight: '800',
       textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     propertyTitle: {
-      fontSize: 16,
-      fontWeight: '700',
-      color: COLORS.text,
+      fontSize: 17,
+      fontWeight: '800',
+      color: COLORS.text || '#111827',
       marginBottom: 6,
       lineHeight: 22,
     },
@@ -489,114 +564,185 @@ const getStyles = COLORS =>
     },
     propertyLocation: {
       fontSize: 13,
-      color: COLORS.subText,
+      color: COLORS.subText || '#6B7280',
       marginLeft: 4,
       flex: 1,
-    },
-
-    divider: {
-      height: 1,
-      backgroundColor: COLORS.border,
-      marginBottom: 24,
+      fontWeight: '500',
     },
 
     /* Trip Dates Section */
     sectionHeader: {
       marginBottom: 16,
+      paddingHorizontal: 4,
     },
     sectionTitle: {
-      fontSize: 20,
+      fontSize: 21,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 4,
     },
     sectionSubTitle: {
       fontSize: 14,
-      color: COLORS.subText,
+      color: COLORS.subText || '#6B7280',
+      fontWeight: '500',
     },
 
     /* Interactive Calendar Widget */
     calendarWidget: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 24,
+      alignItems: 'stretch',
+      marginBottom: 28,
     },
     dateSelector: {
       flex: 1,
-      backgroundColor: COLORS.primary + '10', // Soft primary tint
-      borderRadius: 20,
-      padding: 16,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderRadius: 26,
+      padding: 20,
+      paddingTop: 24,
       alignItems: 'center',
-      borderWidth: 1,
-      borderColor: COLORS.primary + '30',
+      overflow: 'hidden',
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.06,
+      shadowRadius: 12,
+    },
+    dateSelectorStart: {},
+    dateSelectorEnd: {},
+    dateSelectorTopStripe: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 5,
+      backgroundColor: COLORS.primary || '#2563EB',
+    },
+    dateSelectorTopStripeEnd: {
+      backgroundColor: COLORS.success || '#10B981',
     },
     dateSelectorHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 10,
+      marginBottom: 14,
       gap: 6,
+    },
+    dateIconBubble: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: COLORS.primary || '#2563EB',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    dateIconBubbleEnd: {
+      backgroundColor: COLORS.success || '#10B981',
     },
     dateLabel: {
       fontSize: 12,
-      fontWeight: '700',
-      color: COLORS.primary,
+      fontWeight: '800',
+      color: COLORS.text || '#111827',
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
     bigDateText: {
-      fontSize: 36,
+      fontSize: 40,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 2,
+      lineHeight: 44,
     },
     monthYearText: {
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '700',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
+      marginBottom: 10,
+    },
+    weekdayPill: {
+      backgroundColor: COLORS.background || '#F5F6FA',
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 20,
     },
     weekdayText: {
       fontSize: 12,
-      color: COLORS.subText,
-      marginTop: 2,
-      fontWeight: '500',
+      color: COLORS.subText || '#6B7280',
+      fontWeight: '700',
     },
     widgetSeparator: {
-      width: 30,
+      width: 46,
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 10,
     },
-    arrowCircle: {
-      width: 30,
-      height: 30,
-      borderRadius: 15,
-      backgroundColor: COLORS.primary,
-      justifyContent: 'center',
+    nightsBadge: {
+      position: 'absolute',
+      top: -6,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderRadius: 12,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
       alignItems: 'center',
       elevation: 3,
-      shadowColor: COLORS.primary,
+      shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
+      shadowOpacity: 0.08,
       shadowRadius: 4,
-      position: 'absolute',
+    },
+    nightsBadgeText: {
+      fontSize: 13,
+      fontWeight: '800',
+      color: COLORS.primary || '#2563EB',
+      lineHeight: 15,
+    },
+    nightsBadgeLabel: {
+      fontSize: 8,
+      fontWeight: '700',
+      color: COLORS.subText || '#6B7280',
+      textTransform: 'uppercase',
+      letterSpacing: 0.3,
+    },
+    arrowCircle: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: COLORS.primary || '#2563EB',
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 5,
+      shadowColor: COLORS.primary || '#2563EB',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.35,
+      shadowRadius: 8,
     },
 
-    /* Pricing Summary Card */
+    /* Pricing Summary Card (Receipt Style) */
     pricingCard: {
-      backgroundColor: COLORS.card,
-      borderRadius: 16,
-      padding: 16,
-      borderWidth: 1,
-      borderColor: COLORS.border,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderRadius: 22,
+      padding: 20,
       marginBottom: 20,
+      elevation: 3,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.05,
+      shadowRadius: 10,
+    },
+    pricingTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginBottom: 14,
     },
     pricingTitle: {
-      fontSize: 16,
-      fontWeight: '700',
-      color: COLORS.text,
-      marginBottom: 12,
+      fontSize: 17,
+      fontWeight: '800',
+      color: COLORS.text || '#111827',
+    },
+    pricingDivider: {
+      height: 1,
+      backgroundColor: COLORS.border || '#F3F4F6',
+      marginBottom: 8,
     },
     pricingRow: {
       flexDirection: 'row',
@@ -605,13 +751,13 @@ const getStyles = COLORS =>
     },
     pricingLabel: {
       fontSize: 14,
-      color: COLORS.subText,
+      color: COLORS.subText || '#6B7280',
       fontWeight: '500',
     },
     pricingValue: {
-      fontSize: 14,
-      color: COLORS.text,
-      fontWeight: '700',
+      fontSize: 15,
+      color: COLORS.text || '#111827',
+      fontWeight: '800',
     },
 
     /* Fixed Bottom Action Bar */
@@ -620,123 +766,173 @@ const getStyles = COLORS =>
       bottom: 0,
       left: 0,
       right: 0,
-      backgroundColor: COLORS.card,
+      backgroundColor: COLORS.card || '#FFFFFF',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: 20,
-      paddingVertical: 14,
-      paddingBottom: Platform.OS === 'ios' ? 30 : 14,
-      borderTopWidth: 1,
-      borderTopColor: COLORS.border,
-      elevation: 10,
-      shadowColor: COLORS.shadow,
-      shadowOffset: { width: 0, height: -4 },
-      shadowOpacity: 0.05,
-      shadowRadius: 5,
+      paddingVertical: 16,
+      paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+      borderTopLeftRadius: 28,
+      borderTopRightRadius: 28,
+      elevation: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: -6 },
+      shadowOpacity: 0.1,
+      shadowRadius: 16,
     },
     bottomPriceContainer: {
       flex: 1,
     },
     bottomPriceLabel: {
-      fontSize: 12,
-      color: COLORS.subText,
-      fontWeight: '600',
+      fontSize: 11,
+      color: COLORS.subText || '#6B7280',
+      fontWeight: '700',
       textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 2,
     },
     bottomPriceValue: {
-      fontSize: 22,
+      fontSize: 25,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
+    },
+    bottomPriceMonth: {
+      fontSize: 14,
+      color: COLORS.subText || '#6B7280',
+      fontWeight: '600',
     },
     confirmButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: COLORS.primary,
-      paddingHorizontal: 24,
-      paddingVertical: 14,
-      borderRadius: 14,
-      elevation: 4,
-      shadowColor: COLORS.primary,
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.3,
-      shadowRadius: 5,
-      gap: 8,
+      backgroundColor: COLORS.primary || '#2563EB',
+      paddingHorizontal: 26,
+      paddingVertical: 17,
+      borderRadius: 30,
+      elevation: 6,
+      shadowColor: COLORS.primary || '#2563EB',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.4,
+      shadowRadius: 12,
+      gap: 10,
+      overflow: 'hidden',
+    },
+    confirmButtonShine: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '50%',
+      backgroundColor: 'rgba(255,255,255,0.12)',
     },
     confirmButtonText: {
-      color: COLORS.white,
+      color: '#FFFFFF',
       fontSize: 16,
       fontWeight: '800',
+      letterSpacing: 0.3,
+    },
+    confirmButtonIconWrap: {
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      backgroundColor: '#FFFFFF',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
 
     /* iOS Picker Modal Styles */
     iosPickerOverlay: {
       flex: 1,
       justifyContent: 'flex-end',
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: 'rgba(17,24,39,0.55)',
     },
     iosPickerContainer: {
-      backgroundColor: COLORS.card,
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
-      paddingBottom: 30,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderTopLeftRadius: 32,
+      borderTopRightRadius: 32,
+      paddingBottom: 34,
+      paddingTop: 10,
+    },
+    iosPickerHandle: {
+      width: 40,
+      height: 5,
+      borderRadius: 3,
+      backgroundColor: COLORS.border || '#E5E7EB',
+      alignSelf: 'center',
+      marginBottom: 12,
     },
     iosPickerHeader: {
       flexDirection: 'row',
-      justifyContent: 'flex-end',
-      paddingHorizontal: 20,
-      paddingVertical: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 22,
+      paddingVertical: 12,
+    },
+    iosPickerHeaderLabel: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: COLORS.text || '#111827',
+    },
+    iosPickerHeaderSub: {
+      fontSize: 13,
+      color: COLORS.subText || '#6B7280',
+      fontWeight: '500',
+      marginTop: 2,
+    },
+    iosPickerDoneWrap: {
+      backgroundColor: (COLORS.primary || '#2563EB') + '15',
+      paddingHorizontal: 16,
+      paddingVertical: 9,
+      borderRadius: 18,
     },
     iosPickerDoneBtn: {
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: '800',
-      color: COLORS.primary,
+      color: COLORS.primary || '#2563EB',
     },
     iosPicker: {
-      height: 320,
-      marginTop: 10,
+      height: 340,
+      marginTop: 6,
     },
 
     /* Custom Alert Modal Styling */
     alertOverlay: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: 'rgba(17,24,39,0.55)',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      padding: 24,
     },
     alertBox: {
       width: '100%',
-      backgroundColor: COLORS.card,
-      borderRadius: 28,
-      padding: 24,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderRadius: 30,
+      padding: 26,
       alignItems: 'center',
-      elevation: 10,
-      shadowColor: COLORS.shadow,
+      elevation: 12,
+      shadowColor: '#000',
       shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.1,
-      shadowRadius: 20,
+      shadowOpacity: 0.18,
+      shadowRadius: 24,
     },
     alertIconContainer: {
-      width: 72,
-      height: 72,
-      borderRadius: 36,
+      width: 76,
+      height: 76,
+      borderRadius: 38,
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: 20,
     },
     alertTitle: {
-      fontSize: 22,
+      fontSize: 20,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 10,
       textAlign: 'center',
     },
     alertMessage: {
-      fontSize: 15,
-      color: COLORS.subText,
+      fontSize: 14,
+      color: COLORS.subText || '#6B7280',
       textAlign: 'center',
       marginBottom: 28,
       lineHeight: 22,
@@ -744,12 +940,13 @@ const getStyles = COLORS =>
     alertButton: {
       width: '100%',
       paddingVertical: 16,
-      borderRadius: 16,
+      borderRadius: 18,
       alignItems: 'center',
     },
     alertButtonText: {
-      color: COLORS.white,
+      color: '#FFFFFF',
       fontSize: 16,
       fontWeight: '800',
+      letterSpacing: 0.5,
     },
   })

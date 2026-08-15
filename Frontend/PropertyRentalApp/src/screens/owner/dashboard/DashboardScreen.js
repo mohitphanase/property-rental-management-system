@@ -30,6 +30,15 @@ import { getMyProperties } from '../../../services/propertyService'
 import { getOwnerBookings } from '../../../services/bookingService1'
 import { SERVER_URL } from '../../../utils/config'
 
+// Icon + color presets for each alert "type" so the modal actually
+// reacts to alertConfig.type instead of always showing the same info icon.
+const ALERT_PRESETS = {
+  info: { icon: 'info', bg: '#EEF2FF', tint: '#4F5BD5' },
+  success: { icon: 'check-circle', bg: '#E9FBF0', tint: '#12B76A' },
+  warning: { icon: 'error-outline', bg: '#FFF7E6', tint: '#F79009' },
+  error: { icon: 'highlight-off', bg: '#FEECEC', tint: '#F04438' },
+}
+
 export default function DashboardScreen({ navigation }) {
   const { user } = useContext(AuthContext)
 
@@ -109,12 +118,17 @@ export default function DashboardScreen({ navigation }) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading Dashboard...</Text>
+          <View style={styles.loadingBadge}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+          </View>
+          <Text style={styles.loadingText}>Loading your dashboard…</Text>
+          <Text style={styles.loadingSubText}>Just a moment</Text>
         </View>
       </SafeAreaView>
     )
   }
+
+  const preset = ALERT_PRESETS[alertConfig.type] || ALERT_PRESETS.info
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -139,7 +153,7 @@ export default function DashboardScreen({ navigation }) {
           />
         }>
         {/* Header with working notification action */}
-        <View style={styles.headerWrapper}>
+        <View style={styles.headerCard}>
           <DashboardHeader
             name={user?.name || user?.fullName || 'Owner'}
             onNotificationPress={() =>
@@ -155,76 +169,86 @@ export default function DashboardScreen({ navigation }) {
         {/* Statistics Grid */}
         <View style={styles.statsContainer}>
           <View style={styles.statsRow}>
-            <StatsCard
-              title="Properties"
-              value={dashboard.totalProperties}
-              icon="home"
-              color={COLORS.primary}
-            />
-            <StatsCard
-              title="Bookings"
-              value={dashboard.totalBookings}
-              icon="calendar"
-              color={COLORS.success}
-            />
+            <View style={styles.statsCardWrapper}>
+              <StatsCard
+                title="Properties"
+                value={dashboard.totalProperties}
+                icon="home"
+                color={COLORS.primary}
+              />
+            </View>
+            <View style={styles.statsCardWrapper}>
+              <StatsCard
+                title="Bookings"
+                value={dashboard.totalBookings}
+                icon="calendar"
+                color={COLORS.success}
+              />
+            </View>
           </View>
           <View style={styles.statsRow}>
-            <StatsCard
-              title="Pending"
-              value={dashboard.pendingRequests}
-              icon="time"
-              color={COLORS.warning}
-            />
-            <StatsCard
-              title="Earnings"
-              value={`₹${dashboard.totalEarnings}`}
-              icon="wallet"
-              color={COLORS.error}
-            />
+            <View style={styles.statsCardWrapper}>
+              <StatsCard
+                title="Pending"
+                value={dashboard.pendingRequests}
+                icon="time"
+                color={COLORS.warning}
+              />
+            </View>
+            <View style={styles.statsCardWrapper}>
+              <StatsCard
+                title="Earnings"
+                value={`₹${dashboard.totalEarnings}`}
+                icon="wallet"
+                color={COLORS.error}
+              />
+            </View>
           </View>
         </View>
 
         {/* Quick Actions */}
         <SectionHeader title="Quick Actions" />
-        <View style={styles.quickActionsContainer}>
-          {dashboardData.quickActions.map((item, index) => {
-            const actionColors = [
-              COLORS.primary,
-              COLORS.success,
-              COLORS.warning,
-              COLORS.text,
-            ]
+        <View style={styles.quickActionsCard}>
+          <View style={styles.quickActionsContainer}>
+            {dashboardData.quickActions.map((item, index) => {
+              const actionColors = [
+                COLORS.primary,
+                COLORS.success,
+                COLORS.warning,
+                COLORS.text,
+              ]
 
-            return (
-              <QuickActionButton
-                key={item.id}
-                title={item.title}
-                icon={item.icon}
-                color={actionColors[index % actionColors.length]}
-                onPress={() => {
-                  switch (item.title) {
-                    case 'Add Property':
-                      navigation.navigate('Properties', {
-                        screen: 'AddProperty',
-                      })
-                      break
-                    case 'Bookings':
-                      navigation.navigate('Bookings')
-                      break
-                    case 'Payments':
-                      showAlert(
-                        'Coming Soon',
-                        'The payments module is currently under development.',
-                        'info'
-                      )
-                      break
-                    default:
-                      break
-                  }
-                }}
-              />
-            )
-          })}
+              return (
+                <QuickActionButton
+                  key={item.id}
+                  title={item.title}
+                  icon={item.icon}
+                  color={actionColors[index % actionColors.length]}
+                  onPress={() => {
+                    switch (item.title) {
+                      case 'Add Property':
+                        navigation.navigate('Properties', {
+                          screen: 'AddProperty',
+                        })
+                        break
+                      case 'Bookings':
+                        navigation.navigate('Bookings')
+                        break
+                      case 'Payments':
+                        showAlert(
+                          'Coming Soon',
+                          'The payments module is currently under development.',
+                          'info'
+                        )
+                        break
+                      default:
+                        break
+                    }
+                  }}
+                />
+              )
+            })}
+          </View>
         </View>
 
         {/* Recent Bookings */}
@@ -234,20 +258,31 @@ export default function DashboardScreen({ navigation }) {
           onPress={() => navigation.navigate('Bookings')}
         />
         {recentBookings.length > 0 ? (
-          recentBookings.map(booking => (
-            <RecentBookingCard
-              key={booking.bookingId}
-              tenant={booking.tenantName}
-              property={booking.propertyTitle}
-              date={booking.startDate}
-              status={booking.status}
-              onPress={() => navigation.navigate('Bookings')}
-            />
-          ))
+          <View style={styles.listGroup}>
+            {recentBookings.map(booking => (
+              <RecentBookingCard
+                key={booking.bookingId}
+                tenant={booking.tenantName}
+                property={booking.propertyTitle}
+                date={booking.startDate}
+                status={booking.status}
+                onPress={() => navigation.navigate('Bookings')}
+              />
+            ))}
+          </View>
         ) : (
           <View style={styles.emptyCard}>
-            <Icon name="event-busy" size={32} color={COLORS.placeholder} />
+            <View
+              style={[
+                styles.emptyIconBadge,
+                { backgroundColor: COLORS.primary + '12' },
+              ]}>
+              <Icon name="event-busy" size={30} color={COLORS.primary} />
+            </View>
             <Text style={styles.emptyText}>No recent bookings</Text>
+            <Text style={styles.emptySubText}>
+              New bookings will show up here as they come in
+            </Text>
           </View>
         )}
 
@@ -260,27 +295,49 @@ export default function DashboardScreen({ navigation }) {
           }
         />
         {latestProperties.length > 0 ? (
-          latestProperties.slice(0, 3).map(property => (
-            <PropertyCard
-              key={property.propertyId}
-              title={property.title}
-              location={property.city}
-              price={property.price}
-              image={
-                property.imageUrl ? `${SERVER_URL}/${property.imageUrl}` : null
-              }
-              onPress={() =>
-                navigation.navigate('Properties', {
-                  screen: 'PropertyDetails',
-                  params: { propertyId: property.propertyId },
-                })
-              }
-            />
-          ))
+          <View style={styles.listGroup}>
+            {latestProperties.slice(0, 3).map(property => (
+              <PropertyCard
+                key={property.propertyId}
+                title={property.title}
+                location={property.city}
+                price={property.price}
+                image={
+                  property.imageUrl
+                    ? `${SERVER_URL}/${property.imageUrl}`
+                    : null
+                }
+                onPress={() =>
+                  navigation.navigate('Properties', {
+                    screen: 'PropertyDetails',
+                    params: { propertyId: property.propertyId },
+                  })
+                }
+              />
+            ))}
+          </View>
         ) : (
           <View style={styles.emptyCard}>
-            <Icon name="other-houses" size={32} color={COLORS.placeholder} />
+            <View
+              style={[
+                styles.emptyIconBadge,
+                { backgroundColor: COLORS.warning + '15' },
+              ]}>
+              <Icon name="other-houses" size={30} color={COLORS.warning} />
+            </View>
             <Text style={styles.emptyText}>No properties listed yet</Text>
+            <Text style={styles.emptySubText}>
+              Add your first property to start receiving bookings
+            </Text>
+            <TouchableOpacity
+              style={[styles.emptyCta, { backgroundColor: COLORS.primary }]}
+              activeOpacity={0.85}
+              onPress={() =>
+                navigation.navigate('Properties', { screen: 'AddProperty' })
+              }>
+              <Icon name="add" size={18} color="#FFFFFF" />
+              <Text style={styles.emptyCtaText}>Add Property</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -294,18 +351,18 @@ export default function DashboardScreen({ navigation }) {
             <View
               style={[
                 styles.alertIconContainer,
-                { backgroundColor: COLORS.primary + '15' },
+                { backgroundColor: preset.bg },
               ]}>
-              <Icon name="info" size={38} color={COLORS.primary} />
+              <Icon name={preset.icon} size={40} color={preset.tint} />
             </View>
             <Text style={styles.alertTitle}>{alertConfig.title}</Text>
             <Text style={styles.alertMessage}>{alertConfig.message}</Text>
 
             <TouchableOpacity
-              style={[styles.alertButton, { backgroundColor: COLORS.primary }]}
-              activeOpacity={0.8}
+              style={[styles.alertButton, { backgroundColor: preset.tint }]}
+              activeOpacity={0.85}
               onPress={closeAlert}>
-              <Text style={styles.alertButtonText}>OK</Text>
+              <Text style={styles.alertButtonText}>Got it</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -327,57 +384,141 @@ const getStyles = COLORS =>
     scrollContent: {
       paddingBottom: 40,
     },
+
+    /* Loading state */
     loadingContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: COLORS.background,
     },
+    loadingBadge: {
+      width: 84,
+      height: 84,
+      borderRadius: 42,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: COLORS.primary + '10',
+      marginBottom: 18,
+    },
     loadingText: {
-      marginTop: 12,
-      fontSize: 15,
-      fontWeight: '600',
+      fontSize: 16,
+      fontWeight: '700',
+      color: COLORS.text,
+    },
+    loadingSubText: {
+      marginTop: 4,
+      fontSize: 13,
+      fontWeight: '500',
       color: COLORS.subText,
     },
-    headerWrapper: {
-      paddingTop: Platform.OS === 'android' ? 10 : 0,
+
+    /* Header */
+    headerCard: {
+      paddingTop: Platform.OS === 'android' ? 14 : 6,
+      paddingBottom: 6,
       backgroundColor: COLORS.background,
     },
+
+    /* Stats grid */
     statsContainer: {
-      marginTop: 10,
+      marginTop: 6,
       paddingHorizontal: 16,
     },
     statsRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: 12,
-      gap: 12,
+      marginBottom: 14,
+      gap: 14,
+    },
+    statsCardWrapper: {
+      flex: 1,
+      borderRadius: 20,
+      backgroundColor: COLORS.card,
+      shadowColor: '#1A1A2E',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.06,
+      shadowRadius: 12,
+      elevation: 3,
+    },
+
+    /* Quick actions */
+    quickActionsCard: {
+      marginHorizontal: 16,
+      marginBottom: 6,
+      backgroundColor: COLORS.card,
+      borderRadius: 22,
+      paddingVertical: 14,
+      paddingHorizontal: 10,
+      shadowColor: '#1A1A2E',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.05,
+      shadowRadius: 14,
+      elevation: 2,
     },
     quickActionsContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'space-between',
-      paddingHorizontal: 16,
-      marginBottom: 10,
     },
+
+    /* Card groups (bookings / properties) */
+    listGroup: {
+      paddingHorizontal: 16,
+      gap: 10,
+      marginBottom: 4,
+    },
+
+    /* Empty states */
     emptyCard: {
       backgroundColor: COLORS.card,
       marginHorizontal: 16,
-      borderRadius: 16,
-      padding: 30,
+      borderRadius: 22,
+      paddingVertical: 34,
+      paddingHorizontal: 24,
       alignItems: 'center',
       justifyContent: 'center',
-      borderWidth: 1,
+      borderWidth: 1.5,
       borderColor: COLORS.border,
       borderStyle: 'dashed',
-      marginBottom: 16,
+      marginBottom: 18,
+    },
+    emptyIconBadge: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 14,
     },
     emptyText: {
-      marginTop: 8,
-      fontSize: 14,
-      fontWeight: '600',
-      color: COLORS.subText,
+      fontSize: 15,
+      fontWeight: '700',
+      color: COLORS.text,
     },
+    emptySubText: {
+      marginTop: 6,
+      fontSize: 13,
+      fontWeight: '500',
+      color: COLORS.subText,
+      textAlign: 'center',
+      lineHeight: 18,
+    },
+    emptyCta: {
+      marginTop: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingVertical: 12,
+      paddingHorizontal: 22,
+      borderRadius: 14,
+    },
+    emptyCtaText: {
+      color: '#FFFFFF',
+      fontSize: 14,
+      fontWeight: '700',
+    },
+
     bottomSpace: {
       height: 40,
     },
@@ -385,54 +526,56 @@ const getStyles = COLORS =>
     /* Custom Alert Modal Styling */
     alertOverlay: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: 'rgba(15,15,20,0.55)',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      padding: 24,
     },
     alertBox: {
       width: '100%',
+      maxWidth: 360,
       backgroundColor: COLORS.card,
-      borderRadius: 28,
-      padding: 24,
+      borderRadius: 30,
+      padding: 26,
       alignItems: 'center',
-      elevation: 10,
+      elevation: 12,
       shadowColor: COLORS.shadow || '#000',
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.1,
-      shadowRadius: 20,
+      shadowOffset: { width: 0, height: 12 },
+      shadowOpacity: 0.16,
+      shadowRadius: 24,
     },
     alertIconContainer: {
-      width: 72,
-      height: 72,
-      borderRadius: 36,
+      width: 76,
+      height: 76,
+      borderRadius: 38,
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: 20,
     },
     alertTitle: {
-      fontSize: 22,
+      fontSize: 20,
       fontWeight: '800',
       color: COLORS.text,
-      marginBottom: 10,
+      marginBottom: 8,
       textAlign: 'center',
     },
     alertMessage: {
-      fontSize: 15,
+      fontSize: 14.5,
       color: COLORS.subText,
       textAlign: 'center',
-      marginBottom: 28,
-      lineHeight: 22,
+      marginBottom: 26,
+      lineHeight: 21,
     },
     alertButton: {
       width: '100%',
-      paddingVertical: 16,
+      paddingVertical: 15,
       borderRadius: 16,
       alignItems: 'center',
     },
     alertButtonText: {
       color: '#FFFFFF',
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '800',
+      letterSpacing: 0.2,
     },
   })

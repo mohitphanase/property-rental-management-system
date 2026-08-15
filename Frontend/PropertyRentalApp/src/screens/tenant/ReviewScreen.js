@@ -86,8 +86,26 @@ export default function ReviewScreen({ route, navigation }) {
     }
   }
 
+  const totalReviews = reviews.length
+  const averageRating = totalReviews
+    ? reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) /
+      totalReviews
+    : 0
+
+  // Distribution for the 5 -> 1 star breakdown bars
+  const distribution = [5, 4, 3, 2, 1].map(star => {
+    const count = reviews.filter(
+      r => Math.round(Number(r.rating) || 0) === star
+    ).length
+    return {
+      star,
+      count,
+      pct: totalReviews ? count / totalReviews : 0,
+    }
+  })
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar
         barStyle={
           COLORS.background === '#FFFFFF' ? 'dark-content' : 'light-content'
@@ -99,7 +117,7 @@ export default function ReviewScreen({ route, navigation }) {
       <View style={styles.headerBar}>
         <TouchableOpacity
           style={styles.backButton}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
           onPress={() => navigation.goBack()}>
           <Icon
             name="arrow-back-ios"
@@ -126,6 +144,7 @@ export default function ReviewScreen({ route, navigation }) {
           }
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -133,6 +152,59 @@ export default function ReviewScreen({ route, navigation }) {
               tintColor={COLORS.primary}
               colors={[COLORS.primary]}
             />
+          }
+          ListHeaderComponent={
+            totalReviews ? (
+              <View style={styles.summaryCard}>
+                <View style={styles.summaryTopRow}>
+                  <View style={styles.summaryScoreBlock}>
+                    <Text style={styles.summaryScore}>
+                      {averageRating.toFixed(1)}
+                    </Text>
+                    <View style={styles.summaryStarsRow}>
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <Icon
+                          key={star}
+                          name={
+                            star <= Math.round(averageRating)
+                              ? 'star'
+                              : 'star-outline'
+                          }
+                          size={15}
+                          color="#FFB800"
+                          style={{ marginRight: 1 }}
+                        />
+                      ))}
+                    </View>
+                    <Text style={styles.summaryCount}>
+                      {totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.summaryDivider} />
+
+                  <View style={styles.summaryBars}>
+                    {distribution.map(row => (
+                      <View key={row.star} style={styles.summaryBarRow}>
+                        <Text style={styles.summaryBarLabel}>{row.star}</Text>
+                        <Icon name="star" size={10} color="#FFB800" />
+                        <View style={styles.summaryBarTrack}>
+                          <View
+                            style={[
+                              styles.summaryBarFill,
+                              {
+                                width: `${Math.max(row.pct * 100, row.count ? 6 : 0)}%`,
+                              },
+                            ]}
+                          />
+                        </View>
+                        <Text style={styles.summaryBarCount}>{row.count}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </View>
+            ) : null
           }
           renderItem={({ item }) => (
             <View style={styles.reviewItemCard}>
@@ -147,19 +219,22 @@ export default function ReviewScreen({ route, navigation }) {
                   </Text>
                 </View>
                 <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={styles.reviewerName}>
+                  <Text style={styles.reviewerName} numberOfLines={1}>
                     {item.tenant?.name || item.userName || 'Verified Tenant'}
                   </Text>
-                  <Text style={styles.reviewDate}>
-                    {item.createAt
-                      ? new Date(item.createAt).toLocaleDateString()
-                      : item.createdAt
-                        ? new Date(item.createdAt).toLocaleDateString()
-                        : 'Recently'}
-                  </Text>
+                  <View style={styles.dateRow}>
+                    <Icon name="schedule" size={11} color={COLORS.subText} />
+                    <Text style={styles.reviewDate}>
+                      {item.createAt
+                        ? new Date(item.createAt).toLocaleDateString()
+                        : item.createdAt
+                          ? new Date(item.createdAt).toLocaleDateString()
+                          : 'Recently'}
+                    </Text>
+                  </View>
                 </View>
                 <View style={styles.ratingBadge}>
-                  <Icon name="star" size={14} color="#FFB800" />
+                  <Icon name="star" size={13} color="#FFB800" />
                   <Text style={styles.ratingBadgeText}>{item.rating || 5}</Text>
                 </View>
               </View>
@@ -168,7 +243,9 @@ export default function ReviewScreen({ route, navigation }) {
           )}
           ListEmptyComponent={
             <View style={styles.emptyCard}>
-              <Icon name="rate-review" size={36} color={COLORS.subText} />
+              <View style={styles.emptyIconBubble}>
+                <Icon name="rate-review" size={34} color={COLORS.primary} />
+              </View>
               <Text style={styles.emptyTitle}>No Reviews Yet</Text>
               <Text style={styles.emptySub}>
                 There are no reviews posted for this property yet.
@@ -186,12 +263,12 @@ export default function ReviewScreen({ route, navigation }) {
               style={[
                 styles.alertIconContainer,
                 {
-                  backgroundColor: getAlertStyle(alertConfig.type).color + '15',
+                  backgroundColor: getAlertStyle(alertConfig.type).color + '18',
                 },
               ]}>
               <Icon
                 name={getAlertStyle(alertConfig.type).icon}
-                size={38}
+                size={36}
                 color={getAlertStyle(alertConfig.type).color}
               />
             </View>
@@ -203,7 +280,7 @@ export default function ReviewScreen({ route, navigation }) {
                 styles.alertButton,
                 { backgroundColor: getAlertStyle(alertConfig.type).color },
               ]}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
               onPress={closeAlert}>
               <Text style={styles.alertButtonText}>OK</Text>
             </TouchableOpacity>
@@ -213,6 +290,14 @@ export default function ReviewScreen({ route, navigation }) {
     </SafeAreaView>
   )
 }
+
+const shadow = (elevation = 3) => ({
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: elevation / 2 },
+  shadowOpacity: 0.08,
+  shadowRadius: elevation,
+  elevation,
+})
 
 const getStyles = COLORS =>
   StyleSheet.create({
@@ -230,8 +315,8 @@ const getStyles = COLORS =>
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 20,
-      paddingBottom: 12,
-      paddingTop: Platform.OS === 'android' ? 8 : 8,
+      paddingBottom: 14,
+      paddingTop: 8,
       backgroundColor: COLORS.background,
     },
     backButton: {
@@ -241,9 +326,9 @@ const getStyles = COLORS =>
       backgroundColor: COLORS.card,
       justifyContent: 'center',
       alignItems: 'center',
-      elevation: 2,
       borderWidth: 1,
       borderColor: COLORS.border,
+      ...shadow(2),
     },
     backIcon: {
       marginLeft: 6,
@@ -251,6 +336,7 @@ const getStyles = COLORS =>
     headerTitle: {
       fontSize: 18,
       fontWeight: '800',
+      letterSpacing: 0.2,
       color: COLORS.text,
       flex: 1,
       textAlign: 'center',
@@ -264,14 +350,90 @@ const getStyles = COLORS =>
       paddingBottom: 40,
     },
 
+    /* Summary Card */
+    summaryCard: {
+      backgroundColor: COLORS.card,
+      borderRadius: 22,
+      padding: 18,
+      marginBottom: 18,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      ...shadow(4),
+    },
+    summaryTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    summaryScoreBlock: {
+      alignItems: 'center',
+      paddingRight: 16,
+    },
+    summaryScore: {
+      fontSize: 34,
+      fontWeight: '800',
+      color: COLORS.text,
+      lineHeight: 38,
+    },
+    summaryStarsRow: {
+      flexDirection: 'row',
+      marginTop: 2,
+      marginBottom: 4,
+    },
+    summaryCount: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: COLORS.subText,
+    },
+    summaryDivider: {
+      width: 1,
+      alignSelf: 'stretch',
+      backgroundColor: COLORS.border,
+      marginRight: 16,
+    },
+    summaryBars: {
+      flex: 1,
+      gap: 5,
+    },
+    summaryBarRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    summaryBarLabel: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: COLORS.subText,
+      width: 8,
+    },
+    summaryBarTrack: {
+      flex: 1,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: COLORS.background,
+      overflow: 'hidden',
+      marginHorizontal: 4,
+    },
+    summaryBarFill: {
+      height: '100%',
+      borderRadius: 3,
+      backgroundColor: '#FFB800',
+    },
+    summaryBarCount: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: COLORS.subText,
+      width: 16,
+      textAlign: 'right',
+    },
+
     /* Review Item Cards */
     reviewItemCard: {
       backgroundColor: COLORS.card,
-      borderRadius: 16,
+      borderRadius: 18,
       padding: 16,
-      marginBottom: 12,
       borderWidth: 1,
       borderColor: COLORS.border,
+      ...shadow(3),
     },
     reviewCardHeader: {
       flexDirection: 'row',
@@ -279,10 +441,10 @@ const getStyles = COLORS =>
       marginBottom: 10,
     },
     avatarCircle: {
-      width: 38,
-      height: 38,
-      borderRadius: 19,
-      backgroundColor: COLORS.primary + '20',
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      backgroundColor: COLORS.primary + '18',
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -296,18 +458,24 @@ const getStyles = COLORS =>
       fontWeight: '700',
       color: COLORS.text,
     },
+    dateRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      marginTop: 3,
+    },
     reviewDate: {
       fontSize: 11,
       color: COLORS.subText,
-      marginTop: 2,
+      fontWeight: '500',
     },
     ratingBadge: {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: '#FFF8E7',
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 8,
+      paddingHorizontal: 9,
+      paddingVertical: 5,
+      borderRadius: 10,
       gap: 4,
     },
     ratingBadgeText: {
@@ -317,7 +485,7 @@ const getStyles = COLORS =>
     },
     reviewComment: {
       fontSize: 14,
-      color: COLORS.subText,
+      color: COLORS.text,
       lineHeight: 20,
     },
 
@@ -325,13 +493,22 @@ const getStyles = COLORS =>
     emptyCard: {
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 30,
+      padding: 36,
       backgroundColor: COLORS.card,
-      borderRadius: 18,
-      borderWidth: 1,
+      borderRadius: 22,
+      borderWidth: 1.5,
       borderColor: COLORS.border,
       borderStyle: 'dashed',
-      marginTop: 40,
+      marginTop: 24,
+    },
+    emptyIconBubble: {
+      width: 70,
+      height: 70,
+      borderRadius: 35,
+      backgroundColor: COLORS.primary + '14',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 4,
     },
     emptyTitle: {
       fontSize: 16,
@@ -344,28 +521,30 @@ const getStyles = COLORS =>
       color: COLORS.subText,
       textAlign: 'center',
       marginTop: 4,
+      lineHeight: 18,
+      maxWidth: 240,
     },
 
     /* Custom Alert Modal Styling */
     alertOverlay: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: 'rgba(0,0,0,0.55)',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      padding: 24,
     },
     alertBox: {
       width: '100%',
       backgroundColor: COLORS.card,
-      borderRadius: 24,
-      padding: 24,
+      borderRadius: 26,
+      padding: 26,
       alignItems: 'center',
-      elevation: 10,
+      ...shadow(10),
     },
     alertIconContainer: {
-      width: 68,
-      height: 68,
-      borderRadius: 34,
+      width: 70,
+      height: 70,
+      borderRadius: 35,
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: 16,
@@ -386,8 +565,8 @@ const getStyles = COLORS =>
     },
     alertButton: {
       width: '100%',
-      paddingVertical: 14,
-      borderRadius: 14,
+      paddingVertical: 15,
+      borderRadius: 16,
       alignItems: 'center',
     },
     alertButtonText: {

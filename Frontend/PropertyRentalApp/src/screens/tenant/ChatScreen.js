@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native'
@@ -14,6 +13,12 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import { ThemeContext } from '../provider/ThemeProvider'
 import { sendChatMessage } from '../services/chatService'
+
+const SUGGESTIONS = [
+  { icon: 'home-work', label: 'Find a property' },
+  { icon: 'event-available', label: 'My bookings' },
+  { icon: 'support-agent', label: 'Talk to support' },
+]
 
 export default function ChatScreen() {
   const { COLORS } = useContext(ThemeContext)
@@ -29,21 +34,20 @@ export default function ChatScreen() {
   const [inputText, setInputText] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSend = async () => {
-    if (!inputText.trim() || loading) return
+  const sendPrompt = async prompt => {
+    if (!prompt.trim() || loading) return
 
     const userMsg = {
       id: Date.now().toString(),
-      text: inputText.trim(),
+      text: prompt.trim(),
       sender: 'user',
     }
     setMessages(prev => [...prev, userMsg])
-    const prompt = inputText.trim()
     setInputText('')
     setLoading(true)
 
     try {
-      const response = await sendChatMessage(prompt)
+      const response = await sendChatMessage(prompt.trim())
       const aiReply =
         response?.data?.reply || "I didn't receive a clear response."
       const aiMsg = {
@@ -64,15 +68,28 @@ export default function ChatScreen() {
     }
   }
 
+  const handleSend = () => sendPrompt(inputText)
+
+  const showSuggestions = messages.length === 1 && !loading
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}>
         {/* Header Bar */}
         <View style={styles.header}>
-          <Icon name="smart-toy" size={28} color={COLORS.primary} />
-          <Text style={styles.headerTitle}>RentEase AI Assistant</Text>
+          <View style={styles.headerAvatar}>
+            <Icon name="smart-toy" size={22} color={COLORS.primary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>RentEase Assistant</Text>
+            <View style={styles.statusRow}>
+              <View style={styles.statusDot} />
+              <Text style={styles.headerSubtitle}>Online, ready to help</Text>
+            </View>
+          </View>
         </View>
 
         {/* Message Bubble List */}
@@ -80,42 +97,92 @@ export default function ChatScreen() {
           data={messages}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.messageList}
-          renderItem={({ item }) => (
-            <View
-              style={[
-                styles.bubble,
-                item.sender === 'user' ? styles.userBubble : styles.aiBubble,
-              ]}>
-              <Text
-                style={[
-                  styles.messageText,
-                  item.sender === 'user' ? styles.userText : styles.aiText,
-                ]}>
-                {item.text}
-              </Text>
-            </View>
-          )}
+          showsVerticalScrollIndicator={false}
+          ListFooterComponent={
+            loading ? (
+              <View style={styles.aiRow}>
+                <View style={styles.avatarCircle}>
+                  <Icon name="smart-toy" size={16} color={COLORS.primary} />
+                </View>
+                <View
+                  style={[styles.bubble, styles.aiBubble, styles.typingBubble]}>
+                  <View style={styles.typingDot} />
+                  <View style={[styles.typingDot, styles.typingDotMid]} />
+                  <View style={styles.typingDot} />
+                </View>
+              </View>
+            ) : null
+          }
+          renderItem={({ item }) => {
+            const isUser = item.sender === 'user'
+            return (
+              <View style={isUser ? styles.userRow : styles.aiRow}>
+                {!isUser && (
+                  <View style={styles.avatarCircle}>
+                    <Icon name="smart-toy" size={16} color={COLORS.primary} />
+                  </View>
+                )}
+                <View
+                  style={[
+                    styles.bubble,
+                    isUser ? styles.userBubble : styles.aiBubble,
+                  ]}>
+                  <Text
+                    style={[
+                      styles.messageText,
+                      isUser ? styles.userText : styles.aiText,
+                    ]}>
+                    {item.text}
+                  </Text>
+                </View>
+              </View>
+            )
+          }}
         />
 
-        {/* Typing Loader Indicator */}
-        {loading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color={COLORS.primary} />
-            <Text style={styles.loadingText}>RentEase AI is typing...</Text>
-          </View>
+        {/* Quick Suggestion Chips */}
+        {showSuggestions && (
+          <FlatList
+            horizontal
+            data={SUGGESTIONS}
+            keyExtractor={s => s.label}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipsRow}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.chip}
+                activeOpacity={0.7}
+                onPress={() => sendPrompt(item.label)}>
+                <Icon name={item.icon} size={15} color={COLORS.primary} />
+                <Text style={styles.chipText}>{item.label}</Text>
+              </TouchableOpacity>
+            )}
+          />
         )}
 
         {/* Input Bar */}
         <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Ask anything about properties or bookings..."
-            placeholderTextColor={COLORS.subText}
-            value={inputText}
-            onChangeText={setInputText}
-          />
-          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-            <Icon name="send" size={20} color="#FFFFFF" />
+          <View style={styles.inputPill}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ask anything about properties or bookings..."
+              placeholderTextColor={COLORS.subText}
+              value={inputText}
+              onChangeText={setInputText}
+              onSubmitEditing={handleSend}
+              returnKeyType="send"
+              multiline
+            />
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              !inputText.trim() && styles.sendButtonDisabled,
+            ]}
+            activeOpacity={0.8}
+            disabled={!inputText.trim() || loading}
+            onPress={handleSend}>
+            <Icon name="arrow-upward" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -123,75 +190,180 @@ export default function ChatScreen() {
   )
 }
 
+const shadow = (elevation = 3, color = '#000', opacity = 0.08) => ({
+  shadowColor: color,
+  shadowOffset: { width: 0, height: elevation / 2 },
+  shadowOpacity: opacity,
+  shadowRadius: elevation,
+  elevation,
+})
+
 const getStyles = COLORS =>
   StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: COLORS.background },
     container: { flex: 1 },
+
+    /* Header */
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
       borderBottomWidth: 1,
       borderBottomColor: COLORS.border,
       backgroundColor: COLORS.card,
-      gap: 10,
+      gap: 12,
     },
-    headerTitle: { fontSize: 18, fontWeight: '800', color: COLORS.text },
-    messageList: { padding: 16 },
-    bubble: {
-      padding: 14,
-      borderRadius: 16,
+    headerAvatar: {
+      width: 42,
+      height: 42,
+      borderRadius: 14,
+      backgroundColor: COLORS.primary + '18',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    headerTitle: { fontSize: 16, fontWeight: '800', color: COLORS.text },
+    statusRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      marginTop: 2,
+    },
+    statusDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: COLORS.success || '#22C55E',
+    },
+    headerSubtitle: { fontSize: 12, color: COLORS.subText, fontWeight: '500' },
+
+    /* Message list */
+    messageList: { padding: 16, paddingBottom: 8 },
+    aiRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      marginBottom: 12,
+      maxWidth: '88%',
+      alignSelf: 'flex-start',
+      gap: 8,
+    },
+    userRow: {
+      alignSelf: 'flex-end',
       marginBottom: 12,
       maxWidth: '80%',
     },
+    avatarCircle: {
+      width: 28,
+      height: 28,
+      borderRadius: 10,
+      backgroundColor: COLORS.primary + '18',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 2,
+    },
+    bubble: {
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      borderRadius: 18,
+      flexShrink: 1,
+    },
     userBubble: {
-      alignSelf: 'flex-end',
       backgroundColor: COLORS.primary,
-      borderBottomRightRadius: 2,
+      borderBottomRightRadius: 4,
+      ...shadow(4, COLORS.primary, 0.25),
     },
     aiBubble: {
-      alignSelf: 'flex-start',
       backgroundColor: COLORS.card,
       borderWidth: 1,
       borderColor: COLORS.border,
-      borderBottomLeftRadius: 2,
+      borderBottomLeftRadius: 4,
     },
     messageText: { fontSize: 14, lineHeight: 20 },
-    userText: { color: '#FFFFFF' },
+    userText: { color: '#FFFFFF', fontWeight: '500' },
     aiText: { color: COLORS.text },
-    loadingContainer: {
+
+    /* Typing indicator */
+    typingBubble: {
       flexDirection: 'row',
       alignItems: 'center',
+      gap: 4,
+      paddingVertical: 14,
+    },
+    typingDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: COLORS.subText,
+      opacity: 0.5,
+    },
+    typingDotMid: {
+      opacity: 0.9,
+    },
+
+    /* Suggestion chips */
+    chipsRow: {
       paddingHorizontal: 16,
-      paddingBottom: 8,
+      paddingBottom: 10,
       gap: 8,
     },
-    loadingText: { fontSize: 12, color: COLORS.subText },
+    chip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: COLORS.primary + '12',
+      borderWidth: 1,
+      borderColor: COLORS.primary + '30',
+      borderRadius: 20,
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      marginRight: 8,
+    },
+    chipText: {
+      fontSize: 12.5,
+      fontWeight: '700',
+      color: COLORS.primary,
+    },
+
+    /* Input bar */
     inputContainer: {
       flexDirection: 'row',
-      padding: 12,
+      alignItems: 'flex-end',
+      paddingHorizontal: 12,
+      paddingTop: 10,
+      paddingBottom: 12,
       backgroundColor: COLORS.card,
       borderTopWidth: 1,
       borderTopColor: COLORS.border,
       gap: 10,
     },
-    textInput: {
+    inputPill: {
       flex: 1,
       backgroundColor: COLORS.background,
-      color: COLORS.text,
-      borderRadius: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
-      fontSize: 14,
+      borderRadius: 20,
       borderWidth: 1,
       borderColor: COLORS.border,
+      paddingHorizontal: 16,
+      justifyContent: 'center',
+      minHeight: 46,
+      maxHeight: 110,
+    },
+    textInput: {
+      color: COLORS.text,
+      fontSize: 14,
+      paddingVertical: 12,
     },
     sendButton: {
       backgroundColor: COLORS.primary,
-      borderRadius: 12,
+      borderRadius: 23,
       width: 46,
       height: 46,
       justifyContent: 'center',
       alignItems: 'center',
+      ...shadow(5, COLORS.primary, 0.3),
+    },
+    sendButtonDisabled: {
+      backgroundColor: COLORS.border,
+      shadowOpacity: 0,
+      elevation: 0,
     },
   })

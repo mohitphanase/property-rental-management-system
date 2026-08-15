@@ -19,7 +19,6 @@ import { SERVER_URL } from '../../utils/config'
 import { addWishlist, getWishlist } from '../../services/wishlistService'
 
 export default function PropertyDetailsScreen({ route, navigation }) {
-  // Safe extraction of property to prevent undefined property errors
   const property = route?.params?.property || {}
   const [isWishlisted, setIsWishlisted] = useState(false)
   const { COLORS } = useContext(ThemeContext)
@@ -34,7 +33,6 @@ export default function PropertyDetailsScreen({ route, navigation }) {
   const loadWishlistStatus = async () => {
     try {
       const response = await getWishlist()
-
       const wishlist = Array.isArray(response.data)
         ? response.data
         : response.data?.data || []
@@ -50,13 +48,11 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     }
   }
 
-  // Safe evaluation using optional chaining
   const imageUrl =
     property?.images && property.images.length > 0
       ? `${SERVER_URL}/${property.images[0].imageUrl}`
       : null
 
-  // Custom Alert State
   const [alertConfig, setAlertConfig] = useState({
     visible: false,
     title: '',
@@ -87,7 +83,9 @@ export default function PropertyDetailsScreen({ route, navigation }) {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Check out this property: ${property?.title || 'Property'} in ${property?.city || 'City'} for ₹${property?.price || 0}/mo`,
+        message: `Check out this property: ${property?.title || 'Property'} in ${
+          property?.city || 'City'
+        } for ₹${property?.price || 0}/mo`,
       })
     } catch (error) {
       console.log('Error sharing:', error.message)
@@ -107,7 +105,6 @@ export default function PropertyDetailsScreen({ route, navigation }) {
       setIsWishlisted(true)
       showAlert('Success', 'Property added to wishlist.', 'success')
     } catch (error) {
-      console.log('Wishlist Error:', error.response?.data)
       showAlert(
         'Notice',
         error.response?.data?.message || 'Unable to add property to wishlist.',
@@ -119,17 +116,16 @@ export default function PropertyDetailsScreen({ route, navigation }) {
   const getAlertStyle = type => {
     switch (type) {
       case 'success':
-        return { icon: 'check-circle', color: COLORS.success }
+        return { icon: 'check-circle', color: COLORS.success || '#10B981' }
       case 'error':
-        return { icon: 'error', color: COLORS.error }
+        return { icon: 'error', color: COLORS.error || '#EF4444' }
       case 'info':
-        return { icon: 'info', color: COLORS.primary }
+        return { icon: 'info', color: COLORS.primary || '#3B82F6' }
       default:
-        return { icon: 'warning', color: COLORS.warning }
+        return { icon: 'warning', color: COLORS.warning || '#F59E0B' }
     }
   }
 
-  // Fallback screen if property payload is unselected
   if (!property?.propertyId) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -137,23 +133,33 @@ export default function PropertyDetailsScreen({ route, navigation }) {
           <TouchableOpacity
             style={styles.backButtonFallback}
             onPress={() => navigation.goBack()}>
-            <Icon name="arrow-back" size={22} color={COLORS.text} />
+            <Icon name="arrow-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
-          <Icon name="info-outline" size={48} color={COLORS.subText} />
-          <Text style={styles.fallbackText}>Property details not found.</Text>
+          <View style={styles.fallbackIconCircle}>
+            <Icon name="info-outline" size={48} color={COLORS.subText} />
+          </View>
+          <Text style={styles.fallbackTitle}>No Details Found</Text>
+          <Text style={styles.fallbackText}>
+            We couldn't retrieve the property details. Please try again later.
+          </Text>
         </View>
       </SafeAreaView>
     )
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <StatusBar
+        barStyle="light-content"
+        translucent
+        backgroundColor="transparent"
+      />
       <View style={styles.mainContainer}>
         <ScrollView
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}>
-          {/* Header Image Section */}
+          {/* Header Visual Section */}
           <View style={styles.imageContainer}>
             <Image
               source={
@@ -163,123 +169,150 @@ export default function PropertyDetailsScreen({ route, navigation }) {
               }
               style={styles.image}
             />
-            {/* Top Navigation / Action Icons */}
+            <View style={styles.imageScrim} />
+
+            {/* Floating Top Navigation */}
             <View style={styles.topActionRow}>
               <TouchableOpacity
                 style={styles.circleIconButton}
+                activeOpacity={0.8}
                 onPress={() => navigation.goBack()}>
-                <Icon name="arrow-back" size={22} color={COLORS.black} />
+                <Icon name="arrow-back" size={20} color="#1F2937" />
               </TouchableOpacity>
+
               <View style={styles.topRightIcons}>
                 <TouchableOpacity
                   style={styles.circleIconButton}
+                  activeOpacity={0.8}
                   onPress={handleShare}>
-                  <Icon name="share" size={20} color={COLORS.black} />
+                  <Icon name="share" size={20} color="#1F2937" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.circleIconButton, { marginLeft: 10 }]}
+                  activeOpacity={0.8}
                   onPress={handleWishlist}>
                   <Icon
-                    key={isWishlisted ? 'filled' : 'outline'}
                     name={isWishlisted ? 'favorite' : 'favorite-border'}
                     size={22}
-                    color={isWishlisted ? COLORS.error : COLORS.black}
+                    color={isWishlisted ? COLORS.error || '#EF4444' : '#1F2937'}
                   />
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
 
-          {/* Title & Price Card */}
-          <View style={styles.titlePriceCard}>
-            <View style={{ flex: 1, marginRight: 15 }}>
-              <Text style={styles.title}>{property.title}</Text>
-              <Text style={styles.locationText} numberOfLines={2}>
-                {property.city} • {property.description || 'Near Main Road'}
-              </Text>
-            </View>
-            <View style={styles.priceContainer}>
-              <Text style={styles.priceText}>₹{property.price}</Text>
-              <Text style={styles.priceSubText}>Rent/Person</Text>
-            </View>
-          </View>
-
-          {/* Overview Grid Section */}
-          <View style={styles.overviewGrid}>
-            <View style={styles.overviewItem}>
-              <Icon name="home" size={22} color={COLORS.subText} />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.overviewLabel}>Property Type</Text>
-                <Text style={styles.overviewValue}>
+            {property.propertyType && (
+              <View style={styles.typeBadge}>
+                <Text style={styles.typeBadgeText}>
                   {property.propertyType}
                 </Text>
               </View>
-            </View>
+            )}
+          </View>
 
-            <View style={styles.overviewItem}>
-              <Icon name="location-city" size={22} color={COLORS.subText} />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.overviewLabel}>City</Text>
-                <Text style={styles.overviewValue}>{property.city}</Text>
-              </View>
-            </View>
-
-            <View style={styles.overviewItem}>
-              <Icon name="person" size={22} color={COLORS.subText} />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.overviewLabel}>Owner</Text>
-                <Text style={styles.overviewValue}>{property.ownerName}</Text>
-              </View>
-            </View>
-
-            <View style={styles.overviewItem}>
-              <Icon name="phone" size={22} color={COLORS.subText} />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.overviewLabel}>Contact</Text>
-                <Text style={styles.overviewValue}>
-                  {property.ownerPhone || 'Not Available'}
+          {/* Floating Main Information Header */}
+          <View style={styles.titlePriceCard}>
+            <View style={{ flex: 1, paddingRight: 12 }}>
+              <Text style={styles.title} numberOfLines={2}>
+                {property.title}
+              </Text>
+              <View style={styles.locationRow}>
+                <Icon name="location-on" size={16} color={COLORS.primary} />
+                <Text style={styles.locationText} numberOfLines={2}>
+                  {property.city} • {property.description || 'Prime Location'}
                 </Text>
               </View>
             </View>
-          </View>
 
-          {/* Neighbourhood Section */}
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionHeaderTitle}>Neighbourhood</Text>
-            <View style={styles.neighbourhoodRow}>
-              <Icon name="location-pin" size={20} color={COLORS.error} />
-              <Text style={styles.neighbourhoodText}>
-                {property.city} • Prime Location
+            <View style={styles.priceContainer}>
+              <Text style={styles.priceText}>
+                ₹{Number(property.price || 0).toLocaleString('en-IN')}
               </Text>
+              <Text style={styles.priceSubText}>/ month</Text>
             </View>
           </View>
 
-          {/* Property Description */}
+          {/* Key Attributes Overview Grid */}
           <View style={styles.sectionCard}>
-            <Text style={styles.sectionHeaderTitle}>Property Description</Text>
-            <Text style={styles.descriptionText}>
-              {property.description?.trim()
-                ? property.description
-                : 'No description has been provided for this property.'}
-            </Text>
-          </View>
-
-          {/* Reviews Navigation Card */}
-          <View style={styles.sectionCard}>
-            <View style={styles.reviewHeaderRow}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={styles.sectionHeaderTitle}>Reviews & Ratings</Text>
-                <View style={styles.ratingBadge}>
-                  <Icon name="star" size={14} color="#FFB800" />
-                  <Text style={styles.ratingText}>4.5</Text>
+            <Text style={styles.sectionHeaderTitle}>Property Overview</Text>
+            <View style={styles.overviewGrid}>
+              <View style={styles.overviewItem}>
+                <View style={styles.overviewIconCircle}>
+                  <Icon name="domain" size={20} color={COLORS.primary} />
+                </View>
+                <View style={styles.overviewTextContainer}>
+                  <Text style={styles.overviewLabel}>Category</Text>
+                  <Text style={styles.overviewValue} numberOfLines={1}>
+                    {property.propertyType || 'Standard'}
+                  </Text>
                 </View>
               </View>
 
-              {/* Action Buttons Row */}
+              <View style={styles.overviewItem}>
+                <View style={styles.overviewIconCircle}>
+                  <Icon name="place" size={20} color={COLORS.primary} />
+                </View>
+                <View style={styles.overviewTextContainer}>
+                  <Text style={styles.overviewLabel}>Location</Text>
+                  <Text style={styles.overviewValue} numberOfLines={1}>
+                    {property.city || 'N/A'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.overviewItem}>
+                <View style={styles.overviewIconCircle}>
+                  <Icon
+                    name="person-outline"
+                    size={20}
+                    color={COLORS.primary}
+                  />
+                </View>
+                <View style={styles.overviewTextContainer}>
+                  <Text style={styles.overviewLabel}>Lister</Text>
+                  <Text style={styles.overviewValue} numberOfLines={1}>
+                    {property.ownerName || 'Verified Host'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.overviewItem}>
+                <View style={styles.overviewIconCircle}>
+                  <Icon name="phone-in-talk" size={20} color={COLORS.primary} />
+                </View>
+                <View style={styles.overviewTextContainer}>
+                  <Text style={styles.overviewLabel}>Contact</Text>
+                  <Text style={styles.overviewValue} numberOfLines={1}>
+                    {property.ownerPhone ? 'Available' : 'On Request'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Description Section */}
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionHeaderTitle}>About this space</Text>
+            <Text style={styles.descriptionText}>
+              {property.description?.trim()
+                ? property.description
+                : 'No additional details have been provided by the landlord for this listing.'}
+            </Text>
+          </View>
+
+          {/* Community Feedback & Reviews Header */}
+          <View style={styles.sectionCard}>
+            <View style={styles.reviewHeaderRow}>
+              <View style={styles.ratingTitleContainer}>
+                <Text style={styles.sectionHeaderTitle}>Tenant Reviews</Text>
+                <View style={styles.ratingBadge}>
+                  <Icon name="star" size={14} color="#F59E0B" />
+                  <Text style={styles.ratingText}>4.8</Text>
+                </View>
+              </View>
+
               <View style={styles.headerButtonsRow}>
-                {/* 1. Navigate to My Reviews passing propertyId and propertyTitle */}
                 <TouchableOpacity
-                  style={styles.myReviewsHeaderBtn}
+                  style={styles.actionPillBtn}
                   activeOpacity={0.7}
                   onPress={() =>
                     navigation.navigate('MyReviews', {
@@ -287,13 +320,11 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                       propertyTitle: property.title,
                     })
                   }>
-                  <Icon name="person" size={16} color={COLORS.primary} />
-                  <Text style={styles.myReviewsHeaderText}>My Reviews</Text>
+                  <Text style={styles.actionPillText}>My Feedback</Text>
                 </TouchableOpacity>
 
-                {/* 2. Navigate to ReviewScreen passing propertyId and propertyTitle */}
                 <TouchableOpacity
-                  style={styles.writeReviewHeaderBtn}
+                  style={[styles.actionPillBtn, styles.actionPillPrimary]}
                   activeOpacity={0.7}
                   onPress={() =>
                     navigation.navigate('ReviewScreen', {
@@ -301,8 +332,8 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                       propertyTitle: property.title,
                     })
                   }>
-                  <Icon name="rate-review" size={16} color={COLORS.primary} />
-                  <Text style={styles.writeReviewHeaderText}>Reviews</Text>
+                  <Icon name="rate-review" size={14} color={COLORS.primary} />
+                  <Text style={styles.actionPillPrimaryText}>All Reviews</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -317,33 +348,51 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 })
               }>
               <View style={styles.viewReviewsContent}>
-                <Icon name="reviews" size={24} color={COLORS.primary} />
+                <View style={styles.viewReviewsIconCircle}>
+                  <Icon name="rate-review" size={20} color={COLORS.primary} />
+                </View>
                 <View style={{ marginLeft: 12, flex: 1 }}>
-                  <Text style={styles.viewReviewsTitle}>Property Reviews</Text>
+                  <Text style={styles.viewReviewsTitle}>Read All Reviews</Text>
                   <Text style={styles.viewReviewsSub}>
-                    Tap to view all tenant feedback for this property
+                    See ratings, feedback, and experiences from prior residents
                   </Text>
                 </View>
-                <Icon name="chevron-right" size={24} color={COLORS.subText} />
+                <Icon
+                  name="arrow-forward-ios"
+                  size={14}
+                  color={COLORS.subText}
+                />
               </View>
             </TouchableOpacity>
           </View>
         </ScrollView>
 
-        {/* Fixed Bottom Action Bar */}
+        {/* Floating Action Bar */}
         <View style={styles.bottomBar}>
           <TouchableOpacity
             style={styles.bottomContactBtn}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
             onPress={contactOwner}>
-            <Text style={styles.bottomContactText}>Contact</Text>
+            <Icon
+              name="call"
+              size={18}
+              color={COLORS.primary}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.bottomContactText}>Call Owner</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.scheduleVisitBtn}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
             onPress={() => navigation.navigate('BookingForm', { property })}>
-            <Text style={styles.scheduleVisitText}>Booking</Text>
+            <Icon
+              name="event-available"
+              size={18}
+              color="#FFFFFF"
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.scheduleVisitText}>Book Visit</Text>
           </TouchableOpacity>
         </View>
 
@@ -356,12 +405,12 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                   styles.alertIconContainer,
                   {
                     backgroundColor:
-                      getAlertStyle(alertConfig.type).color + '15',
+                      getAlertStyle(alertConfig.type).color + '1A',
                   },
                 ]}>
                 <Icon
                   name={getAlertStyle(alertConfig.type).icon}
-                  size={38}
+                  size={36}
                   color={getAlertStyle(alertConfig.type).color}
                 />
               </View>
@@ -373,9 +422,9 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                   styles.alertButton,
                   { backgroundColor: getAlertStyle(alertConfig.type).color },
                 ]}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
                 onPress={closeAlert}>
-                <Text style={styles.alertButtonText}>OK</Text>
+                <Text style={styles.alertButtonText}>Got It</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -389,17 +438,17 @@ const getStyles = COLORS =>
   StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
     mainContainer: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
     fallbackContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      padding: 24,
     },
     backButtonFallback: {
       position: 'absolute',
@@ -407,34 +456,75 @@ const getStyles = COLORS =>
       left: 20,
       padding: 8,
     },
+    fallbackIconCircle: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderWidth: 1,
+      borderColor: COLORS.border || '#E5E7EB',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    fallbackTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: COLORS.text || '#111827',
+      marginBottom: 6,
+    },
     fallbackText: {
-      fontSize: 16,
-      color: COLORS.subText,
-      marginTop: 10,
-      fontWeight: '600',
+      fontSize: 14,
+      color: COLORS.subText || '#6B7280',
+      textAlign: 'center',
     },
     scrollView: {
       flex: 1,
     },
     scrollContent: {
-      paddingBottom: 100,
+      paddingBottom: 110,
     },
 
-    /* Image & Header Section */
+    /* Header Visual Section */
     imageContainer: {
       position: 'relative',
       width: '100%',
-      height: 280,
-      backgroundColor: COLORS.disabled,
+      height: 340,
+      backgroundColor: '#E5E7EB',
     },
     image: {
       width: '100%',
       height: '100%',
       resizeMode: 'cover',
     },
+    imageScrim: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.18)',
+    },
+    typeBadge: {
+      position: 'absolute',
+      bottom: 44,
+      left: 20,
+      backgroundColor: 'rgba(255, 255, 255, 0.92)',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    typeBadgeText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: COLORS.text || '#1F2937',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
     topActionRow: {
       position: 'absolute',
-      top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 50,
+      top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 12 : 16,
       left: 16,
       right: 16,
       flexDirection: 'row',
@@ -445,192 +535,218 @@ const getStyles = COLORS =>
       flexDirection: 'row',
     },
     circleIconButton: {
-      width: 38,
-      height: 38,
-      borderRadius: 19,
-      backgroundColor: COLORS.white,
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
       justifyContent: 'center',
       alignItems: 'center',
       elevation: 4,
-      shadowColor: COLORS.shadow,
+      shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
+      shadowOpacity: 0.15,
+      shadowRadius: 6,
     },
 
-    /* Title & Price Card */
+    /* Floating Card */
     titlePriceCard: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      backgroundColor: COLORS.card,
-      padding: 16,
-      marginBottom: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      padding: 20,
+      marginHorizontal: 16,
+      marginTop: -28,
+      borderRadius: 20,
+      elevation: 6,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      borderWidth: 1,
+      borderColor: COLORS.border || 'rgba(229, 231, 235, 0.8)',
+      marginBottom: 16,
     },
     title: {
-      fontSize: 18,
-      fontWeight: '800',
-      color: COLORS.text,
+      fontSize: 20,
+      fontWeight: '700',
+      color: COLORS.text || '#111827',
       marginBottom: 6,
+      lineHeight: 26,
+    },
+    locationRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
     },
     locationText: {
       fontSize: 13,
-      color: COLORS.subText,
-      lineHeight: 18,
+      color: COLORS.subText || '#6B7280',
+      marginLeft: 4,
+      flexShrink: 1,
+      fontWeight: '500',
     },
     priceContainer: {
       alignItems: 'flex-end',
     },
     priceText: {
-      fontSize: 18,
+      fontSize: 22,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.primary || '#2563EB',
     },
     priceSubText: {
-      fontSize: 11,
-      color: COLORS.subText,
-      fontWeight: '600',
-      marginTop: 2,
+      fontSize: 12,
+      color: COLORS.subText || '#6B7280',
+      fontWeight: '500',
     },
 
-    /* Section Cards */
+    /* Card Layout System */
     sectionCard: {
-      backgroundColor: COLORS.card,
-      padding: 16,
-      marginBottom: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      padding: 20,
+      marginHorizontal: 16,
+      marginBottom: 16,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: COLORS.border || '#F3F4F6',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.03,
+      shadowRadius: 4,
+      elevation: 1,
     },
     sectionHeaderTitle: {
       fontSize: 16,
       fontWeight: '700',
-      color: COLORS.text,
-      marginBottom: 14,
+      color: COLORS.text || '#111827',
+      marginBottom: 16,
     },
     overviewGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'space-between',
+      rowGap: 12,
     },
     overviewItem: {
       width: '48%',
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F9FAFB',
       padding: 12,
-      borderRadius: 12,
-      marginBottom: 12,
+      borderRadius: 14,
       borderWidth: 1,
-      borderColor: COLORS.border,
+      borderColor: COLORS.border || '#E5E7EB',
+    },
+    overviewIconCircle: {
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+      backgroundColor: (COLORS.primary || '#2563EB') + '12',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    overviewTextContainer: {
+      marginLeft: 10,
+      flex: 1,
     },
     overviewLabel: {
       fontSize: 11,
-      color: COLORS.subText,
+      color: COLORS.subText || '#6B7280',
       fontWeight: '500',
     },
     overviewValue: {
       fontSize: 13,
-      color: COLORS.text,
-      fontWeight: '700',
-      marginTop: 2,
-    },
-    neighbourhoodRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    neighbourhoodText: {
-      fontSize: 14,
-      color: COLORS.text,
+      color: COLORS.text || '#1F2937',
       fontWeight: '600',
-      marginLeft: 8,
+      marginTop: 2,
     },
     descriptionText: {
       fontSize: 14,
-      color: COLORS.subText,
+      color: COLORS.subText || '#4B5563',
       lineHeight: 22,
+      fontWeight: '400',
     },
 
-    /* Reviews Section Styling */
+    /* Reviews Styling */
     reviewHeaderRow: {
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-      marginBottom: 12,
-      gap: 8,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
     },
-    headerButtonsRow: {
+    ratingTitleContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      width: '100%',
-      justifyContent: 'flex-end',
-      gap: 8,
     },
     ratingBadge: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#FFF8E7',
+      backgroundColor: '#FEF3C7',
       paddingHorizontal: 8,
       paddingVertical: 3,
-      borderRadius: 8,
+      borderRadius: 12,
       marginLeft: 8,
       marginBottom: 14,
     },
     ratingText: {
       fontSize: 12,
-      fontWeight: '800',
-      color: '#B88600',
-      marginLeft: 4,
+      fontWeight: '700',
+      color: '#D97706',
+      marginLeft: 3,
     },
-    myReviewsHeaderBtn: {
+    headerButtonsRow: {
       flexDirection: 'row',
-      alignItems: 'center',
+      gap: 8,
+      marginBottom: 14,
+    },
+    actionPillBtn: {
       paddingVertical: 6,
       paddingHorizontal: 10,
-      borderRadius: 8,
-      backgroundColor: COLORS.primary + '10',
-      borderWidth: 1,
-      borderColor: COLORS.primary + '30',
+      borderRadius: 20,
+      backgroundColor: COLORS.background || '#F3F4F6',
     },
-    myReviewsHeaderText: {
+    actionPillText: {
       fontSize: 12,
-      fontWeight: '700',
-      color: COLORS.primary,
-      marginLeft: 4,
+      fontWeight: '600',
+      color: COLORS.subText || '#4B5563',
     },
-    writeReviewHeaderBtn: {
+    actionPillPrimary: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 6,
-      paddingHorizontal: 10,
-      borderRadius: 8,
-      backgroundColor: COLORS.primary + '20',
+      backgroundColor: (COLORS.primary || '#2563EB') + '14',
+      gap: 4,
     },
-    writeReviewHeaderText: {
+    actionPillPrimaryText: {
       fontSize: 12,
-      fontWeight: '700',
-      color: COLORS.primary,
-      marginLeft: 4,
+      fontWeight: '600',
+      color: COLORS.primary || '#2563EB',
     },
     viewReviewsCard: {
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F9FAFB',
       borderRadius: 14,
       padding: 14,
       borderWidth: 1,
-      borderColor: COLORS.border,
+      borderColor: COLORS.border || '#E5E7EB',
     },
     viewReviewsContent: {
       flexDirection: 'row',
       alignItems: 'center',
     },
+    viewReviewsIconCircle: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      backgroundColor: (COLORS.primary || '#2563EB') + '15',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
     viewReviewsTitle: {
       fontSize: 14,
-      fontWeight: '700',
-      color: COLORS.text,
+      fontWeight: '600',
+      color: COLORS.text || '#111827',
     },
     viewReviewsSub: {
       fontSize: 12,
-      color: COLORS.subText,
+      color: COLORS.subText || '#6B7280',
       marginTop: 2,
     },
 
@@ -640,99 +756,103 @@ const getStyles = COLORS =>
       bottom: 0,
       left: 0,
       right: 0,
-      backgroundColor: COLORS.card,
+      backgroundColor: COLORS.card || '#FFFFFF',
       flexDirection: 'row',
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+      paddingHorizontal: 20,
+      paddingTop: 14,
+      paddingBottom: Platform.OS === 'ios' ? 28 : 14,
       borderTopWidth: 1,
-      borderTopColor: COLORS.border,
-      elevation: 10,
-      shadowColor: COLORS.shadow,
+      borderTopColor: COLORS.border || '#E5E7EB',
+      elevation: 12,
+      shadowColor: '#000',
       shadowOffset: { width: 0, height: -4 },
-      shadowOpacity: 0.05,
-      shadowRadius: 5,
+      shadowOpacity: 0.08,
+      shadowRadius: 10,
       gap: 12,
     },
     bottomContactBtn: {
       flex: 1,
+      flexDirection: 'row',
       borderWidth: 1.5,
-      borderColor: COLORS.primary,
-      borderRadius: 12,
+      borderColor: COLORS.primary || '#2563EB',
+      borderRadius: 14,
       paddingVertical: 14,
       alignItems: 'center',
-      backgroundColor: COLORS.card,
+      justifyContent: 'center',
+      backgroundColor: (COLORS.primary || '#2563EB') + '08',
     },
     bottomContactText: {
-      color: COLORS.primary,
-      fontSize: 16,
+      color: COLORS.primary || '#2563EB',
+      fontSize: 15,
       fontWeight: '700',
     },
     scheduleVisitBtn: {
       flex: 1,
-      backgroundColor: COLORS.primary,
-      borderRadius: 12,
+      flexDirection: 'row',
+      backgroundColor: COLORS.primary || '#2563EB',
+      borderRadius: 14,
       paddingVertical: 14,
       alignItems: 'center',
-      elevation: 3,
-      shadowColor: COLORS.primary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
+      justifyContent: 'center',
+      elevation: 2,
+      shadowColor: COLORS.primary || '#2563EB',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.25,
+      shadowRadius: 6,
     },
     scheduleVisitText: {
-      color: COLORS.white,
-      fontSize: 16,
+      color: '#FFFFFF',
+      fontSize: 15,
       fontWeight: '700',
     },
 
-    /* Custom Alert Modal Styling */
+    /* Alert Modal */
     alertOverlay: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: 'rgba(0, 0, 0, 0.45)',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      padding: 24,
     },
     alertBox: {
       width: '100%',
-      backgroundColor: COLORS.card,
+      backgroundColor: COLORS.card || '#FFFFFF',
       borderRadius: 24,
-      padding: 25,
+      padding: 24,
       alignItems: 'center',
       elevation: 10,
     },
     alertIconContainer: {
-      width: 70,
-      height: 70,
-      borderRadius: 35,
+      width: 64,
+      height: 64,
+      borderRadius: 32,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 20,
+      marginBottom: 16,
     },
     alertTitle: {
-      fontSize: 20,
-      fontWeight: '800',
-      color: COLORS.text,
-      marginBottom: 10,
+      fontSize: 18,
+      fontWeight: '700',
+      color: COLORS.text || '#111827',
+      marginBottom: 8,
       textAlign: 'center',
     },
     alertMessage: {
       fontSize: 14,
-      color: COLORS.subText,
+      color: COLORS.subText || '#4B5563',
       textAlign: 'center',
-      marginBottom: 25,
+      marginBottom: 20,
       lineHeight: 20,
     },
     alertButton: {
       width: '100%',
-      paddingVertical: 14,
-      borderRadius: 14,
+      paddingVertical: 12,
+      borderRadius: 12,
       alignItems: 'center',
     },
     alertButtonText: {
-      color: COLORS.white,
-      fontSize: 16,
-      fontWeight: '700',
+      color: '#FFFFFF',
+      fontSize: 15,
+      fontWeight: '600',
     },
   })
