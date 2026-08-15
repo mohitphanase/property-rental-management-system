@@ -31,6 +31,7 @@ export default function BookingScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [selectedTab, setSelectedTab] = useState('ALL')
   const [propertyImages, setPropertyImages] = useState({})
+
   const { COLORS } = useContext(ThemeContext)
   const styles = getStyles(COLORS)
 
@@ -94,40 +95,52 @@ export default function BookingScreen() {
     switch (status) {
       case 'APPROVED':
         return {
-          style: { backgroundColor: COLORS.success },
+          style: { backgroundColor: COLORS.success || '#10B981' },
+          soft: (COLORS.success || '#10B981') + '15',
           icon: 'check-circle',
           text: 'Approved',
         }
       case 'PENDING':
         return {
-          style: { backgroundColor: COLORS.warning },
-          icon: 'hourglass-empty',
+          style: { backgroundColor: COLORS.warning || '#F59E0B' },
+          soft: (COLORS.warning || '#F59E0B') + '15',
+          icon: 'schedule',
           text: 'Pending',
         }
       case 'REJECTED':
         return {
-          style: { backgroundColor: COLORS.error },
+          style: { backgroundColor: COLORS.error || '#EF4444' },
+          soft: (COLORS.error || '#EF4444') + '15',
           icon: 'cancel',
           text: 'Rejected',
         }
       case 'CANCELLED':
         return {
-          style: { backgroundColor: COLORS.cancelled },
+          style: { backgroundColor: COLORS.cancelled || '#6B7280' },
+          soft: (COLORS.cancelled || '#6B7280') + '15',
           icon: 'block',
           text: 'Cancelled',
         }
       default:
         return {
-          style: { backgroundColor: COLORS.placeholder },
+          style: { backgroundColor: COLORS.placeholder || '#9CA3AF' },
+          soft: (COLORS.placeholder || '#9CA3AF') + '15',
           icon: 'info',
           text: status,
         }
     }
   }
 
+  const TAB_META = {
+    ALL: { icon: 'apps' },
+    PENDING: { icon: 'schedule' },
+    APPROVED: { icon: 'check-circle' },
+    REJECTED: { icon: 'cancel' },
+    CANCELLED: { icon: 'block' },
+  }
+
   const renderBooking = ({ item }) => {
     const statusConfig = getStatusConfig(item.status)
-    // Fallback if propertyImages state is used, else try to get from merged property data
     const imageUrl = propertyImages[item.propertyId]
       ? `${SERVER_URL}${propertyImages[item.propertyId]}`
       : item?.images?.[0]?.imageUrl
@@ -137,10 +150,13 @@ export default function BookingScreen() {
     return (
       <TouchableOpacity
         style={styles.card}
-        activeOpacity={0.9}
+        activeOpacity={0.95}
         onPress={() =>
           navigation.navigate('BookingDetails', { booking: item })
         }>
+        {/* Status accent stripe */}
+        <View style={[styles.cardAccentStripe, statusConfig.style]} />
+
         {/* Image Section */}
         <View style={styles.imageWrapper}>
           <Image
@@ -156,7 +172,7 @@ export default function BookingScreen() {
             <Icon
               name={statusConfig.icon}
               size={12}
-              color={COLORS.white}
+              color="#FFFFFF"
               style={styles.statusIcon}
             />
             <Text style={styles.statusText}>{statusConfig.text}</Text>
@@ -167,7 +183,14 @@ export default function BookingScreen() {
         <View style={styles.cardContent}>
           <View>
             <View style={styles.cardHeaderRow}>
-              <Text style={styles.bookingId}>Booking #{item.bookingId}</Text>
+              <View style={styles.bookingIdPill}>
+                <Icon
+                  name="confirmation-number"
+                  size={11}
+                  color={COLORS.primary || '#2563EB'}
+                />
+                <Text style={styles.bookingId}>#{item.bookingId}</Text>
+              </View>
               <Text style={styles.dateAppliedText}>
                 {item.createdAt?.split(' ')[0] || item.createdAt}
               </Text>
@@ -178,17 +201,27 @@ export default function BookingScreen() {
             </Text>
 
             <View style={styles.infoRow}>
-              <Icon name="location-on" size={14} color={COLORS.subText} />
+              <Icon
+                name="location-on"
+                size={14}
+                color={COLORS.subText || '#6B7280'}
+              />
               <Text style={styles.infoText} numberOfLines={1}>
                 {item.location || item.city || 'Location unavailable'}
               </Text>
             </View>
 
             <View style={styles.infoRow}>
-              <Icon name="date-range" size={14} color={COLORS.subText} />
+              <Icon
+                name="date-range"
+                size={14}
+                color={COLORS.subText || '#6B7280'}
+              />
               <Text style={styles.infoText}>
                 {item.startDate}{' '}
-                <Text style={{ color: COLORS.placeholder }}>to</Text>{' '}
+                <Text style={{ color: COLORS.placeholder || '#9CA3AF' }}>
+                  to
+                </Text>{' '}
                 {item.endDate}
               </Text>
             </View>
@@ -196,12 +229,16 @@ export default function BookingScreen() {
 
           <View style={styles.cardFooter}>
             <Text style={styles.priceText}>
-              ₹{item.price ?? item.rent ?? '0'}
+              ₹{Number(item.price ?? item.rent ?? 0).toLocaleString('en-IN')}
               <Text style={styles.priceSubText}>/mo</Text>
             </Text>
             <View style={styles.detailsButton}>
               <Text style={styles.detailsButtonText}>Details</Text>
-              <Icon name="chevron-right" size={16} color={COLORS.primary} />
+              <Icon
+                name="chevron-right"
+                size={16}
+                color={COLORS.primary || '#2563EB'}
+              />
             </View>
           </View>
         </View>
@@ -212,9 +249,18 @@ export default function BookingScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={COLORS.background}
+        />
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading your bookings...</Text>
+          <View style={styles.loaderRing}>
+            <ActivityIndicator
+              size="large"
+              color={COLORS.primary || '#2563EB'}
+            />
+          </View>
+          <Text style={styles.loadingText}>Fetching your bookings...</Text>
         </View>
       </SafeAreaView>
     )
@@ -224,10 +270,17 @@ export default function BookingScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={COLORS.card || '#FFFFFF'}
+      />
       <View style={styles.container}>
         {/* Top Header */}
         <View style={styles.header}>
           <Text style={styles.screenTitle}>My Bookings</Text>
+          <Text style={styles.screenSubtitle}>
+            Manage and track your stay requests
+          </Text>
         </View>
 
         {/* Filter Tabs */}
@@ -236,21 +289,27 @@ export default function BookingScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.tabContainer}>
-            {TABS.map(tab => (
-              <TouchableOpacity
-                key={tab}
-                activeOpacity={0.8}
-                style={[styles.tab, selectedTab === tab && styles.activeTab]}
-                onPress={() => setSelectedTab(tab)}>
-                <Text
-                  style={[
-                    styles.tabText,
-                    selectedTab === tab && styles.activeTabText,
-                  ]}>
-                  {tab.charAt(0) + tab.slice(1).toLowerCase()}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {TABS.map(tab => {
+              const isActive = selectedTab === tab
+              return (
+                <TouchableOpacity
+                  key={tab}
+                  activeOpacity={0.8}
+                  style={[styles.tab, isActive && styles.activeTab]}
+                  onPress={() => setSelectedTab(tab)}>
+                  <Icon
+                    name={TAB_META[tab]?.icon || 'label'}
+                    size={14}
+                    color={isActive ? '#FFFFFF' : COLORS.subText || '#4B5563'}
+                    style={styles.tabIcon}
+                  />
+                  <Text
+                    style={[styles.tabText, isActive && styles.activeTabText]}>
+                    {tab.charAt(0) + tab.slice(1).toLowerCase()}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })}
           </ScrollView>
         </View>
 
@@ -265,14 +324,18 @@ export default function BookingScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={[COLORS.primary]}
-              tintColor={COLORS.primary}
+              colors={[COLORS.primary || '#2563EB']}
+              tintColor={COLORS.primary || '#2563EB'}
             />
           }
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
               <View style={styles.emptyIconBox}>
-                <Icon name="event-busy" size={50} color={COLORS.primary} />
+                <Icon
+                  name="event-busy"
+                  size={48}
+                  color={COLORS.primary || '#2563EB'}
+                />
               </View>
               <Text style={styles.emptyTitle}>No Bookings Found</Text>
               <Text style={styles.emptyText}>
@@ -280,9 +343,10 @@ export default function BookingScreen() {
               </Text>
               <TouchableOpacity
                 style={styles.exploreButton}
-                activeOpacity={0.8}
+                activeOpacity={0.88}
                 onPress={() => navigation.navigate('Home')}>
                 <Text style={styles.exploreButtonText}>Explore Properties</Text>
+                <Icon name="arrow-forward" size={16} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
           )}
@@ -296,22 +360,31 @@ const getStyles = COLORS =>
   StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.card || '#FFFFFF',
     },
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F5F6FA',
     },
     loader: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F5F6FA',
+    },
+    loaderRing: {
+      width: 88,
+      height: 88,
+      borderRadius: 44,
+      backgroundColor: (COLORS.primary || '#2563EB') + '10',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 6,
     },
     loadingText: {
-      marginTop: 12,
-      fontSize: 16,
-      color: COLORS.subText,
+      marginTop: 14,
+      fontSize: 15,
+      color: COLORS.subText || '#6B7280',
       fontWeight: '500',
     },
 
@@ -319,133 +392,165 @@ const getStyles = COLORS =>
     header: {
       paddingHorizontal: 20,
       paddingTop:
-        Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 10,
-      paddingBottom: 15,
-      backgroundColor: COLORS.background,
+        Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 16,
+      paddingBottom: 16,
+      backgroundColor: COLORS.card || '#FFFFFF',
     },
     screenTitle: {
-      fontSize: 28,
+      fontSize: 27,
       fontWeight: '800',
-      color: COLORS.text,
-      letterSpacing: 0.5,
+      color: COLORS.text || '#111827',
+      letterSpacing: -0.5,
+      marginBottom: 4,
+    },
+    screenSubtitle: {
+      fontSize: 14,
+      color: COLORS.subText || '#6B7280',
+      fontWeight: '500',
     },
 
     /* Tabs Styling */
     tabWrapper: {
-      height: 48,
-      marginBottom: 10,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border || '#F3F4F6',
+      paddingBottom: 14,
     },
     tabContainer: {
-      paddingHorizontal: 16,
+      paddingHorizontal: 20,
       alignItems: 'center',
     },
     tab: {
-      paddingHorizontal: 18,
-      height: 36,
-      marginRight: 10,
-      borderRadius: 18,
-      backgroundColor: COLORS.card,
-      borderWidth: 1,
-      borderColor: COLORS.border,
+      flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
+      paddingHorizontal: 18,
+      height: 40,
+      marginRight: 10,
+      borderRadius: 22,
+      backgroundColor: COLORS.background || '#F5F6FA',
+    },
+    tabIcon: {
+      marginRight: 6,
     },
     activeTab: {
-      backgroundColor: COLORS.primary,
-      borderColor: COLORS.primary,
+      backgroundColor: COLORS.primary || '#2563EB',
+      shadowColor: COLORS.primary || '#2563EB',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.28,
+      shadowRadius: 8,
+      elevation: 4,
     },
     tabText: {
       fontSize: 13,
-      fontWeight: '600',
-      color: COLORS.subText,
+      fontWeight: '700',
+      color: COLORS.subText || '#4B5563',
     },
     activeTabText: {
-      color: COLORS.white,
-      fontWeight: '700',
+      color: '#FFFFFF',
+      fontWeight: '800',
     },
 
     /* List & Card Styling */
     listContainer: {
       paddingHorizontal: 16,
-      paddingBottom: 100, // Extra padding for tab bar if needed
-      paddingTop: 10,
+      paddingTop: 18,
+      paddingBottom: 40,
     },
     card: {
       flexDirection: 'row',
-      backgroundColor: COLORS.card,
-      borderRadius: 20,
-      padding: 12,
-      marginBottom: 16,
-      borderWidth: 1,
-      borderColor: COLORS.border,
-      elevation: 2,
-      shadowColor: COLORS.shadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 5,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderRadius: 24,
+      padding: 14,
+      marginBottom: 18,
+      elevation: 5,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.07,
+      shadowRadius: 14,
+      overflow: 'hidden',
+    },
+    cardAccentStripe: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      bottom: 0,
+      width: 5,
     },
     imageWrapper: {
       position: 'relative',
       marginRight: 14,
+      marginLeft: 6,
     },
     propertyImage: {
-      width: 100,
-      height: 120,
-      borderRadius: 14,
-      backgroundColor: COLORS.disabled,
+      width: 108,
+      height: 132,
+      borderRadius: 16,
+      backgroundColor: '#E5E7EB',
     },
     statusBadge: {
       position: 'absolute',
-      top: 8,
-      left: 8,
+      top: 10,
+      left: 10,
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 6,
+      paddingHorizontal: 8,
       paddingVertical: 4,
-      borderRadius: 8,
-      elevation: 2,
+      borderRadius: 12,
+      elevation: 3,
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
+      shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
-      shadowRadius: 2,
+      shadowRadius: 3,
     },
     statusIcon: {
-      marginRight: 3,
+      marginRight: 4,
     },
     statusText: {
-      color: COLORS.white,
-      fontSize: 9,
+      color: '#FFFFFF',
+      fontSize: 10,
       fontWeight: '800',
       textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
 
     /* Card Content */
     cardContent: {
       flex: 1,
       justifyContent: 'space-between',
+      paddingRight: 4,
     },
     cardHeaderRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 6,
+      marginBottom: 8,
+    },
+    bookingIdPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: (COLORS.primary || '#2563EB') + '12',
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
     },
     bookingId: {
-      fontSize: 12,
-      color: COLORS.primary,
-      fontWeight: '700',
+      fontSize: 11,
+      color: COLORS.primary || '#2563EB',
+      fontWeight: '800',
       letterSpacing: 0.5,
     },
     dateAppliedText: {
-      fontSize: 10,
-      color: COLORS.placeholder,
+      fontSize: 11,
+      color: COLORS.subText || '#6B7280',
       fontWeight: '600',
     },
     propertyName: {
-      fontSize: 16,
+      fontSize: 17,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 6,
+      lineHeight: 22,
     },
     infoRow: {
       flexDirection: 'row',
@@ -453,9 +558,9 @@ const getStyles = COLORS =>
       marginBottom: 4,
     },
     infoText: {
-      fontSize: 12,
-      color: COLORS.subText,
-      marginLeft: 4,
+      fontSize: 13,
+      color: COLORS.subText || '#4B5563',
+      marginLeft: 6,
       flex: 1,
       fontWeight: '500',
     },
@@ -463,29 +568,29 @@ const getStyles = COLORS =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-end',
-      marginTop: 6,
+      marginTop: 10,
     },
     priceText: {
-      fontSize: 16,
+      fontSize: 18,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
     },
     priceSubText: {
       fontSize: 12,
       fontWeight: '600',
-      color: COLORS.subText,
+      color: COLORS.subText || '#6B7280',
     },
     detailsButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: COLORS.primary + '15',
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-      borderRadius: 8,
+      backgroundColor: (COLORS.primary || '#2563EB') + '10',
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      borderRadius: 14,
     },
     detailsButtonText: {
-      color: COLORS.primary,
-      fontSize: 12,
+      color: COLORS.primary || '#2563EB',
+      fontSize: 13,
       fontWeight: '700',
       marginRight: 2,
     },
@@ -494,45 +599,48 @@ const getStyles = COLORS =>
     emptyContainer: {
       alignItems: 'center',
       justifyContent: 'center',
-      paddingTop: 60,
-      paddingHorizontal: 20,
+      paddingTop: 80,
+      paddingHorizontal: 24,
     },
     emptyIconBox: {
-      width: 90,
-      height: 90,
-      borderRadius: 45,
-      backgroundColor: COLORS.primary + '10',
+      width: 96,
+      height: 96,
+      borderRadius: 48,
+      backgroundColor: (COLORS.primary || '#2563EB') + '10',
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 20,
+      marginBottom: 22,
     },
     emptyTitle: {
       fontSize: 20,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 10,
     },
     emptyText: {
-      fontSize: 15,
-      color: COLORS.subText,
+      fontSize: 14,
+      color: COLORS.subText || '#6B7280',
       textAlign: 'center',
       lineHeight: 22,
-      marginBottom: 25,
+      marginBottom: 28,
     },
     exploreButton: {
-      backgroundColor: COLORS.primary,
-      paddingHorizontal: 24,
-      paddingVertical: 14,
-      borderRadius: 14,
-      elevation: 3,
-      shadowColor: COLORS.primary,
-      shadowOffset: { width: 0, height: 2 },
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: COLORS.primary || '#2563EB',
+      paddingHorizontal: 28,
+      paddingVertical: 15,
+      borderRadius: 26,
+      elevation: 5,
+      shadowColor: COLORS.primary || '#2563EB',
+      shadowOffset: { width: 0, height: 5 },
       shadowOpacity: 0.3,
-      shadowRadius: 4,
+      shadowRadius: 10,
     },
     exploreButtonText: {
-      color: COLORS.white,
-      fontWeight: '700',
+      color: '#FFFFFF',
+      fontWeight: '800',
       fontSize: 15,
     },
   })

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useCallback, useEffect } from "react"
+import React, { useContext, useState, useCallback, useEffect } from 'react'
 import {
   View,
   Text,
@@ -14,16 +14,15 @@ import {
   SafeAreaView,
   StatusBar,
   ScrollView,
-} from "react-native"
-import Icon from "react-native-vector-icons/MaterialIcons"
-import { useFocusEffect } from "@react-navigation/native"
-import { useNavigation } from "@react-navigation/native"
+} from 'react-native'
+import Icon from 'react-native-vector-icons/MaterialIcons'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 
-import { ThemeContext } from "../../provider/ThemeProvider"
-import { AuthContext } from "../../provider/AuthProvider"
-import { getProperties } from "../../services/propertyServicet"
-import { SERVER_URL } from "../../utils/config"
-import { addWishlist, getWishlist } from "../../services/wishlistService"
+import { ThemeContext } from '../../provider/ThemeProvider'
+import { AuthContext } from '../../provider/AuthProvider'
+import { getProperties } from '../../services/propertyServicet'
+import { SERVER_URL } from '../../utils/config'
+import { addWishlist, getWishlist } from '../../services/wishlistService'
 
 export default function TenantHomeScreen() {
   const navigation = useNavigation()
@@ -35,12 +34,12 @@ export default function TenantHomeScreen() {
   const [loading, setLoading] = useState(true)
 
   // Filter States
-  const [search, setSearch] = useState("")
-  const [selectedCity, setSelectedCity] = useState("All Cities")
+  const [search, setSearch] = useState('')
+  const [selectedCity, setSelectedCity] = useState('All Cities')
   const [selectedPropertyType, setSelectedPropertyType] =
-    useState("Property Type")
-  const [selectedBudget, setSelectedBudget] = useState("Budget")
-  const [selectedSort, setSelectedSort] = useState("Default")
+    useState('Property Type')
+  const [selectedBudget, setSelectedBudget] = useState('Budget')
+  const [selectedSort, setSelectedSort] = useState('Default')
 
   // Modal Visibility States
   const [cityModalVisible, setCityModalVisible] = useState(false)
@@ -54,9 +53,9 @@ export default function TenantHomeScreen() {
   // Custom Alert State
   const [alertConfig, setAlertConfig] = useState({
     visible: false,
-    title: "",
-    message: "",
-    type: "warning",
+    title: '',
+    message: '',
+    type: 'warning',
     onClose: null,
   })
 
@@ -64,53 +63,49 @@ export default function TenantHomeScreen() {
     useCallback(() => {
       loadProperties()
       loadWishlist()
-    }, []),
+    }, [])
   )
 
   // Combined Filter and Sort Engine
   useEffect(() => {
     let result = [...properties]
 
-    // 1. Search Query Filter
     if (search.trim()) {
       const query = search.toLowerCase().trim()
       result = result.filter(
-        (item) =>
+        item =>
           item.title?.toLowerCase().includes(query) ||
-          item.city?.toLowerCase().includes(query),
+          item.city?.toLowerCase().includes(query)
       )
     }
 
-    // 2. City Filter
-    if (selectedCity !== "All Cities") {
+    if (selectedCity !== 'All Cities') {
       result = result.filter(
-        (property) =>
+        property =>
           property.city?.trim().toLowerCase() ===
-          selectedCity.trim().toLowerCase(),
+          selectedCity.trim().toLowerCase()
       )
     }
 
-    // 3. Property Type Filter
-    if (selectedPropertyType !== "Property Type") {
+    if (selectedPropertyType !== 'Property Type') {
       result = result.filter(
-        (property) =>
+        property =>
           property.propertyType?.toUpperCase() ===
-          selectedPropertyType.toUpperCase(),
+          selectedPropertyType.toUpperCase()
       )
     }
 
-    // 4. Budget Filter
-    if (selectedBudget !== "Budget") {
-      result = result.filter((property) => {
+    if (selectedBudget !== 'Budget') {
+      result = result.filter(property => {
         const pPrice = Number(property.price || property.rent || 0)
         switch (selectedBudget) {
-          case "Below ₹10,000":
+          case 'Below ₹10,000':
             return pPrice < 10000
-          case "₹10,000 - ₹20,000":
+          case '₹10,000 - ₹20,000':
             return pPrice >= 10000 && pPrice <= 20000
-          case "₹20,000 - ₹50,000":
+          case '₹20,000 - ₹50,000':
             return pPrice > 20000 && pPrice <= 50000
-          case "Above ₹50,000":
+          case 'Above ₹50,000':
             return pPrice > 50000
           default:
             return true
@@ -118,10 +113,9 @@ export default function TenantHomeScreen() {
       })
     }
 
-    // 5. Sort Properties
-    if (selectedSort === "Price: Low to High") {
+    if (selectedSort === 'Price: Low to High') {
       result.sort((a, b) => (a.price || a.rent) - (b.price || b.rent))
-    } else if (selectedSort === "Price: High to Low") {
+    } else if (selectedSort === 'Price: High to Low') {
       result.sort((a, b) => (b.price || b.rent) - (a.price || a.rent))
     }
 
@@ -145,32 +139,31 @@ export default function TenantHomeScreen() {
     if (onClose) onClose()
   }
 
-  const handleWishlist = async (propertyId) => {
+  const handleWishlist = async propertyId => {
     try {
       await addWishlist(propertyId)
-      showAlert("Success", "Property added to wishlist.", "success", () =>
-        navigation.navigate("Wishlist"),
+      showAlert('Success', 'Property added to wishlist.', 'success', () =>
+        navigation.navigate('Wishlist')
       )
     } catch (error) {
-      console.log(error.response?.data)
       showAlert(
-        "Error",
-        error.response?.data?.message || "Unable to add property.",
-        "error",
+        'Error',
+        error.response?.data?.message || 'Unable to add property to wishlist.',
+        'error'
       )
     }
   }
 
   const cities = [
-    "All Cities",
+    'All Cities',
     ...[
       ...new Map(
         properties
-          .filter((item) => Boolean(item.city))
-          .map((item) => [
+          .filter(item => Boolean(item.city))
+          .map(item => [
             item.city.trim().toLowerCase(),
-            item.city.trim().replace(/\b\w/g, (c) => c.toUpperCase()),
-          ]),
+            item.city.trim().replace(/\b\w/g, c => c.toUpperCase()),
+          ])
       ).values(),
     ],
   ]
@@ -178,14 +171,14 @@ export default function TenantHomeScreen() {
   const loadWishlist = async () => {
     try {
       const response = await getWishlist()
-      const ids = response.data.map((item) => item.property.propertyId)
+      const ids = response.data.map(item => item.property.propertyId)
       setWishlistIds(ids)
     } catch (error) {
       console.log(error.response?.data || error.message)
     }
   }
 
-  const isWishlisted = (propertyId) => wishlistIds.includes(propertyId)
+  const isWishlisted = propertyId => wishlistIds.includes(propertyId)
 
   const loadProperties = async () => {
     try {
@@ -199,40 +192,55 @@ export default function TenantHomeScreen() {
     }
   }
 
-  const handleCall = (phoneNumber) => {
+  const handleCall = phoneNumber => {
     if (!phoneNumber) {
       showAlert(
-        "Not Available",
-        "Owner phone number is not provided.",
-        "warning",
+        'Not Available',
+        'Owner phone number is not provided.',
+        'warning'
       )
       return
     }
     Linking.openURL(`tel:${phoneNumber}`)
   }
 
-  const handleWhatsApp = (phoneNumber) => {
+  const handleWhatsApp = phoneNumber => {
     if (!phoneNumber) {
       showAlert(
-        "Not Available",
-        "Owner phone number is not provided.",
-        "warning",
+        'Not Available',
+        'Owner phone number is not provided.',
+        'warning'
       )
       return
     }
     Linking.openURL(`whatsapp://send?phone=${phoneNumber}`)
   }
 
-  const getAlertStyle = (type) => {
+  const getAlertStyle = type => {
     switch (type) {
-      case "success":
-        return { icon: "check-circle", color: COLORS.success }
-      case "error":
-        return { icon: "error", color: COLORS.error }
+      case 'success':
+        return { icon: 'check-circle', color: COLORS.success || '#10B981' }
+      case 'error':
+        return { icon: 'error', color: COLORS.error || '#EF4444' }
       default:
-        return { icon: "warning", color: COLORS.warning }
+        return { icon: 'warning', color: COLORS.warning || '#F59E0B' }
     }
   }
+
+  const clearAllFilters = () => {
+    setSearch('')
+    setSelectedCity('All Cities')
+    setSelectedPropertyType('Property Type')
+    setSelectedBudget('Budget')
+    setSelectedSort('Default')
+  }
+
+  const activeFilterCount = [
+    selectedCity !== 'All Cities',
+    selectedPropertyType !== 'Property Type',
+    selectedBudget !== 'Budget',
+    selectedSort !== 'Default',
+  ].filter(Boolean).length
 
   const renderProperty = ({ item }) => {
     const primaryImage =
@@ -240,248 +248,414 @@ export default function TenantHomeScreen() {
         ? `${SERVER_URL}/${item.images[0].imageUrl}`
         : null
 
+    const wishlisted = isWishlisted(item.propertyId)
+
     return (
       <View style={styles.card}>
         <TouchableOpacity
-          activeOpacity={0.95}
+          activeOpacity={0.92}
           onPress={() =>
-            navigation.navigate("PropertyDetails", { property: item })
-          }
-        >
+            navigation.navigate('PropertyDetails', { property: item })
+          }>
           <View style={styles.imageContainer}>
             <Image
               source={
                 primaryImage
                   ? { uri: primaryImage }
-                  : require("../../../assets/property_placeholder.png")
+                  : require('../../../assets/property_placeholder.png')
               }
               style={styles.singleImage}
             />
 
-            <View style={styles.verifiedBadge}>
-              <Icon name="verified" size={14} color={COLORS.success} />
-              <Text style={styles.verifiedText}>Verified</Text>
-            </View>
+            <View style={styles.imageScrim} pointerEvents="none" />
 
-            <View style={styles.imageCountBadge}>
-              <Text style={styles.imageCountText}>
-                1/{item.images?.length || 1}
+            <View style={styles.typeBadge}>
+              <Text style={styles.typeBadgeText}>
+                {item.propertyType || 'Listing'}
               </Text>
             </View>
 
             <TouchableOpacity
               style={styles.wishlistBtn}
-              onPress={() => handleWishlist(item.propertyId)}
-            >
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              onPress={() => handleWishlist(item.propertyId)}>
               <Icon
-                name={
-                  isWishlisted(item.propertyId) ? "favorite" : "favorite-border"
-                }
-                size={22}
-                color={
-                  isWishlisted(item.propertyId) ? COLORS.error : COLORS.white
-                }
+                name={wishlisted ? 'favorite' : 'favorite-border'}
+                size={20}
+                color={wishlisted ? COLORS.error || '#EF4444' : '#FFFFFF'}
               />
             </TouchableOpacity>
+
+            <View style={styles.imageCountBadge}>
+              <Icon name="photo-camera" size={12} color="#FFFFFF" />
+              <Text style={styles.imageCountText}>
+                {item.images?.length || 1}
+              </Text>
+            </View>
           </View>
         </TouchableOpacity>
 
         <View style={styles.details}>
-          <Text style={styles.propertySubMeta}>
-            {item.propertyType} • {item.city}
-          </Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.propertyTitle} numberOfLines={1}>
+              {item.title}
+            </Text>
+          </View>
 
-          <Text style={styles.propertyTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
+          <View style={styles.locationRow}>
+            <Icon
+              name="location-on"
+              size={15}
+              color={COLORS.primary || '#2563EB'}
+            />
+            <Text style={styles.propertySubMeta} numberOfLines={1}>
+              {item.city} • Prime Area
+            </Text>
+          </View>
 
           <View style={styles.priceRow}>
-            <Text style={styles.priceText}>
-              ₹{item.price || item.rent}/{" "}
-              <Text style={styles.monthText}>Month</Text>
-            </Text>
+            <View style={styles.priceBlock}>
+              <Text style={styles.priceText}>
+                ₹{Number(item.price || item.rent || 0).toLocaleString('en-IN')}
+              </Text>
+              <Text style={styles.monthText}>/ month</Text>
+            </View>
+
             <TouchableOpacity
+              style={styles.priceBreakupBtn}
               onPress={() =>
-                navigation.navigate("PropertyDetails", { property: item })
-              }
-            >
-              <Text style={styles.priceBreakupText}>see price breakup ›</Text>
+                navigation.navigate('PropertyDetails', { property: item })
+              }>
+              <Text style={styles.priceBreakupText}>Details</Text>
+              <Icon
+                name="chevron-right"
+                size={16}
+                color={COLORS.primary || '#2563EB'}
+              />
             </TouchableOpacity>
           </View>
 
           {item.description ? (
-            <Text style={styles.highlightsText} numberOfLines={1}>
-              <Text style={{ fontWeight: "700", color: COLORS.text }}>
-                Highlights:{" "}
+            <View style={styles.highlightsBox}>
+              <Text style={styles.highlightsLabel}>Key Highlights</Text>
+              <Text style={styles.highlightsText} numberOfLines={2}>
+                {item.description}
               </Text>
-              {item.description}
-            </Text>
+            </View>
           ) : null}
         </View>
+
+        <View style={styles.divider} />
 
         <View style={styles.cardBottomAction}>
           <TouchableOpacity
             style={styles.propertyDetailsBtn}
+            activeOpacity={0.85}
             onPress={() =>
-              navigation.navigate("PropertyDetails", { property: item })
-            }
-          >
-            <Text style={styles.propertyDetailsBtnText}>Property Details</Text>
+              navigation.navigate('PropertyDetails', { property: item })
+            }>
+            <Text style={styles.propertyDetailsBtnText}>Explore Space</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.actionIconBtn}
-            onPress={() => handleWhatsApp(item.ownerPhone)}
-          >
-            <Icon name="chat" size={20} color={COLORS.success} />
+            style={[styles.actionIconBtn, styles.whatsappBtn]}
+            activeOpacity={0.85}
+            onPress={() => handleWhatsApp(item.ownerPhone)}>
+            <Icon name="chat" size={20} color={COLORS.success || '#10B981'} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.actionIconBtn}
-            onPress={() => handleCall(item.ownerPhone)}
-          >
-            <Icon name="phone" size={20} color={COLORS.primary} />
+            style={[styles.actionIconBtn, styles.callBtn]}
+            activeOpacity={0.85}
+            onPress={() => handleCall(item.ownerPhone)}>
+            <Icon name="call" size={20} color={COLORS.primary || '#2563EB'} />
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.updatedTimeText}>Updated 2d ago</Text>
+        <View style={styles.cardFooter}>
+          <Text style={styles.updatedTimeText}>Updated recently</Text>
+        </View>
       </View>
     )
   }
 
   if (loading) {
     return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Finding great properties...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={COLORS.card || '#FFFFFF'}
+        />
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" color={COLORS.primary || '#2563EB'} />
+          <Text style={styles.loadingText}>
+            Curating available properties...
+          </Text>
+        </View>
+      </SafeAreaView>
     )
   }
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={COLORS.card || '#FFFFFF'}
+      />
       <View style={styles.container}>
-        {/* Top Search Bar */}
+        {/* Top Header & Search Bar */}
         <View style={styles.topSearchHeader}>
+          <View style={styles.headerGreetingRow}>
+            <View>
+              <Text style={styles.greetingTitle}>
+                Hello, {user?.name ? user.name.split(' ')[0] : 'Explorer'} 👋
+              </Text>
+              <Text style={styles.headerGreeting}>
+                {filteredProperties.length} spaces available
+              </Text>
+            </View>
+            <View style={styles.avatarCircle}>
+              <Icon
+                name="person"
+                size={20}
+                color={COLORS.primary || '#2563EB'}
+              />
+            </View>
+          </View>
+
           <View style={styles.searchContainer}>
+            <Icon
+              name="search"
+              size={20}
+              color={COLORS.placeholder || '#9CA3AF'}
+              style={styles.searchLeadingIcon}
+            />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search locality, landmark..."
-              placeholderTextColor={COLORS.placeholder}
+              placeholder="Search locality, city, landmark..."
+              placeholderTextColor={COLORS.placeholder || '#9CA3AF'}
               value={search}
               onChangeText={setSearch}
+              returnKeyType="search"
             />
-            <TouchableOpacity style={styles.searchIconButton}>
-              <Icon name="search" size={20} color={COLORS.white} />
-            </TouchableOpacity>
+            {search.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setSearch('')}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={styles.clearSearchBtn}>
+                <Icon
+                  name="close"
+                  size={14}
+                  color={COLORS.subText || '#6B7280'}
+                />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
-        {/* Filter Dropdown Chips Row */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterChipsRow}
-        >
-          <TouchableOpacity
-            style={styles.filterChipIcon}
-            onPress={() => setSortModalVisible(true)}
-          >
-            <Icon name="swap-vert" size={18} color={COLORS.text} />
-          </TouchableOpacity>
+        {/* Horizontal Filter Chips Bar */}
+        <View style={styles.filterBarWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterChipsRow}>
+            <TouchableOpacity
+              style={styles.filterChipIcon}
+              activeOpacity={0.8}
+              onPress={() => setSortModalVisible(true)}>
+              <Icon
+                name="swap-vert"
+                size={20}
+                color={COLORS.text || '#111827'}
+              />
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.filterChip,
-              selectedCity !== "All Cities" && styles.activeFilterChip,
-            ]}
-            onPress={() => setCityModalVisible(true)}
-          >
-            <Text style={styles.filterChipText}>{selectedCity}</Text>
-            <Icon name="keyboard-arrow-down" size={18} color={COLORS.text} />
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.filterChip,
+                selectedCity !== 'All Cities' && styles.activeFilterChip,
+              ]}
+              activeOpacity={0.8}
+              onPress={() => setCityModalVisible(true)}>
+              <Text
+                style={[
+                  styles.filterChipText,
+                  selectedCity !== 'All Cities' && styles.activeFilterChipText,
+                ]}>
+                {selectedCity}
+              </Text>
+              <Icon
+                name="keyboard-arrow-down"
+                size={18}
+                color={
+                  selectedCity !== 'All Cities'
+                    ? COLORS.primary || '#2563EB'
+                    : COLORS.subText || '#6B7280'
+                }
+              />
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.filterChip,
-              selectedSort !== "Default" && styles.activeFilterChip,
-            ]}
-            onPress={() => setSortModalVisible(true)}
-          >
-            <Text style={styles.filterChipText}>{selectedSort}</Text>
-            <Icon name="keyboard-arrow-down" size={18} color={COLORS.text} />
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.filterChip,
+                selectedSort !== 'Default' && styles.activeFilterChip,
+              ]}
+              activeOpacity={0.8}
+              onPress={() => setSortModalVisible(true)}>
+              <Text
+                style={[
+                  styles.filterChipText,
+                  selectedSort !== 'Default' && styles.activeFilterChipText,
+                ]}>
+                {selectedSort}
+              </Text>
+              <Icon
+                name="keyboard-arrow-down"
+                size={18}
+                color={
+                  selectedSort !== 'Default'
+                    ? COLORS.primary || '#2563EB'
+                    : COLORS.subText || '#6B7280'
+                }
+              />
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.filterChip,
-              selectedPropertyType !== "Property Type" &&
-                styles.activeFilterChip,
-            ]}
-            onPress={() => setShowPropertyTypeModal(true)}
-          >
-            <Text style={styles.filterChipText}>{selectedPropertyType}</Text>
-            <Icon name="keyboard-arrow-down" size={18} color={COLORS.text} />
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.filterChip,
+                selectedPropertyType !== 'Property Type' &&
+                  styles.activeFilterChip,
+              ]}
+              activeOpacity={0.8}
+              onPress={() => setShowPropertyTypeModal(true)}>
+              <Text
+                style={[
+                  styles.filterChipText,
+                  selectedPropertyType !== 'Property Type' &&
+                    styles.activeFilterChipText,
+                ]}>
+                {selectedPropertyType}
+              </Text>
+              <Icon
+                name="keyboard-arrow-down"
+                size={18}
+                color={
+                  selectedPropertyType !== 'Property Type'
+                    ? COLORS.primary || '#2563EB'
+                    : COLORS.subText || '#6B7280'
+                }
+              />
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.filterChip,
-              selectedBudget !== "Budget" && styles.activeFilterChip,
-            ]}
-            onPress={() => setShowBudgetModal(true)}
-          >
-            <Text style={styles.filterChipText}>{selectedBudget}</Text>
-            <Icon name="keyboard-arrow-down" size={18} color={COLORS.text} />
-          </TouchableOpacity>
-        </ScrollView>
+            <TouchableOpacity
+              style={[
+                styles.filterChip,
+                selectedBudget !== 'Budget' && styles.activeFilterChip,
+              ]}
+              activeOpacity={0.8}
+              onPress={() => setShowBudgetModal(true)}>
+              <Text
+                style={[
+                  styles.filterChipText,
+                  selectedBudget !== 'Budget' && styles.activeFilterChipText,
+                ]}>
+                {selectedBudget}
+              </Text>
+              <Icon
+                name="keyboard-arrow-down"
+                size={18}
+                color={
+                  selectedBudget !== 'Budget'
+                    ? COLORS.primary || '#2563EB'
+                    : COLORS.subText || '#6B7280'
+                }
+              />
+            </TouchableOpacity>
 
-        {/* Properties List */}
+            {activeFilterCount > 0 && (
+              <TouchableOpacity
+                style={styles.clearFilterChip}
+                activeOpacity={0.8}
+                onPress={clearAllFilters}>
+                <Icon
+                  name="close"
+                  size={14}
+                  color={COLORS.error || '#EF4444'}
+                />
+                <Text style={styles.clearFilterChipText}>Reset</Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+        </View>
+
+        {/* Feed List */}
         <FlatList
           data={filteredProperties}
           renderItem={renderProperty}
-          keyExtractor={(item) => item.propertyId.toString()}
+          keyExtractor={item => item.propertyId.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContainer}
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
-              <Icon name="search-off" size={60} color={COLORS.placeholder} />
-              <Text style={styles.emptyText}>No properties found.</Text>
+              <View style={styles.emptyIconCircle}>
+                <Icon
+                  name="search-off"
+                  size={40}
+                  color={COLORS.subText || '#6B7280'}
+                />
+              </View>
+              <Text style={styles.emptyTitle}>No matching listings</Text>
+              <Text style={styles.emptyText}>
+                Try softening your search keywords or clearing active filters
+              </Text>
+              {(search || activeFilterCount > 0) && (
+                <TouchableOpacity
+                  style={styles.emptyResetBtn}
+                  onPress={clearAllFilters}>
+                  <Text style={styles.emptyResetBtnText}>
+                    Reset All Filters
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         />
 
         {/* Sort Modal */}
-        <Modal visible={sortModalVisible} transparent animationType="fade">
+        <Modal visible={sortModalVisible} transparent animationType="slide">
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Sort Properties</Text>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>Sort Order</Text>
               <FlatList
-                data={["Default", "Price: Low to High", "Price: High to Low"]}
-                keyExtractor={(item) => item}
+                data={['Default', 'Price: Low to High', 'Price: High to Low']}
+                keyExtractor={item => item}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.modalItem}
+                    activeOpacity={0.7}
                     onPress={() => {
                       setSelectedSort(item)
                       setSortModalVisible(false)
-                    }}
-                  >
+                    }}>
                     <Icon
                       name={
                         selectedSort === item
-                          ? "radio-button-checked"
-                          : "radio-button-unchecked"
+                          ? 'radio-button-checked'
+                          : 'radio-button-unchecked'
                       }
-                      size={22}
-                      color={COLORS.primary}
+                      size={20}
+                      color={
+                        selectedSort === item
+                          ? COLORS.primary || '#2563EB'
+                          : COLORS.placeholder || '#9CA3AF'
+                      }
                     />
                     <Text
                       style={[
                         styles.modalItemText,
                         selectedSort === item && styles.modalItemSelectedText,
-                      ]}
-                    >
+                      ]}>
                       {item}
                     </Text>
                   </TouchableOpacity>
@@ -489,45 +663,49 @@ export default function TenantHomeScreen() {
               />
               <TouchableOpacity
                 style={styles.closeButton}
-                onPress={() => setSortModalVisible(false)}
-              >
-                <Text style={styles.closeText}>Close</Text>
+                activeOpacity={0.85}
+                onPress={() => setSortModalVisible(false)}>
+                <Text style={styles.closeText}>Apply</Text>
               </TouchableOpacity>
             </View>
           </View>
         </Modal>
 
         {/* City Modal */}
-        <Modal visible={cityModalVisible} transparent animationType="fade">
+        <Modal visible={cityModalVisible} transparent animationType="slide">
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Select City</Text>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>Select Location</Text>
               <FlatList
                 data={cities}
-                keyExtractor={(item) => item}
+                keyExtractor={item => item}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.modalItem}
+                    activeOpacity={0.7}
                     onPress={() => {
                       setSelectedCity(item)
                       setCityModalVisible(false)
-                    }}
-                  >
+                    }}>
                     <Icon
                       name={
                         selectedCity === item
-                          ? "radio-button-checked"
-                          : "radio-button-unchecked"
+                          ? 'radio-button-checked'
+                          : 'radio-button-unchecked'
                       }
-                      size={22}
-                      color={COLORS.primary}
+                      size={20}
+                      color={
+                        selectedCity === item
+                          ? COLORS.primary || '#2563EB'
+                          : COLORS.placeholder || '#9CA3AF'
+                      }
                     />
                     <Text
                       style={[
                         styles.modalItemText,
                         selectedCity === item && styles.modalItemSelectedText,
-                      ]}
-                    >
+                      ]}>
                       {item}
                     </Text>
                   </TouchableOpacity>
@@ -535,9 +713,9 @@ export default function TenantHomeScreen() {
               />
               <TouchableOpacity
                 style={styles.closeButton}
-                onPress={() => setCityModalVisible(false)}
-              >
-                <Text style={styles.closeText}>Close</Text>
+                activeOpacity={0.85}
+                onPress={() => setCityModalVisible(false)}>
+                <Text style={styles.closeText}>Apply</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -547,36 +725,45 @@ export default function TenantHomeScreen() {
         <Modal
           visible={showPropertyTypeModal}
           transparent
-          animationType="fade"
-          onRequestClose={() => setShowPropertyTypeModal(false)}
-        >
+          animationType="slide"
+          onRequestClose={() => setShowPropertyTypeModal(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Select Property Type</Text>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>Property Type</Text>
               {[
-                { label: "Apartment", value: "APARTMENT" },
-                { label: "House", value: "HOUSE" },
-                { label: "Villa", value: "VILLA" },
-                { label: "PG", value: "PG" },
-                { label: "Room", value: "ROOM" },
-              ].map((item) => (
+                { label: 'Apartment', value: 'APARTMENT', icon: 'apartment' },
+                { label: 'House', value: 'HOUSE', icon: 'house' },
+                { label: 'Villa', value: 'VILLA', icon: 'villa' },
+                { label: 'PG', value: 'PG', icon: 'meeting-room' },
+                { label: 'Room', value: 'ROOM', icon: 'bed' },
+              ].map(item => (
                 <TouchableOpacity
                   key={item.value}
                   style={styles.option}
+                  activeOpacity={0.7}
                   onPress={() => {
                     setSelectedPropertyType(item.label)
                     setShowPropertyTypeModal(false)
-                  }}
-                >
+                  }}>
+                  <Icon
+                    name={item.icon}
+                    size={20}
+                    color={
+                      selectedPropertyType === item.label
+                        ? COLORS.primary || '#2563EB'
+                        : COLORS.subText || '#6B7280'
+                    }
+                    style={styles.optionIcon}
+                  />
                   <Text
                     style={[
                       styles.optionText,
                       selectedPropertyType === item.label && {
-                        color: COLORS.primary,
-                        fontWeight: "700",
+                        color: COLORS.primary || '#2563EB',
+                        fontWeight: '700',
                       },
-                    ]}
-                  >
+                    ]}>
                     {item.label}
                   </Text>
                 </TouchableOpacity>
@@ -584,21 +771,31 @@ export default function TenantHomeScreen() {
 
               <TouchableOpacity
                 style={styles.option}
+                activeOpacity={0.7}
                 onPress={() => {
-                  setSelectedPropertyType("Property Type")
+                  setSelectedPropertyType('Property Type')
                   setShowPropertyTypeModal(false)
-                }}
-              >
-                <Text style={[styles.optionText, { color: COLORS.primary }]}>
-                  Clear Filter
+                }}>
+                <Icon
+                  name="refresh"
+                  size={20}
+                  color={COLORS.error || '#EF4444'}
+                  style={styles.optionIcon}
+                />
+                <Text
+                  style={[
+                    styles.optionText,
+                    { color: COLORS.error || '#EF4444' },
+                  ]}>
+                  Reset Filter
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.closeButton}
-                onPress={() => setShowPropertyTypeModal(false)}
-              >
-                <Text style={styles.closeText}>Close</Text>
+                activeOpacity={0.85}
+                onPress={() => setShowPropertyTypeModal(false)}>
+                <Text style={styles.closeText}>Done</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -608,62 +805,81 @@ export default function TenantHomeScreen() {
         <Modal
           visible={showBudgetModal}
           transparent
-          animationType="fade"
-          onRequestClose={() => setShowBudgetModal(false)}
-        >
+          animationType="slide"
+          onRequestClose={() => setShowBudgetModal(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Select Budget</Text>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>Monthly Budget</Text>
               {[
-                "Below ₹10,000",
-                "₹10,000 - ₹20,000",
-                "₹20,000 - ₹50,000",
-                "Above ₹50,000",
-              ].map((item) => (
+                'Below ₹10,000',
+                '₹10,000 - ₹20,000',
+                '₹20,000 - ₹50,000',
+                'Above ₹50,000',
+              ].map(item => (
                 <TouchableOpacity
                   key={item}
                   style={styles.option}
+                  activeOpacity={0.7}
                   onPress={() => {
                     setSelectedBudget(item)
                     setShowBudgetModal(false)
-                  }}
-                >
+                  }}>
+                  <Icon
+                    name="payments"
+                    size={20}
+                    color={
+                      selectedBudget === item
+                        ? COLORS.primary || '#2563EB'
+                        : COLORS.subText || '#6B7280'
+                    }
+                    style={styles.optionIcon}
+                  />
                   <Text
                     style={[
                       styles.optionText,
                       selectedBudget === item && {
-                        color: COLORS.primary,
-                        fontWeight: "700",
+                        color: COLORS.primary || '#2563EB',
+                        fontWeight: '700',
                       },
-                    ]}
-                  >
+                    ]}>
                     {item}
                   </Text>
                 </TouchableOpacity>
               ))}
               <TouchableOpacity
                 style={styles.option}
+                activeOpacity={0.7}
                 onPress={() => {
-                  setSelectedBudget("Budget")
+                  setSelectedBudget('Budget')
                   setShowBudgetModal(false)
-                }}
-              >
-                <Text style={[styles.optionText, { color: COLORS.primary }]}>
-                  Clear Filter
+                }}>
+                <Icon
+                  name="refresh"
+                  size={20}
+                  color={COLORS.error || '#EF4444'}
+                  style={styles.optionIcon}
+                />
+                <Text
+                  style={[
+                    styles.optionText,
+                    { color: COLORS.error || '#EF4444' },
+                  ]}>
+                  Reset Filter
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.closeButton}
-                onPress={() => setShowBudgetModal(false)}
-              >
-                <Text style={styles.closeText}>Close</Text>
+                activeOpacity={0.85}
+                onPress={() => setShowBudgetModal(false)}>
+                <Text style={styles.closeText}>Done</Text>
               </TouchableOpacity>
             </View>
           </View>
         </Modal>
 
-        {/* Custom Alert Modal */}
+        {/* Alert Modal */}
         <Modal transparent visible={alertConfig.visible} animationType="fade">
           <View style={styles.alertOverlay}>
             <View style={styles.alertBox}>
@@ -672,13 +888,12 @@ export default function TenantHomeScreen() {
                   styles.alertIconContainer,
                   {
                     backgroundColor:
-                      getAlertStyle(alertConfig.type).color + "15",
+                      getAlertStyle(alertConfig.type).color + '18',
                   },
-                ]}
-              >
+                ]}>
                 <Icon
                   name={getAlertStyle(alertConfig.type).icon}
-                  size={38}
+                  size={36}
                   color={getAlertStyle(alertConfig.type).color}
                 />
               </View>
@@ -690,10 +905,9 @@ export default function TenantHomeScreen() {
                   styles.alertButton,
                   { backgroundColor: getAlertStyle(alertConfig.type).color },
                 ]}
-                activeOpacity={0.8}
-                onPress={closeAlert}
-              >
-                <Text style={styles.alertButtonText}>OK</Text>
+                activeOpacity={0.85}
+                onPress={closeAlert}>
+                <Text style={styles.alertButtonText}>Got It</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -703,388 +917,521 @@ export default function TenantHomeScreen() {
   )
 }
 
-const getStyles = (COLORS) =>
+const getStyles = COLORS =>
   StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.card || '#FFFFFF',
     },
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
     loader: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: COLORS.background,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
     loadingText: {
-      marginTop: 12,
-      fontSize: 16,
-      color: COLORS.subText,
-      fontWeight: "500",
+      marginTop: 14,
+      fontSize: 14,
+      color: COLORS.subText || '#6B7280',
+      fontWeight: '500',
     },
 
-    /* Top Header Search Bar */
+    /* Header & Search Bar */
     topSearchHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-      marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 10,
-      backgroundColor: COLORS.card,
+      paddingHorizontal: 20,
+      paddingTop:
+        Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 12 : 12,
+      paddingBottom: 14,
+      backgroundColor: COLORS.card || '#FFFFFF',
       borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
+      borderBottomColor: COLORS.border || '#F3F4F6',
+    },
+    headerGreetingRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 14,
+    },
+    greetingTitle: {
+      fontSize: 20,
+      fontWeight: '800',
+      color: COLORS.text || '#111827',
+    },
+    headerGreeting: {
+      fontSize: 12,
+      fontWeight: '500',
+      color: COLORS.subText || '#6B7280',
+      marginTop: 2,
+    },
+    avatarCircle: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: (COLORS.primary || '#2563EB') + '12',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     searchContainer: {
-      flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: COLORS.card,
-      borderRadius: 24,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.background || '#F9FAFB',
+      borderRadius: 14,
       borderWidth: 1,
-      borderColor: COLORS.border,
-      height: 46,
-      paddingLeft: 16,
-      overflow: "hidden",
+      borderColor: COLORS.border || '#E5E7EB',
+      height: 48,
+      paddingHorizontal: 14,
+    },
+    searchLeadingIcon: {
+      marginRight: 10,
     },
     searchInput: {
       flex: 1,
-      fontSize: 15,
-      color: COLORS.text,
+      fontSize: 14,
+      color: COLORS.text || '#111827',
+      height: '100%',
     },
-    searchIconButton: {
-      backgroundColor: COLORS.primary,
-      height: "100%",
-      width: 48,
-      justifyContent: "center",
-      alignItems: "center",
+    clearSearchBtn: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      backgroundColor: COLORS.border || '#E5E7EB',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
 
-    /* Filter Chips Row */
+    /* Filter Chips Bar */
+    filterBarWrapper: {
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border || '#F3F4F6',
+    },
     filterChipsRow: {
-      paddingHorizontal: 16,
+      paddingHorizontal: 20,
       paddingVertical: 12,
-      backgroundColor: COLORS.card,
-      alignItems: "center",
-      height: 60,
+      alignItems: 'center',
+      gap: 8,
     },
     filterChipIcon: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
+      width: 38,
+      height: 38,
+      borderRadius: 12,
       borderWidth: 1,
-      borderColor: COLORS.border,
-      justifyContent: "center",
-      alignItems: "center",
-      marginRight: 8,
-      backgroundColor: COLORS.card,
+      borderColor: COLORS.border || '#E5E7EB',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
     filterChip: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: COLORS.card,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.background || '#F9FAFB',
       borderWidth: 1,
-      borderColor: COLORS.border,
-      borderRadius: 20,
+      borderColor: COLORS.border || '#E5E7EB',
+      borderRadius: 12,
       paddingHorizontal: 14,
-      height: 36,
-      marginRight: 8,
+      height: 38,
     },
     activeFilterChip: {
-      borderColor: COLORS.primary,
-      backgroundColor: COLORS.primary + "10",
+      borderColor: COLORS.primary || '#2563EB',
+      backgroundColor: (COLORS.primary || '#2563EB') + '10',
     },
     filterChipText: {
       fontSize: 13,
-      fontWeight: "600",
-      color: COLORS.subText,
+      fontWeight: '600',
+      color: COLORS.subText || '#4B5563',
       marginRight: 4,
     },
+    activeFilterChipText: {
+      color: COLORS.primary || '#2563EB',
+      fontWeight: '700',
+    },
+    clearFilterChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+      height: 38,
+      borderRadius: 12,
+      backgroundColor: (COLORS.error || '#EF4444') + '12',
+    },
+    clearFilterChipText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: COLORS.error || '#EF4444',
+      marginLeft: 4,
+    },
 
-    /* List & Card Styles */
+    /* List & Cards */
     listContainer: {
       padding: 16,
       paddingBottom: 40,
     },
     card: {
-      backgroundColor: COLORS.card,
-      borderRadius: 16,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderRadius: 20,
       marginBottom: 20,
-      overflow: "hidden",
+      overflow: 'hidden',
       borderWidth: 1,
-      borderColor: COLORS.border,
-      elevation: 2,
-      shadowColor: COLORS.shadow,
-      shadowOffset: { width: 0, height: 1 },
+      borderColor: COLORS.border || 'rgba(229, 231, 235, 0.8)',
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.05,
-      shadowRadius: 3,
+      shadowRadius: 10,
     },
-
-    /* Single Image Section */
     imageContainer: {
-      height: 200,
-      width: "100%",
-      backgroundColor: COLORS.disabled,
-      position: "relative",
+      height: 230,
+      width: '100%',
+      backgroundColor: '#E5E7EB',
+      position: 'relative',
     },
     singleImage: {
-      width: "100%",
-      height: "100%",
-      resizeMode: "cover",
+      width: '100%',
+      height: '100%',
+      resizeMode: 'cover',
     },
-    verifiedBadge: {
-      position: "absolute",
-      bottom: 12,
-      left: 12,
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: "rgba(255, 255, 255, 0.95)",
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 6,
+    imageScrim: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.15)',
     },
-    verifiedText: {
-      fontSize: 11,
-      fontWeight: "700",
-      color: COLORS.success,
-      marginLeft: 3,
+    typeBadge: {
+      position: 'absolute',
+      top: 14,
+      left: 14,
+      backgroundColor: 'rgba(255,255,255,0.92)',
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 20,
     },
-    imageCountBadge: {
-      position: "absolute",
-      bottom: 12,
-      right: 12,
-      backgroundColor: "rgba(0, 0, 0, 0.6)",
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 6,
-    },
-    imageCountText: {
-      color: COLORS.white,
-      fontSize: 11,
-      fontWeight: "700",
+    typeBadgeText: {
+      fontSize: 10,
+      fontWeight: '800',
+      color: COLORS.text || '#111827',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
     },
     wishlistBtn: {
-      position: "absolute",
-      top: 12,
-      right: 12,
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: "rgba(0,0,0,0.4)",
-      justifyContent: "center",
-      alignItems: "center",
+      position: 'absolute',
+      top: 14,
+      right: 14,
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      backgroundColor: 'rgba(0,0,0,0.35)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    imageCountBadge: {
+      position: 'absolute',
+      bottom: 14,
+      right: 14,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+    },
+    imageCountText: {
+      color: '#FFFFFF',
+      fontSize: 11,
+      fontWeight: '700',
+      marginLeft: 4,
     },
 
-    /* Details Section */
+    /* Card Details */
     details: {
       padding: 16,
     },
-    propertySubMeta: {
-      fontSize: 13,
-      color: COLORS.subText,
+    titleRow: {
       marginBottom: 4,
-      fontWeight: "500",
     },
     propertyTitle: {
-      fontSize: 17,
-      fontWeight: "700",
-      color: COLORS.text,
-      marginBottom: 4,
+      fontSize: 18,
+      fontWeight: '700',
+      color: COLORS.text || '#111827',
+    },
+    locationRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    propertySubMeta: {
+      fontSize: 13,
+      color: COLORS.subText || '#6B7280',
+      fontWeight: '500',
+      marginLeft: 4,
     },
     priceRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 10,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    priceBlock: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
     },
     priceText: {
-      fontSize: 18,
-      fontWeight: "800",
-      color: COLORS.text,
+      fontSize: 20,
+      fontWeight: '800',
+      color: COLORS.primary || '#2563EB',
     },
     monthText: {
-      fontSize: 13,
-      fontWeight: "500",
-      color: COLORS.subText,
+      fontSize: 12,
+      fontWeight: '500',
+      color: COLORS.subText || '#6B7280',
+      marginLeft: 2,
+    },
+    priceBreakupBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
     },
     priceBreakupText: {
       fontSize: 13,
-      fontWeight: "600",
-      color: COLORS.primary,
+      fontWeight: '600',
+      color: COLORS.primary || '#2563EB',
+    },
+    highlightsBox: {
+      backgroundColor: COLORS.background || '#F9FAFB',
+      padding: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: COLORS.border || '#F3F4F6',
+    },
+    highlightsLabel: {
+      fontSize: 10,
+      fontWeight: '800',
+      color: COLORS.subText || '#6B7280',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 2,
     },
     highlightsText: {
       fontSize: 13,
-      color: COLORS.subText,
-      backgroundColor: COLORS.background,
-      padding: 8,
-      borderRadius: 8,
-      overflow: "hidden",
+      color: COLORS.text || '#374151',
+      lineHeight: 18,
+    },
+
+    divider: {
+      height: 1,
+      backgroundColor: COLORS.border || '#F3F4F6',
+      marginHorizontal: 16,
     },
 
     /* Card Bottom Action Bar */
     cardBottomAction: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       paddingHorizontal: 16,
-      paddingBottom: 16,
+      paddingTop: 14,
       gap: 10,
     },
     propertyDetailsBtn: {
       flex: 1,
-      borderWidth: 1.5,
-      borderColor: COLORS.primary,
-      borderRadius: 10,
-      paddingVertical: 10,
-      alignItems: "center",
-      backgroundColor: COLORS.card,
+      backgroundColor: COLORS.primary || '#2563EB',
+      borderRadius: 12,
+      paddingVertical: 12,
+      alignItems: 'center',
     },
     propertyDetailsBtnText: {
-      color: COLORS.primary,
+      color: '#FFFFFF',
       fontSize: 14,
-      fontWeight: "700",
+      fontWeight: '700',
     },
     actionIconBtn: {
       width: 44,
       height: 44,
-      borderRadius: 10,
-      borderWidth: 1.5,
-      borderColor: COLORS.border,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: COLORS.card,
+      borderRadius: 12,
+      borderWidth: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    whatsappBtn: {
+      borderColor: (COLORS.success || '#10B981') + '30',
+      backgroundColor: (COLORS.success || '#10B981') + '10',
+    },
+    callBtn: {
+      borderColor: (COLORS.primary || '#2563EB') + '30',
+      backgroundColor: (COLORS.primary || '#2563EB') + '10',
+    },
+    cardFooter: {
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      paddingBottom: 14,
     },
     updatedTimeText: {
       fontSize: 11,
-      color: COLORS.placeholder,
-      paddingHorizontal: 16,
-      paddingBottom: 12,
+      color: COLORS.placeholder || '#9CA3AF',
     },
 
-    /* Empty State */
+    /* Empty View */
     emptyContainer: {
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
       marginTop: 60,
+      paddingHorizontal: 24,
+    },
+    emptyIconCircle: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: COLORS.border || '#E5E7EB',
+    },
+    emptyTitle: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: COLORS.text || '#111827',
+      marginBottom: 6,
     },
     emptyText: {
-      marginTop: 15,
-      fontSize: 15,
-      color: COLORS.subText,
-      fontWeight: "500",
+      fontSize: 13,
+      color: COLORS.subText || '#6B7280',
+      textAlign: 'center',
+      marginBottom: 20,
+    },
+    emptyResetBtn: {
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 12,
+      backgroundColor: COLORS.primary || '#2563EB',
+    },
+    emptyResetBtnText: {
+      color: '#FFFFFF',
+      fontSize: 13,
+      fontWeight: '600',
     },
 
-    /* Modal Styles */
+    /* Bottom Sheet Modals */
     modalOverlay: {
       flex: 1,
-      backgroundColor: "rgba(0,0,0,0.5)",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 20,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      justifyContent: 'flex-end',
     },
     modalContainer: {
-      width: "100%",
-      maxHeight: "80%",
-      backgroundColor: COLORS.card,
-      borderRadius: 24,
+      width: '100%',
+      maxHeight: '80%',
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
       padding: 20,
-      elevation: 10,
+      paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    },
+    modalHandle: {
+      width: 36,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: COLORS.border || '#E5E7EB',
+      alignSelf: 'center',
+      marginBottom: 16,
     },
     modalTitle: {
-      fontSize: 20,
-      fontWeight: "800",
-      color: COLORS.text,
-      marginBottom: 20,
-      textAlign: "center",
+      fontSize: 18,
+      fontWeight: '700',
+      color: COLORS.text || '#111827',
+      marginBottom: 16,
+      textAlign: 'center',
     },
     modalItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 14,
       borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
+      borderBottomColor: COLORS.border || '#F3F4F6',
     },
     modalItemText: {
-      marginLeft: 15,
-      fontSize: 16,
-      color: COLORS.text,
-      fontWeight: "500",
+      marginLeft: 12,
+      fontSize: 14,
+      color: COLORS.text || '#374151',
+      fontWeight: '500',
     },
     modalItemSelectedText: {
-      fontWeight: "700",
-      color: COLORS.primary,
+      fontWeight: '700',
+      color: COLORS.primary || '#2563EB',
+    },
+    option: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border || '#F3F4F6',
+    },
+    optionIcon: {
+      marginRight: 12,
+    },
+    optionText: {
+      fontSize: 14,
+      color: COLORS.text || '#374151',
+      fontWeight: '500',
     },
     closeButton: {
       marginTop: 20,
-      backgroundColor: COLORS.primary,
+      backgroundColor: COLORS.primary || '#2563EB',
       paddingVertical: 14,
       borderRadius: 14,
-      alignItems: "center",
+      alignItems: 'center',
     },
     closeText: {
-      color: COLORS.white,
-      fontSize: 16,
-      fontWeight: "700",
+      color: '#FFFFFF',
+      fontSize: 15,
+      fontWeight: '600',
     },
 
-    /* Alert Modal */
+    /* Custom Alert */
     alertOverlay: {
       flex: 1,
-      backgroundColor: "rgba(0,0,0,0.45)",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 20,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
     },
     alertBox: {
-      width: "100%",
-      backgroundColor: COLORS.card,
+      width: '100%',
+      backgroundColor: COLORS.card || '#FFFFFF',
       borderRadius: 24,
-      padding: 25,
-      alignItems: "center",
+      padding: 24,
+      alignItems: 'center',
       elevation: 10,
     },
     alertIconContainer: {
-      width: 70,
-      height: 70,
-      borderRadius: 35,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 20,
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 16,
     },
     alertTitle: {
-      fontSize: 20,
-      fontWeight: "800",
-      color: COLORS.text,
-      marginBottom: 10,
-      textAlign: "center",
+      fontSize: 18,
+      fontWeight: '700',
+      color: COLORS.text || '#111827',
+      marginBottom: 8,
+      textAlign: 'center',
     },
     alertMessage: {
       fontSize: 14,
-      color: COLORS.subText,
-      textAlign: "center",
-      marginBottom: 25,
+      color: COLORS.subText || '#6B7280',
+      textAlign: 'center',
+      marginBottom: 20,
       lineHeight: 20,
     },
     alertButton: {
-      width: "100%",
-      paddingVertical: 14,
-      borderRadius: 14,
-      alignItems: "center",
+      width: '100%',
+      paddingVertical: 12,
+      borderRadius: 12,
+      alignItems: 'center',
     },
     alertButtonText: {
-      color: COLORS.white,
-      fontSize: 16,
-      fontWeight: "700",
-    },
-
-    option: {
-      paddingVertical: 15,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
-    },
-    optionText: {
-      fontSize: 16,
-      color: COLORS.text,
+      color: '#FFFFFF',
+      fontSize: 15,
+      fontWeight: '600',
     },
   })

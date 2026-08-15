@@ -47,33 +47,26 @@ export default function PaymentScreen({ route, navigation }) {
   }
 
   const onDownloadAgreement = async () => {
-    // 1. Show a loading alert
     showAlert(
       'Downloading...',
       'Please wait while we fetch your draft agreement.',
       'info'
     )
 
-    // Replace with your actual backend PDF URL later
     const pdfUrl =
       'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
-
-    // Create a local file path on the device
     const fileUri = FileSystem.documentDirectory + 'Draft_Rental_Agreement.pdf'
 
     try {
-      // 2. Actually download the file to the phone's hidden storage
       const downloadResult = await FileSystem.downloadAsync(pdfUrl, fileUri)
+      closeAlert()
 
-      closeAlert() // Close the "Downloading..." popup
-
-      // 3. Open the native phone menu so the user can Save to Files or Share it
       const canShare = await Sharing.isAvailableAsync()
       if (canShare) {
         await Sharing.shareAsync(downloadResult.uri, {
           mimeType: 'application/pdf',
           dialogTitle: 'Save or Share your Agreement',
-          UTI: 'com.adobe.pdf', // iOS specific for PDFs
+          UTI: 'com.adobe.pdf',
         })
       } else {
         showAlert('Success', 'File downloaded successfully!', 'success')
@@ -97,45 +90,51 @@ export default function PaymentScreen({ route, navigation }) {
   }
 
   const onContactOwner = () => {
-    showAlert(
-      'Contact Required',
-      'Please contact the owner directly to finalize the lease and arrange the security deposit.',
-      'warning'
-    )
+    if (!property?.ownerPhone) {
+      showAlert(
+        'Contact Unavailable',
+        'The owner has not provided a direct contact number yet.',
+        'warning'
+      )
+      return
+    }
+    Linking.openURL(`tel:${property.ownerPhone}`)
   }
 
-  // Helper for alert styles
   const getAlertStyle = type => {
     switch (type) {
       case 'success':
-        return { icon: 'check-circle', color: COLORS.success }
+        return { icon: 'check-circle', color: COLORS.success || '#10B981' }
       case 'error':
-        return { icon: 'error', color: COLORS.error }
+        return { icon: 'error', color: COLORS.error || '#EF4444' }
       case 'warning':
-        return { icon: 'warning', color: COLORS.warning }
+        return { icon: 'warning', color: COLORS.warning || '#F59E0B' }
       default:
-        return { icon: 'info', color: COLORS.primary }
+        return { icon: 'info', color: COLORS.primary || '#2563EB' }
     }
   }
 
-  // Calculate Mock Deposit
+  // Calculate Mock Deposit & Formatting
   const baseRent = parseInt(property?.price || amount || '0', 10)
-  const securityDeposit = baseRent * 2 // Standard 2 months deposit
+  const securityDeposit = baseRent * 2
+  const totalDue = baseRent + securityDeposit
+
+  const formatCurrency = num => `₹${Number(num).toLocaleString('en-IN')}`
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={COLORS.background || '#F9FAFB'}
+      />
+
       {/* Seamless Top Bar Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           activeOpacity={0.8}
           onPress={() => navigation.goBack()}>
-          <Icon
-            name="arrow-back-ios"
-            size={18}
-            color={COLORS.text}
-            style={styles.backIcon}
-          />
+          <Icon name="arrow-back" size={22} color={COLORS.text || '#111827'} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Rent & Lease Details</Text>
         <View style={styles.headerSpacer} />
@@ -147,7 +146,7 @@ export default function PaymentScreen({ route, navigation }) {
         {/* Top Property Info Card */}
         <View style={styles.propertyHeaderCard}>
           <View style={styles.iconCircle}>
-            <Icon name="home-work" size={22} color={COLORS.primary} />
+            <Icon name="domain" size={24} color={COLORS.primary || '#2563EB'} />
           </View>
           <View style={styles.propertyHeaderText}>
             <Text style={styles.propertyTitle} numberOfLines={1}>
@@ -160,25 +159,25 @@ export default function PaymentScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* Financial Breakdown Card */}
+        {/* Financial Breakdown Card (Receipt Style) */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Financial Breakdown</Text>
 
           <View style={styles.row}>
             <Text style={styles.label}>Monthly Rent</Text>
-            <Text style={styles.value}>₹{baseRent}</Text>
+            <Text style={styles.value}>{formatCurrency(baseRent)}</Text>
           </View>
 
           <View style={styles.row}>
-            <Text style={styles.label}>Security Deposit</Text>
-            <Text style={styles.value}>₹{securityDeposit}</Text>
+            <Text style={styles.label}>Security Deposit (2 Months)</Text>
+            <Text style={styles.value}>{formatCurrency(securityDeposit)}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Maintenance</Text>
-            <Text style={[styles.value, { color: COLORS.success }]}>
-              Included
-            </Text>
+            <View style={styles.badgeSuccess}>
+              <Text style={styles.badgeSuccessText}>Included</Text>
+            </View>
           </View>
 
           {/* Dashed Divider */}
@@ -188,17 +187,14 @@ export default function PaymentScreen({ route, navigation }) {
           <View style={styles.totalBox}>
             <View>
               <Text style={styles.totalLabel}>Total Due at Move-in</Text>
-              <Text style={styles.totalSubLabel}>(1st Month + Deposit)</Text>
+              <Text style={styles.totalSubLabel}>1st Month + Deposit</Text>
             </View>
-            <Text style={styles.amount}>₹{baseRent + securityDeposit}</Text>
+            <Text style={styles.amount}>{formatCurrency(totalDue)}</Text>
           </View>
         </View>
 
         {/* Documents & Actions Section */}
-        <Text
-          style={[styles.sectionTitle, { marginLeft: 4, marginBottom: 12 }]}>
-          Terms & Conditions
-        </Text>
+        <Text style={styles.sectionTitleOutside}>Documents & Terms</Text>
 
         {/* Action 1: Tenancy Terms */}
         <TouchableOpacity
@@ -208,19 +204,71 @@ export default function PaymentScreen({ route, navigation }) {
           <View
             style={[
               styles.actionIconBox,
-              { backgroundColor: COLORS.warning + '15' },
+              { backgroundColor: (COLORS.warning || '#F59E0B') + '15' },
             ]}>
-            <Icon name="gavel" size={24} color={COLORS.warning} />
+            <Icon name="gavel" size={22} color={COLORS.warning || '#F59E0B'} />
           </View>
           <View style={styles.actionTextContainer}>
             <Text style={styles.actionTitle}>Tenancy Terms</Text>
             <Text style={styles.actionSubTitle}>Lock-in & Notice period</Text>
           </View>
-          <Icon name="chevron-right" size={24} color={COLORS.text} />
+          <Icon
+            name="chevron-right"
+            size={24}
+            color={COLORS.placeholder || '#9CA3AF'}
+          />
+        </TouchableOpacity>
+
+        {/* Action 2: Download Agreement */}
+        <TouchableOpacity
+          style={styles.actionCard}
+          activeOpacity={0.8}
+          onPress={onDownloadAgreement}>
+          <View
+            style={[
+              styles.actionIconBox,
+              { backgroundColor: (COLORS.primary || '#2563EB') + '15' },
+            ]}>
+            <Icon
+              name="description"
+              size={22}
+              color={COLORS.primary || '#2563EB'}
+            />
+          </View>
+          <View style={styles.actionTextContainer}>
+            <Text style={styles.actionTitle}>Draft Agreement</Text>
+            <Text style={styles.actionSubTitle}>Download PDF copy</Text>
+          </View>
+          <Icon
+            name="file-download"
+            size={24}
+            color={COLORS.placeholder || '#9CA3AF'}
+          />
+        </TouchableOpacity>
+
+        {/* Contact Owner Banner */}
+        <TouchableOpacity
+          style={styles.contactBanner}
+          activeOpacity={0.9}
+          onPress={onContactOwner}>
+          <View style={styles.contactBannerContent}>
+            <Text style={styles.contactBannerTitle}>Ready to move in?</Text>
+            <Text style={styles.contactBannerSub}>
+              Contact the owner directly to finalize your lease and arrange the
+              deposit.
+            </Text>
+          </View>
+          <View style={styles.contactIconCircle}>
+            <Icon
+              name="phone-in-talk"
+              size={24}
+              color={COLORS.text || '#111827'}
+            />
+          </View>
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Custom Alert Modal */}
+      {/* Premium Alert Modal */}
       <Modal transparent visible={alertConfig.visible} animationType="fade">
         <View style={styles.alertOverlay}>
           <View style={styles.alertBox}>
@@ -228,12 +276,12 @@ export default function PaymentScreen({ route, navigation }) {
               style={[
                 styles.alertIconContainer,
                 {
-                  backgroundColor: getAlertStyle(alertConfig.type).color + '15',
+                  backgroundColor: getAlertStyle(alertConfig.type).color + '1A',
                 },
               ]}>
               <Icon
                 name={getAlertStyle(alertConfig.type).icon}
-                size={38}
+                size={36}
                 color={getAlertStyle(alertConfig.type).color}
               />
             </View>
@@ -245,9 +293,9 @@ export default function PaymentScreen({ route, navigation }) {
                 styles.alertButton,
                 { backgroundColor: getAlertStyle(alertConfig.type).color },
               ]}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
               onPress={closeAlert}>
-              <Text style={styles.alertButtonText}>OK</Text>
+              <Text style={styles.alertButtonText}>Got It</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -260,43 +308,39 @@ const getStyles = COLORS =>
   StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
 
-    /* Seamless Header */
+    /* Modern Header */
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingHorizontal: 20,
-      paddingBottom: 15,
+      paddingHorizontal: 16,
+      paddingBottom: 16,
       paddingTop:
-        Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
-      backgroundColor: COLORS.background,
+        Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 16,
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
     backButton: {
       width: 44,
       height: 44,
       borderRadius: 22,
-      backgroundColor: COLORS.card,
+      backgroundColor: COLORS.card || '#FFFFFF',
       justifyContent: 'center',
       alignItems: 'center',
-      elevation: 2,
-      shadowColor: COLORS.shadow || '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
       borderWidth: 1,
-      borderColor: COLORS.border,
-    },
-    backIcon: {
-      marginLeft: 6,
+      borderColor: COLORS.border || '#E5E7EB',
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
     },
     headerTitle: {
       fontSize: 18,
       fontWeight: '800',
-      color: COLORS.text,
-      letterSpacing: 0.3,
+      color: COLORS.text || '#111827',
     },
     headerSpacer: {
       width: 44,
@@ -312,18 +356,23 @@ const getStyles = COLORS =>
     propertyHeaderCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: COLORS.card,
+      backgroundColor: COLORS.card || '#FFFFFF',
       padding: 16,
-      borderRadius: 16,
-      marginBottom: 20,
+      borderRadius: 20,
+      marginBottom: 24,
       borderWidth: 1,
-      borderColor: COLORS.border,
+      borderColor: COLORS.border || '#E5E7EB',
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.04,
+      shadowRadius: 6,
     },
     iconCircle: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      backgroundColor: COLORS.primary + '15',
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      backgroundColor: (COLORS.primary || '#2563EB') + '15',
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 16,
@@ -332,107 +381,128 @@ const getStyles = COLORS =>
       flex: 1,
     },
     propertyTitle: {
-      fontSize: 16,
+      fontSize: 17,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 4,
     },
     propertySubtitle: {
       fontSize: 13,
-      color: COLORS.subText,
+      color: COLORS.subText || '#6B7280',
       fontWeight: '500',
     },
 
-    /* Financial Card */
+    /* Financial Card (Receipt Style) */
     card: {
-      backgroundColor: COLORS.card,
-      borderRadius: 20,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderRadius: 24,
       padding: 20,
-      marginBottom: 24,
+      marginBottom: 28,
       elevation: 4,
-      shadowColor: COLORS.shadow || '#000',
+      shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.08,
+      shadowOpacity: 0.06,
       shadowRadius: 10,
       borderWidth: 1,
-      borderColor: COLORS.border,
+      borderColor: COLORS.border || '#E5E7EB',
     },
     sectionTitle: {
       fontSize: 18,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 16,
+    },
+    sectionTitleOutside: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: COLORS.text || '#111827',
+      marginLeft: 4,
+      marginBottom: 14,
     },
     row: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 10,
+      paddingVertical: 12,
     },
     label: {
       fontSize: 14,
-      color: COLORS.subText,
-      fontWeight: '600',
+      color: COLORS.subText || '#4B5563',
+      fontWeight: '500',
     },
     value: {
       fontSize: 15,
-      fontWeight: '800',
-      color: COLORS.text,
+      fontWeight: '700',
+      color: COLORS.text || '#111827',
+    },
+    badgeSuccess: {
+      backgroundColor: (COLORS.success || '#10B981') + '15',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 6,
+    },
+    badgeSuccessText: {
+      color: COLORS.success || '#10B981',
+      fontSize: 12,
+      fontWeight: '700',
+      textTransform: 'uppercase',
     },
     dashedDivider: {
       height: 1,
       borderWidth: 1,
-      borderColor: COLORS.border,
+      borderColor: COLORS.border || '#E5E7EB',
       borderStyle: 'dashed',
-      marginVertical: 16,
+      marginVertical: 20,
     },
     totalBox: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      backgroundColor: COLORS.primary + '10',
+      backgroundColor: (COLORS.primary || '#2563EB') + '10',
       paddingHorizontal: 16,
       paddingVertical: 18,
       borderRadius: 16,
+      borderWidth: 1,
+      borderColor: (COLORS.primary || '#2563EB') + '20',
     },
     totalLabel: {
       fontSize: 15,
       fontWeight: '800',
-      color: COLORS.primary,
-      marginBottom: 2,
+      color: COLORS.primary || '#2563EB',
+      marginBottom: 4,
     },
     totalSubLabel: {
-      fontSize: 11,
-      color: COLORS.primary,
+      fontSize: 12,
+      color: COLORS.primary || '#2563EB',
       fontWeight: '600',
       opacity: 0.8,
     },
     amount: {
       fontSize: 22,
       fontWeight: '800',
-      color: COLORS.primary,
+      color: COLORS.primary || '#2563EB',
     },
 
     /* Action Cards */
     actionCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: COLORS.card,
+      backgroundColor: COLORS.card || '#FFFFFF',
       padding: 16,
-      borderRadius: 16,
-      marginBottom: 12,
+      borderRadius: 20,
+      marginBottom: 14,
       borderWidth: 1,
-      borderColor: COLORS.border,
+      borderColor: COLORS.border || '#E5E7EB',
       elevation: 2,
-      shadowColor: COLORS.shadow || '#000',
+      shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
+      shadowOpacity: 0.04,
+      shadowRadius: 6,
     },
     actionIconBox: {
       width: 48,
       height: 48,
-      borderRadius: 14,
+      borderRadius: 16,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 16,
@@ -441,62 +511,74 @@ const getStyles = COLORS =>
       flex: 1,
     },
     actionTitle: {
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       fontSize: 16,
-      fontWeight: '800',
+      fontWeight: '700',
       marginBottom: 4,
     },
     actionSubTitle: {
-      fontSize: 12,
-      color: COLORS.subText,
+      fontSize: 13,
+      color: COLORS.subText || '#6B7280',
       fontWeight: '500',
     },
 
-    /* Contact Banner */
+    /* Sleek Contact Banner */
     contactBanner: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: COLORS.text, // Dark pop background
+      backgroundColor: COLORS.text || '#111827',
       padding: 20,
-      borderRadius: 16,
-      marginTop: 8,
-      elevation: 5,
-      shadowColor: COLORS.text,
+      borderRadius: 24,
+      marginTop: 14,
+      elevation: 6,
+      shadowColor: COLORS.text || '#111827',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.2,
-      shadowRadius: 8,
+      shadowOpacity: 0.25,
+      shadowRadius: 10,
+    },
+    contactBannerContent: {
+      flex: 1,
+      paddingRight: 16,
     },
     contactBannerTitle: {
-      color: COLORS.background, // Reverse text color
-      fontSize: 16,
+      color: '#FFFFFF',
+      fontSize: 18,
       fontWeight: '800',
-      marginBottom: 4,
+      marginBottom: 6,
     },
     contactBannerSub: {
-      fontSize: 12,
-      color: COLORS.background,
-      opacity: 0.8,
+      fontSize: 13,
+      color: 'rgba(255, 255, 255, 0.8)',
       fontWeight: '500',
+      lineHeight: 18,
+    },
+    contactIconCircle: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: '#FFFFFF',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
 
-    /* Custom Alert Modal Styling */
+    /* Premium Alert Modal Styling */
     alertOverlay: {
       flex: 1,
       backgroundColor: 'rgba(0,0,0,0.5)',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      padding: 24,
     },
     alertBox: {
       width: '100%',
-      backgroundColor: COLORS.card,
+      backgroundColor: COLORS.card || '#FFFFFF',
       borderRadius: 28,
       padding: 24,
       alignItems: 'center',
       elevation: 10,
-      shadowColor: COLORS.shadow || '#000',
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.1,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.15,
       shadowRadius: 20,
     },
     alertIconContainer: {
@@ -508,29 +590,28 @@ const getStyles = COLORS =>
       marginBottom: 20,
     },
     alertTitle: {
-      fontSize: 22,
+      fontSize: 20,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 10,
       textAlign: 'center',
     },
     alertMessage: {
-      fontSize: 15,
-      color: COLORS.subText,
+      fontSize: 14,
+      color: COLORS.subText || '#6B7280',
       textAlign: 'center',
       marginBottom: 28,
       lineHeight: 22,
     },
     alertButton: {
       width: '100%',
-      paddingVertical: 16,
+      paddingVertical: 14,
       borderRadius: 16,
       alignItems: 'center',
     },
     alertButtonText: {
       color: '#FFFFFF',
-      fontSize: 16,
-      fontWeight: '800',
-      letterSpacing: 0.5,
+      fontSize: 15,
+      fontWeight: '700',
     },
   })

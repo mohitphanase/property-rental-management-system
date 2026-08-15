@@ -15,7 +15,6 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
 import { AuthContext } from '../../provider/AuthProvider'
-// IMPORT your new ThemeContext here!
 import { ThemeContext } from '../../provider/ThemeProvider'
 
 export default function ProfileScreen({ navigation }) {
@@ -23,8 +22,6 @@ export default function ProfileScreen({ navigation }) {
 
   // Pull the global theme state and COLORS dynamically from context
   const { isDarkMode, toggleTheme, COLORS } = useContext(ThemeContext)
-
-  // Generate dynamic styles based on the current theme colors
   const styles = getStyles(COLORS)
 
   // Dynamic Custom Alert State
@@ -40,8 +37,8 @@ export default function ProfileScreen({ navigation }) {
   const onLogoutPress = () => {
     setAlertConfig({
       visible: true,
-      title: 'Logout',
-      message: 'Are you sure you want to log out of your account?',
+      title: 'Sign Out',
+      message: 'Are you sure you want to securely log out of your account?',
       type: 'logout',
       onConfirm: logout,
     })
@@ -52,7 +49,8 @@ export default function ProfileScreen({ navigation }) {
     setAlertConfig({
       visible: true,
       title: 'Help & Support',
-      message: 'For assistance, please contact us at:\n\n📞 +91 98765 43210',
+      message:
+        'Our support team is here to help you.\n\n📞 +91 98765 43210\n📧 support@rentapp.com',
       type: 'info',
       onConfirm: null,
     })
@@ -73,28 +71,46 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar
+        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+        backgroundColor={COLORS.background || '#F9FAFB'}
+      />
       <View style={styles.mainContainer}>
-        {/* Seamless Header */}
+        {/* Seamless Modern Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>My Profile</Text>
+          <Text style={styles.headerSubtitle}>
+            Manage your account and settings
+          </Text>
         </View>
 
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
           bounces={true}>
-          {/* Modern Profile Avatar Section */}
+          {/* Hero Profile Avatar Section */}
           <View style={styles.profileSection}>
-            <View style={styles.imageRing}>
-              <Image
-                source={require('../../../assets/profile.png')}
-                style={styles.profileImage}
-              />
+            <View style={styles.avatarBackdrop}>
+              <View style={styles.imageRing}>
+                <Image
+                  source={require('../../../assets/profile.png')}
+                  style={styles.profileImage}
+                />
+                <View style={styles.editIconBadge}>
+                  <Icon name="edit" size={14} color="#FFFFFF" />
+                </View>
+              </View>
             </View>
             <Text style={styles.name}>
               {user?.fullName || user?.name || 'Tenant Name'}
             </Text>
             <View style={styles.roleChip}>
+              <Icon
+                name="verified-user"
+                size={14}
+                color={COLORS.primary || '#2563EB'}
+                style={{ marginRight: 4 }}
+              />
               <Text style={styles.roleText}>{user?.role || 'TENANT'}</Text>
             </View>
           </View>
@@ -104,8 +120,16 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.sectionTitle}>Account Details</Text>
             <View style={styles.card}>
               <View style={styles.row}>
-                <View style={styles.iconBox}>
-                  <Icon name="email" size={20} color={COLORS.primary} />
+                <View
+                  style={[
+                    styles.iconBox,
+                    { backgroundColor: (COLORS.primary || '#2563EB') + '15' },
+                  ]}>
+                  <Icon
+                    name="email"
+                    size={20}
+                    color={COLORS.primary || '#2563EB'}
+                  />
                 </View>
                 <View style={styles.infoTextContainer}>
                   <Text style={styles.label}>Email Address</Text>
@@ -118,8 +142,16 @@ export default function ProfileScreen({ navigation }) {
               <View style={styles.dashedDivider} />
 
               <View style={styles.row}>
-                <View style={styles.iconBox}>
-                  <Icon name="verified-user" size={20} color={COLORS.primary} />
+                <View
+                  style={[
+                    styles.iconBox,
+                    { backgroundColor: (COLORS.primary || '#2563EB') + '15' },
+                  ]}>
+                  <Icon
+                    name="admin-panel-settings"
+                    size={20}
+                    color={COLORS.primary || '#2563EB'}
+                  />
                 </View>
                 <View style={styles.infoTextContainer}>
                   <Text style={styles.label}>Account Role</Text>
@@ -131,7 +163,7 @@ export default function ProfileScreen({ navigation }) {
 
           {/* Settings & Actions Section */}
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Settings</Text>
+            <Text style={styles.sectionTitle}>Preferences</Text>
 
             <View style={styles.card}>
               {/* App Theme Toggle */}
@@ -139,22 +171,29 @@ export default function ProfileScreen({ navigation }) {
                 <View
                   style={[
                     styles.iconBox,
-                    { backgroundColor: COLORS.text + '10' },
+                    { backgroundColor: (COLORS.text || '#111827') + '0D' },
                   ]}>
                   <Icon
                     name={isDarkMode ? 'dark-mode' : 'light-mode'}
-                    size={20}
-                    color={COLORS.text}
+                    size={22}
+                    color={COLORS.text || '#111827'}
                   />
                 </View>
-                <Text style={styles.actionText}>Dark Mode</Text>
+                <View style={styles.actionTextGroup}>
+                  <Text style={styles.actionText}>Dark Mode</Text>
+                  <Text style={styles.actionSubText}>
+                    {isDarkMode ? 'Enabled' : 'Disabled'}
+                  </Text>
+                </View>
                 <Switch
                   trackColor={{
-                    false: COLORS.border,
-                    true: COLORS.primary + '80',
+                    false: COLORS.border || '#E5E7EB',
+                    true: (COLORS.primary || '#2563EB') + '80',
                   }}
-                  thumbColor={isDarkMode ? COLORS.primary : '#f4f3f4'}
-                  ios_backgroundColor={COLORS.border}
+                  thumbColor={
+                    isDarkMode ? COLORS.primary || '#2563EB' : '#FFFFFF'
+                  }
+                  ios_backgroundColor={COLORS.border || '#E5E7EB'}
                   onValueChange={toggleTheme}
                   value={isDarkMode}
                 />
@@ -165,20 +204,29 @@ export default function ProfileScreen({ navigation }) {
               {/* Change Password */}
               <TouchableOpacity
                 style={styles.actionRow}
-                activeOpacity={0.7}
+                activeOpacity={0.6}
                 onPress={() => navigation.navigate('ChangePassword')}>
                 <View
                   style={[
                     styles.iconBox,
-                    { backgroundColor: COLORS.text + '10' },
+                    { backgroundColor: (COLORS.text || '#111827') + '0D' },
                   ]}>
-                  <Icon name="lock-outline" size={20} color={COLORS.text} />
+                  <Icon
+                    name="lock-outline"
+                    size={22}
+                    color={COLORS.text || '#111827'}
+                  />
                 </View>
-                <Text style={styles.actionText}>Change Password</Text>
+                <View style={styles.actionTextGroup}>
+                  <Text style={styles.actionText}>Change Password</Text>
+                  <Text style={styles.actionSubText}>
+                    Update your login credentials
+                  </Text>
+                </View>
                 <Icon
                   name="chevron-right"
-                  size={22}
-                  color={COLORS.placeholder}
+                  size={24}
+                  color={COLORS.placeholder || '#9CA3AF'}
                 />
               </TouchableOpacity>
 
@@ -187,20 +235,29 @@ export default function ProfileScreen({ navigation }) {
               {/* Help & Support */}
               <TouchableOpacity
                 style={styles.actionRow}
-                activeOpacity={0.7}
+                activeOpacity={0.6}
                 onPress={onSupportPress}>
                 <View
                   style={[
                     styles.iconBox,
-                    { backgroundColor: COLORS.text + '10' },
+                    { backgroundColor: (COLORS.text || '#111827') + '0D' },
                   ]}>
-                  <Icon name="help-outline" size={20} color={COLORS.text} />
+                  <Icon
+                    name="help-outline"
+                    size={22}
+                    color={COLORS.text || '#111827'}
+                  />
                 </View>
-                <Text style={styles.actionText}>Help & Support</Text>
+                <View style={styles.actionTextGroup}>
+                  <Text style={styles.actionText}>Help & Support</Text>
+                  <Text style={styles.actionSubText}>
+                    Get in touch with our team
+                  </Text>
+                </View>
                 <Icon
                   name="chevron-right"
-                  size={22}
-                  color={COLORS.placeholder}
+                  size={24}
+                  color={COLORS.placeholder || '#9CA3AF'}
                 />
               </TouchableOpacity>
             </View>
@@ -210,15 +267,15 @@ export default function ProfileScreen({ navigation }) {
           <View style={styles.logoutContainer}>
             <TouchableOpacity
               style={styles.logoutButtonSoft}
-              activeOpacity={0.8}
+              activeOpacity={0.75}
               onPress={onLogoutPress}>
               <Icon
                 name="logout"
                 size={22}
-                color={COLORS.error}
+                color={COLORS.error || '#EF4444'}
                 style={styles.logoutIcon}
               />
-              <Text style={styles.logoutText}>Logout Securely</Text>
+              <Text style={styles.logoutText}>Sign Out Securely</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -233,19 +290,19 @@ export default function ProfileScreen({ navigation }) {
                   {
                     backgroundColor:
                       alertConfig.type === 'logout'
-                        ? COLORS.error + '15'
-                        : COLORS.primary + '15',
+                        ? (COLORS.error || '#EF4444') + '18'
+                        : (COLORS.primary || '#2563EB') + '18',
                   },
                 ]}>
                 <Icon
                   name={
                     alertConfig.type === 'logout' ? 'logout' : 'support-agent'
                   }
-                  size={38}
+                  size={34}
                   color={
                     alertConfig.type === 'logout'
-                      ? COLORS.error
-                      : COLORS.primary
+                      ? COLORS.error || '#EF4444'
+                      : COLORS.primary || '#2563EB'
                   }
                 />
               </View>
@@ -257,24 +314,24 @@ export default function ProfileScreen({ navigation }) {
                 <View style={styles.alertButtonRow}>
                   <TouchableOpacity
                     style={styles.alertCancelButton}
-                    activeOpacity={0.7}
+                    activeOpacity={0.75}
                     onPress={closeAlert}>
                     <Text style={styles.alertCancelButtonText}>Cancel</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={styles.alertConfirmButton}
-                    activeOpacity={0.7}
+                    activeOpacity={0.85}
                     onPress={handleConfirm}>
-                    <Text style={styles.alertConfirmButtonText}>Logout</Text>
+                    <Text style={styles.alertConfirmButtonText}>Sign Out</Text>
                   </TouchableOpacity>
                 </View>
               ) : (
                 <TouchableOpacity
                   style={styles.alertSingleButton}
-                  activeOpacity={0.8}
+                  activeOpacity={0.85}
                   onPress={closeAlert}>
-                  <Text style={styles.alertSingleButtonText}>OK</Text>
+                  <Text style={styles.alertSingleButtonText}>Got It</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -285,84 +342,120 @@ export default function ProfileScreen({ navigation }) {
   )
 }
 
+const shadow = (elevation = 3, color = '#000', opacity = 0.08) => ({
+  shadowColor: color,
+  shadowOffset: { width: 0, height: elevation / 2 },
+  shadowOpacity: opacity,
+  shadowRadius: elevation,
+  elevation,
+})
+
 // Wrap styles in a function so it updates when COLORS changes
 const getStyles = COLORS =>
   StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
     mainContainer: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
 
     /* Seamless Header */
     header: {
-      alignItems: 'center',
-      justifyContent: 'center',
       paddingHorizontal: 20,
-      paddingBottom: 15,
+      paddingBottom: 16,
       paddingTop:
-        Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 15 : 15,
-      backgroundColor: COLORS.background,
+        Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 16,
+      backgroundColor: COLORS.background || '#F9FAFB',
     },
     headerTitle: {
-      fontSize: 20,
+      fontSize: 28,
       fontWeight: '800',
-      color: COLORS.text,
-      letterSpacing: 0.3,
+      color: COLORS.text || '#111827',
+      letterSpacing: -0.5,
+      marginBottom: 4,
+    },
+    headerSubtitle: {
+      fontSize: 14,
+      color: COLORS.subText || '#6B7280',
+      fontWeight: '500',
     },
 
     scrollContainer: {
       flexGrow: 1,
       paddingHorizontal: 16,
-      paddingBottom: 40,
+      // Increased paddingBottom significantly from 40 to 110 to account for Tab bar
+      paddingBottom: 110,
     },
 
     /* Modern Profile Section */
     profileSection: {
       alignItems: 'center',
-      marginVertical: 20,
+      marginVertical: 24,
+    },
+    avatarBackdrop: {
+      width: 148,
+      height: 148,
+      borderRadius: 74,
+      backgroundColor: (COLORS.primary || '#2563EB') + '0F',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 16,
     },
     imageRing: {
-      width: 110,
-      height: 110,
-      borderRadius: 55,
-      backgroundColor: COLORS.card,
+      width: 116,
+      height: 116,
+      borderRadius: 58,
+      backgroundColor: COLORS.card || '#FFFFFF',
       justifyContent: 'center',
       alignItems: 'center',
       padding: 4,
-      marginBottom: 16,
-      elevation: 6,
-      shadowColor: COLORS.shadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
+      ...shadow(6, '#000', 0.1),
+      borderWidth: 1,
+      borderColor: COLORS.border || '#E5E7EB',
+      position: 'relative',
     },
     profileImage: {
       width: '100%',
       height: '100%',
       borderRadius: 55,
-      backgroundColor: COLORS.disabled || '#E9ECEF',
+      backgroundColor: COLORS.disabled || '#E5E7EB',
+    },
+    editIconBadge: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+      backgroundColor: COLORS.primary || '#2563EB',
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 3,
+      borderColor: COLORS.card || '#FFFFFF',
     },
     name: {
       fontSize: 24,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 8,
+      textAlign: 'center',
     },
     roleChip: {
-      backgroundColor: COLORS.primary + '15',
-      paddingHorizontal: 14,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: (COLORS.primary || '#2563EB') + '12',
+      paddingHorizontal: 12,
       paddingVertical: 6,
-      borderRadius: 12,
+      borderRadius: 20,
     },
     roleText: {
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: '800',
-      color: COLORS.primary,
-      letterSpacing: 1,
+      color: COLORS.primary || '#2563EB',
+      letterSpacing: 0.5,
       textTransform: 'uppercase',
     },
 
@@ -371,36 +464,31 @@ const getStyles = COLORS =>
       marginBottom: 24,
     },
     sectionTitle: {
-      fontSize: 17,
+      fontSize: 18,
       fontWeight: '800',
-      color: COLORS.text,
-      marginBottom: 12,
+      color: COLORS.text || '#111827',
+      marginBottom: 14,
       marginLeft: 4,
     },
 
     /* Premium Cards */
     card: {
-      backgroundColor: COLORS.card,
-      borderRadius: 20,
+      backgroundColor: COLORS.card || '#FFFFFF',
+      borderRadius: 24,
       padding: 16,
-      elevation: 3,
-      shadowColor: COLORS.shadow || '#000',
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.06,
-      shadowRadius: 8,
+      ...shadow(4, '#000', 0.04),
       borderWidth: 1,
-      borderColor: COLORS.border,
+      borderColor: COLORS.border || 'rgba(229, 231, 235, 0.8)',
     },
     row: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 4,
+      paddingVertical: 6,
     },
     iconBox: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      backgroundColor: COLORS.primary + '10',
+      width: 46,
+      height: 46,
+      borderRadius: 16,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 16,
@@ -411,63 +499,72 @@ const getStyles = COLORS =>
     },
     label: {
       fontSize: 12,
-      color: COLORS.subText,
+      color: COLORS.subText || '#6B7280',
       fontWeight: '600',
       marginBottom: 4,
       textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     value: {
-      fontSize: 15,
-      color: COLORS.text,
+      fontSize: 16,
+      color: COLORS.text || '#111827',
       fontWeight: '700',
     },
     dashedDivider: {
       height: 1,
       borderWidth: 1,
-      borderColor: COLORS.border,
+      borderColor: COLORS.border || '#F3F4F6',
       borderStyle: 'dashed',
       marginVertical: 14,
     },
     solidDivider: {
       height: 1,
-      backgroundColor: COLORS.border,
+      backgroundColor: COLORS.border || '#F3F4F6',
       marginVertical: 4,
-      marginLeft: 60,
+      marginLeft: 62,
     },
 
     /* Actions & Settings */
     actionRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 8,
+      paddingVertical: 10,
+    },
+    actionTextGroup: {
+      flex: 1,
     },
     actionText: {
-      flex: 1,
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: '700',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
+    },
+    actionSubText: {
+      fontSize: 12,
+      fontWeight: '500',
+      color: COLORS.subText || '#6B7280',
+      marginTop: 2,
     },
 
     /* Logout Button */
     logoutContainer: {
-      marginTop: 10,
+      marginTop: 8,
       marginBottom: 20,
     },
     logoutButtonSoft: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: COLORS.error + '10', // Tinted background
-      borderRadius: 16,
+      backgroundColor: (COLORS.error || '#EF4444') + '10',
+      borderRadius: 20,
       paddingVertical: 16,
       borderWidth: 1,
-      borderColor: COLORS.error + '20',
+      borderColor: (COLORS.error || '#EF4444') + '25',
     },
     logoutIcon: {
       marginRight: 8,
     },
     logoutText: {
-      color: COLORS.error,
+      color: COLORS.error || '#EF4444',
       fontSize: 16,
       fontWeight: '800',
     },
@@ -475,22 +572,18 @@ const getStyles = COLORS =>
     /* Custom Modal Styling */
     alertOverlay: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: 'rgba(0,0,0,0.55)',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      padding: 24,
     },
     alertBox: {
       width: '100%',
-      backgroundColor: COLORS.card,
+      backgroundColor: COLORS.card || '#FFFFFF',
       borderRadius: 28,
       padding: 24,
       alignItems: 'center',
-      elevation: 10,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.1,
-      shadowRadius: 20,
+      ...shadow(20, '#000', 0.15),
     },
     alertIconContainer: {
       width: 72,
@@ -503,13 +596,13 @@ const getStyles = COLORS =>
     alertTitle: {
       fontSize: 22,
       fontWeight: '800',
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       marginBottom: 10,
       textAlign: 'center',
     },
     alertMessage: {
-      fontSize: 15,
-      color: COLORS.subText,
+      fontSize: 14,
+      color: COLORS.subText || '#6B7280',
       textAlign: 'center',
       marginBottom: 28,
       lineHeight: 22,
@@ -524,13 +617,13 @@ const getStyles = COLORS =>
       flex: 1,
       paddingVertical: 16,
       borderRadius: 16,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.background || '#F9FAFB',
       borderWidth: 1,
-      borderColor: COLORS.border,
+      borderColor: COLORS.border || '#E5E7EB',
       alignItems: 'center',
     },
     alertCancelButtonText: {
-      color: COLORS.text,
+      color: COLORS.text || '#111827',
       fontSize: 15,
       fontWeight: '700',
     },
@@ -538,34 +631,13 @@ const getStyles = COLORS =>
       flex: 1,
       paddingVertical: 16,
       borderRadius: 16,
-      backgroundColor: COLORS.error,
+      backgroundColor: COLORS.error || '#EF4444',
       alignItems: 'center',
-      elevation: 3,
-      shadowColor: COLORS.error,
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.3,
-      shadowRadius: 5,
+      ...shadow(5, COLORS.error || '#EF4444', 0.3),
     },
     alertConfirmButtonText: {
       color: '#FFFFFF',
-      fontSize: 16,
-      fontWeight: '800',
-    },
-    alertSingleButton: {
-      width: '100%',
-      paddingVertical: 16,
-      borderRadius: 16,
-      backgroundColor: COLORS.primary,
-      alignItems: 'center',
-      elevation: 3,
-      shadowColor: COLORS.primary,
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.3,
-      shadowRadius: 5,
-    },
-    alertSingleButtonText: {
-      color: '#FFFFFF',
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '800',
     },
   })
